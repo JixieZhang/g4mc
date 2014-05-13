@@ -28,7 +28,7 @@ class HRSPrimaryGeneratorAction;
 #define MaxStepPerTrack  1024
 
 //maximum number of hits in a SD
-#define MaxSDHit 256
+#define MaxSDHit 1024
 
 //maximum number of hits in a track
 #define MaxTrackHit 128
@@ -271,6 +271,7 @@ public:
 
 	//transport particles through HRS, calling fortan routines
 	bool TransportThruHRS(int i);
+	bool TransportThruHMS(int i);
 	bool TransportThruBigBite(int i);
 	bool TransportThruHRS_NoTgField(int i);
 	bool TransportThruVD(int i, double EndPlaneAngle);
@@ -356,6 +357,10 @@ private:
 	double mVDAngle,mVDTiltAngle,mPivot2VDFace;
 
 	/////////////////////////////////////////////////////
+	int    mSetupLAC;
+	double mLACAngle,mLACTiltAngle,mPivot2LACFace;
+
+	/////////////////////////////////////////////////////
 	int    mSetupBigBite;
 	double mBigBiteAngle,mBigBiteTiltAngle,mPivot2BigBiteFace;
 
@@ -376,7 +381,7 @@ private:
 	double mSBSFieldCurrentRatio;
 
 	int    mSetupHMS;
-	double mHMSAngle,mPivot2HMSFace;
+	double mHMSAngle,mPivot2HMSFace,mHMSMomentum;
 
 	/////////////////////////////////////////////////////
 

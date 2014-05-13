@@ -35,6 +35,7 @@ HRSStdSD::HRSStdSD(G4String name):G4VSensitiveDetector(name)
 	//G4HCtable::GetCollectionID(G4String collectionName) 
 
 	hitsCollection = 0;
+	verboseLevel = 0; //defined in G4VSensitiveDetector.hh
 }
 
 HRSStdSD::~HRSStdSD()
@@ -60,9 +61,6 @@ G4bool HRSStdSD::ProcessHits(G4Step* aStep,G4TouchableHistory* /*aROHist*/)
 	G4double edep = aStep->GetTotalEnergyDeposit();
 	if(edep/keV<=0.)  return true;
 
-	//By Jixie; it turns out that this is always zero due to the fact that G4 physics process never set 
-	//a value to it
-	G4double edep_NonIon = aStep->GetNonIonizingEnergyDeposit();
 
 	G4StepPoint* preStepPoint = aStep->GetPreStepPoint();
 	G4TouchableHistory* theTouchable = (G4TouchableHistory*)(preStepPoint->GetTouchable());
@@ -73,36 +71,54 @@ G4bool HRSStdSD::ProcessHits(G4Step* aStep,G4TouchableHistory* /*aROHist*/)
 	G4StepPoint* postStepPoint = aStep->GetPostStepPoint();
 	G4ThreeVector outpos = postStepPoint->GetPosition();       
 	G4ThreeVector outmom = postStepPoint->GetMomentum();
+	G4String physName = theTouchable->GetVolume()->GetName();
 
+	//By Jixie; it turns out that this is always zero due to the fact that G4 physics process never set 
+	//a value to it
+	G4double edep_NonIon = aStep->GetNonIonizingEnergyDeposit();
 	G4String process=postStepPoint->GetProcessDefinedStep()->GetProcessName();
-	if(process=="Transportation" || process=="msc")
-		edep_NonIon=edep;	
+	if(process=="Transportation" || process=="msc") edep_NonIon=edep;	
 	//if(edep_NonIon) G4cout<<"edep_NonIon="<<edep_NonIon<<G4endl;
+
 
 	// check if this finger already has a hit
 	// generally a hit is the total energy deposit in a sensitive detector within a time window
-	// it does not care which particle deposite these energy
+	// it does not care which particle deposite the energy
 	// In order to study the radiation, I need to isolate the hit source, therefore I require
 	// comparing the trackid here
 
+
 	HRSStdHit* aHit = 0;
-	for(G4int i=0;i<hitsCollection->entries();i++)
-	{
-		aHit = (*hitsCollection)[i];
-		if(aHit->GetID()==copyNo && aHit->GetTrackId()==trackId )
+	for(G4int i=hitsCollection->entries()-1;i>=0;i--)
+	{		
+		if( (*hitsCollection)[i]->GetPhysV()->GetName()==physName && 
+			(*hitsCollection)[i]->GetId()==copyNo && 
+			(*hitsCollection)[i]->GetTrackId()==trackId )
 		{
 			//found an exist hit 
+			if(verboseLevel >= 3)
+			{
+				G4cout<<"found an exist hit: PhysVol = "<<physName
+					<<" copyNo = "<<theTouchable->GetVolume()->GetCopyNo()
+					<<" trackId = "<<trackId<<G4endl;
+			}
+			aHit = (*hitsCollection)[i];
 			break;
 		}
 	}
+	
 
 	// if it has, then take the earlier time, accumulated the deposited energy
-	// if not, create a new hit and set it to the collection
+	// if not, create a new hit and push it into the collection
 	if(aHit)
 	{
-		if(aHit->GetTime() > hitTime) aHit->SetTime(hitTime); 
+		if(verboseLevel >= 4)
+		{
+			G4cout<<"<<<add energy into an exist hit: position="<<outpos<<"  edep="<<edep<<G4endl;
+		}
 		aHit->AddEdep(edep); 
 		aHit->AddNonIonEdep(edep_NonIon);
+		if(aHit->GetTime() > hitTime) aHit->SetTime(hitTime); 
 		aHit->SetOutPos(outpos);
 		aHit->SetOutMom(outmom);
 	}
@@ -135,6 +151,13 @@ G4bool HRSStdSD::ProcessHits(G4Step* aStep,G4TouchableHistory* /*aROHist*/)
 		aHit->SetPdgid(pdgid);
 
 		hitsCollection->insert(aHit);
+
+		if(verboseLevel >= 2)
+		{
+			G4cout<<"<<<Create a new Hit of type <" << SensitiveDetectorName << "/"<<collectionName[0]
+			<<" in "<<theTouchable->GetVolume()->GetName()<<"["<<copyNo<<"] \n"
+				<<" at "<<inpos<<", by track "<< trackId <<", momentum="<<inmom<<G4endl;
+		}
 	}
 
 	return true;
@@ -148,8 +171,7 @@ void HRSStdSD::EndOfEvent(G4HCofThisEvent* HCE)
 	int nhitC = hitsCollection->GetSize();
 	if(!nhitC) return;
 
-	int HIT_VERBOSITY=0;
-	if(HIT_VERBOSITY >= 2 && nhitC)
+	if(verboseLevel >= 2 && nhitC)
 	{
 		G4cout<<"<<<End of Hit Collections <" << SensitiveDetectorName << "/"<<collectionName[0]
 		<<">: " << nhitC << " hits." << G4endl; 

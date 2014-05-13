@@ -84,6 +84,7 @@ private:
 
 	//return the elastic momentum for target X
 	double GetElasMomentumX(double pE0, double pTheta, double pMtg);
+	double GetElasMomentumX_old(double pE0, double pTheta, double pMtg);
 	
 	//return the compton momentum for target X
 	void GetComptonMomentumX(double pE0, double pTheta_gamma, double pMtg,

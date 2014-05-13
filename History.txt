@@ -139,7 +139,13 @@ V1.05
 23. Added brem. photon polarization into the tree and in HRSPrimaryEventGenerator, assuming 90% electron
     polarization. Use this fomular: Pol_e * (4*y-y*y)/(4-4*y+3*y*y), where y is the energy fraction of 
     photon to electron.
-
+24. Add LAC geometry: class LACDetectorConstruction added, class HRSDetectorConstruction and HRSRootTree
+    and HRSEventAction were modified for this purpose. 
+24. Fixed a bug in HRSStdHit, this bug cause accumulate energy into a wrong hit.
+25. Added HRSCalorimeterHit and HRSCalorimeterSD to take care of EC hit.
+26. Updated CREX geometry according to http://ace.phys.virginia.edu/HAPPEX/2866
+    user: happex
+    psw: strangeFF
 
 ---------------------------------------------------------------------------
 V1.04

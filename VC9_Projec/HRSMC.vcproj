@@ -186,6 +186,10 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
+				RelativePath="..\src\BigBiteEventAction.cc"
+				>
+			</File>
+			<File
 				RelativePath="..\src\BigBiteHit.cc"
 				>
 			</File>
@@ -207,6 +211,14 @@
 			</File>
 			<File
 				RelativePath="..\src\HRSAnalysisManager.cc"
+				>
+			</File>
+			<File
+				RelativePath="..\src\HRSCalorimeterHit.cc"
+				>
+			</File>
+			<File
+				RelativePath="..\src\HRSCalorimeterSD.cc"
 				>
 			</File>
 			<File
@@ -704,10 +716,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\BigBiteEventAction.cc"
-				>
-			</File>
-			<File
 				RelativePath="..\src\CREXDetectorConstruction.cc"
 				>
 			</File>
@@ -721,6 +729,10 @@
 			</File>
 			<File
 				RelativePath="..\src\HRSDetectorConstruction.cc"
+				>
+			</File>
+			<File
+				RelativePath="..\src\LACDetectorConstruction.cc"
 				>
 			</File>
 			<File

@@ -1,7 +1,7 @@
 ######################################################
 #use -m64 sompiler option for all code
 setenv COMPILER_BIT 64
-setenv g2psoft /work/halla/g2p/disk1/software	
+setenv g2psoft /work/halla/g2p/disk1/centos62
 ######################################################
 ###!set up cernlib
 
@@ -111,7 +111,7 @@ setenv QTFLAGS  " -I${QTDIR}/include -I${QTDIR}/include/QtCore -I${QTDIR}/includ
 setenv QTLIBS   " -L${QTDIR}/lib -lQtCore -lQtGui -lQtOpenGL"
 setenv GLQTLIBS " -L${QTDIR}/lib -lQtCore -lQtGui -lQtOpenGL"
 
-
+if !($?OS_NAME) setenv OS_NAME Linux64RH6
 setenv  G4WORKDIR  /u/scratch/$USER/g4work_${OS_NAME}
 #/scratch of batch farm is diff from interactive farm, need to change this one 
 if !(-e  $G4WORKDIR) mkdir -p $G4WORKDIR

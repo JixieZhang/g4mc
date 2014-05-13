@@ -79,6 +79,7 @@ private:
 	int    mSetupBigBite;
 	int    mSetupSuperBigBite;
 	int    mSetupHMS;
+	int    mSetupLAC;
 
 	//for HRS
 	int    mSetupLSieveSlit,mSetupRSieveSlit;

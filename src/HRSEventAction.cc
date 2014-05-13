@@ -26,6 +26,7 @@
 #include "G4ThreeVector.hh"
 #include "HRSStdHit.hh"
 #include "HRSDCHit.hh"
+#include "HRSCalorimeterHit.hh" 
 #include "HRSRootTree.hh"
 #include "UsageManager.hh"
 
@@ -345,6 +346,104 @@ void HRSEventAction::ProcessStdSDHits(G4HCofThisEvent* HCE)
 }
 
 
+void HRSEventAction::ProcessCalorimeterSDHits(G4HCofThisEvent* HCE)
+{
+	if(!HCE) return;  //no hits collection found 
+
+	int nHC = HCE->GetNumberOfCollections();
+
+	G4String colName;
+	HRSCalorimeterHitsCollection* theHC = 0;
+
+	for(int ihc=0;ihc<nHC;ihc++)
+	{
+		//only one way to get a hit collection
+		//G4VHitsCollection* G4HCofThisEvent::GetHC(G4int sdid);
+		//But there are two ways to get a hit collection id (sdid)
+		//
+		//usually the SDID came from the following 2 ways
+		//	G4SDManager* SDman = G4SDManager::GetSDMpointer();
+		//  G4int G4SDManager::GetCollectionID(G4String colName);
+		//	G4int G4SDManager::GetCollectionID(G4VHitsCollection * aHC);
+		//  These two methods return the ID number of the sensitive detector.
+
+		//Just for debug
+		//it has been checked by the next 3 lines that ihc is equal to SDID
+		//in other words, SDID is the array index of each SD, which totally depends
+		//on how the code is organized. If one changes the detector construction
+		//by adding or deleting a SD somewhere, the SDID will change.
+		//
+		//G4int theSDID = SDman->GetCollectionID(theHC);
+		//G4cout<<"HRSEventAction::ProcessDCHits():  ihc="<<ihc<<"   SDID="<<theSDID<<G4endl;
+		//G4cout<<"HRSEventAction::ProcessDCHits():  SDName="<<theHC->GetSDname()
+		//	<<" colName="<<theHC->GetName()<<G4endl;
+
+		int theSDID = ihc;
+		colName = HCE->GetHC(ihc)->GetName();
+
+		bool bUseUserSDIDTable=false;
+		if(bUseUserSDIDTable)
+		{
+			//G4String SDName = HCE->GetHC(ihc)->GetSDname();
+			//need to add int GetUserSDID(const char *SDName);
+			//theSDID = GetUserSDID(SDName.c_str());
+		}
+
+
+		if(colName=="CalorimeterColl")
+		{			
+			theHC = (HRSCalorimeterHitsCollection*) HCE->GetHC(ihc);
+
+			HRSCalorimeterHit *aHit=0; 
+			G4ThreeVector tmpV3;
+
+			G4int n_hit = theHC->entries();
+
+			if(verboseLevel>=1) 
+			{
+				if(n_hit>0) G4cout<< (*theHC)[0]->GetPhysV()->GetName()<< " has " << n_hit << " hits." << G4endl;
+			}
+
+			for(int ih=0;ih<n_hit;ih++)
+			{
+				aHit=(*theHC)[ih];
+				if(verboseLevel>=2) aHit->Print();
+
+				if(aHit->GetTrackId()<MaxStoredTrjN)
+				{
+					mStoreTrackIdList[aHit->GetParentTrackId()]=true;
+					mStoreTrackIdList[aHit->GetTrackId()]=true;
+				}
+
+				int ii=gHRSTree->SD_N;
+				if(ii<MaxSDHit)
+				{
+					gHRSTree->SD_Id[ii]=theSDID;   //changed by Jixie
+					gHRSTree->SD_Pid[ii]=aHit->GetPdgid(); 
+					gHRSTree->SD_Tid[ii]=aHit->GetTrackId(); 
+					gHRSTree->SD_ParentTid[ii]=aHit->GetParentTrackId(); 
+					gHRSTree->SD_T[ii]=aHit->GetTime()/ns; 
+					tmpV3=aHit->GetInPos();
+					gHRSTree->SD_X[ii]=tmpV3.x()/mm;
+					gHRSTree->SD_Y[ii]=tmpV3.y()/mm; 
+					gHRSTree->SD_Z[ii]=tmpV3.z()/mm; 
+					gHRSTree->SD_Edep[ii]=aHit->GetEdep()/MeV;
+					gHRSTree->SD_NonIonEdep[ii]=aHit->GetNonIonEdep()/MeV;
+					tmpV3=aHit->GetInMom();
+					gHRSTree->SD_P[ii]=tmpV3.mag()/GeV;  
+					gHRSTree->SD_Theta[ii]=tmpV3.theta(); 
+					gHRSTree->SD_Phi[ii]=tmpV3.phi(); 
+					gHRSTree->SD_Pout[ii]=aHit->GetOutMom().mag()/GeV; 
+
+					gHRSTree->SD_N++; 
+				}
+			}
+
+		} //end of for ih 
+	} //end of ihc
+}
+
+
 void HRSEventAction::ProcessSDHits(G4HCofThisEvent* HCE)
 {
 	if(!HCE) return;  //no hits collection found 
@@ -355,6 +454,7 @@ void HRSEventAction::ProcessSDHits(G4HCofThisEvent* HCE)
 
 	HRSDCHitsCollection* theDCHC = 0;
 	HRSStdHitsCollection* theStdHC = 0;
+	HRSCalorimeterHitsCollection* theECHC = 0;
 
 	for(int ihc=0;ihc<nHC;ihc++)
 	{
@@ -378,6 +478,7 @@ void HRSEventAction::ProcessSDHits(G4HCofThisEvent* HCE)
 		//G4cout<<"HRSEventAction::ProcessDCHits():  ihc="<<ihc<<"   SDID="<<theSDID<<G4endl;
 		//G4cout<<"HRSEventAction::ProcessDCHits():  SDName="<<theHC->GetSDname()
 		//	<<" colName="<<theHC->GetName()<<G4endl;
+
 
 		int theSDID = ihc;
 		colName = HCE->GetHC(ihc)->GetName();
@@ -419,7 +520,7 @@ void HRSEventAction::ProcessSDHits(G4HCofThisEvent* HCE)
 				int ii=gHRSTree->SD_N;
 				if(ii<MaxSDHit)
 				{
-					gHRSTree->SD_Id[ii]=theSDID;   //changed by Jixie
+					gHRSTree->SD_Id[ii]=theSDID*1.0E06+aHit->GetId();   //changed by Jixie
 					gHRSTree->SD_Pid[ii]=aHit->GetPdgid(); 
 					gHRSTree->SD_Tid[ii]=aHit->GetTrackId(); 
 					gHRSTree->SD_ParentTid[ii]=aHit->GetParentTrackId(); 
@@ -518,7 +619,7 @@ void HRSEventAction::ProcessSDHits(G4HCofThisEvent* HCE)
 					int ii=gHRSTree->SD_N;
 					if(ii<MaxSDHit)
 					{
-						gHRSTree->SD_Id[ii]=theSDID;   //changed by Jixie
+						gHRSTree->SD_Id[ii]=theSDID*1.0E06+aHit->GetId();   //changed by Jixie
 						gHRSTree->SD_Pid[ii]=aHit->GetPdgid(); 
 						gHRSTree->SD_Tid[ii]=aHit->GetTrackId(); 
 						gHRSTree->SD_ParentTid[ii]=aHit->GetParentTrackId(); 
@@ -541,6 +642,55 @@ void HRSEventAction::ProcessSDHits(G4HCofThisEvent* HCE)
 			} //end of for ih 
 
 		} //end of  if(colName=="StdColl")
+		else if(colName=="CalorimeterColl")
+		{
+			theECHC = (HRSCalorimeterHitsCollection*) HCE->GetHC(ihc);
+			HRSCalorimeterHit *aHit=0; 
+			G4ThreeVector tmpV3;
+
+			G4int n_hit = theECHC->entries();
+
+			if(verboseLevel>=1) 
+			{
+				if(n_hit>0) G4cout<< (*theECHC)[0]->GetPhysV()->GetName()<< " has " << n_hit << " hits." << G4endl;
+			}
+
+			for(int ih=0;ih<n_hit;ih++)
+			{
+				aHit=(*theECHC)[ih];
+				if(verboseLevel>=2) aHit->Print();
+
+				if(aHit->GetTrackId()<MaxStoredTrjN)
+				{
+					mStoreTrackIdList[aHit->GetParentTrackId()]=true;
+					mStoreTrackIdList[aHit->GetTrackId()]=true;
+				}
+
+				int ii=gHRSTree->SD_N;
+				if(ii<MaxSDHit)
+				{
+					gHRSTree->SD_Id[ii]=theSDID*1.0E06+aHit->GetId();   //changed by Jixie
+					gHRSTree->SD_Pid[ii]=aHit->GetPdgid(); 
+					gHRSTree->SD_Tid[ii]=aHit->GetTrackId(); 
+					gHRSTree->SD_ParentTid[ii]=aHit->GetParentTrackId(); 
+					gHRSTree->SD_T[ii]=aHit->GetTime()/ns; 
+					tmpV3=aHit->GetInPos();
+					gHRSTree->SD_X[ii]=tmpV3.x()/mm;
+					gHRSTree->SD_Y[ii]=tmpV3.y()/mm; 
+					gHRSTree->SD_Z[ii]=tmpV3.z()/mm; 
+					gHRSTree->SD_Edep[ii]=aHit->GetEdep()/MeV;
+					gHRSTree->SD_NonIonEdep[ii]=aHit->GetNonIonEdep()/MeV;
+					tmpV3=aHit->GetInMom();
+					gHRSTree->SD_P[ii]=tmpV3.mag()/GeV;  
+					gHRSTree->SD_Theta[ii]=tmpV3.theta(); 
+					gHRSTree->SD_Phi[ii]=tmpV3.phi(); 
+					gHRSTree->SD_Pout[ii]=aHit->GetOutMom().mag()/GeV; 
+
+					gHRSTree->SD_N++; 
+				}
+			} //end of for ih 
+
+		} //end of  if(colName=="CalorimeterColl")
 
 	} //end of ihc
 }

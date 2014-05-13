@@ -99,7 +99,7 @@ void HRSStdHit::Print()
 		<<"), at time="<< time/ns << " (nsec)" <<"\n "
 		<<"\t entrance momentum=" << inmom <<inmom.mag()/MeV<<"MeV \n"
 		<<"\t outgoing momentum=" << outmom <<outmom.mag()/MeV<<"MeV \n"
-		<<"\t Edep=" << edep/MeV  <<"MeV  NonIon_Edep=" << edep_NonIon/MeV  
+		<<"\t Edep=" << edep/MeV  <<"MeV  NonIon_Edep=" << edep_NonIon/MeV<<"MeV"  
 		<< G4endl;
 	G4cout.unsetf(ios::fixed);
 	G4cout.precision(prec);

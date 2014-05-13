@@ -49,7 +49,7 @@ private:
 
 public:
 
-	inline G4int GetID() const { return id; }
+	inline G4int GetId() const { return id; }
 
 	inline G4double GetTime() const { return time; }
 	inline void SetTime(G4double val) { time = val; }

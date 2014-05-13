@@ -36,6 +36,7 @@ HRSDCSD::HRSDCSD(G4String name):G4VSensitiveDetector(name)
 	//G4HCtable::GetCollectionID(G4String collectionName) 
 
 	hitsCollection = 0;
+	verboseLevel = 0; //defined in G4VSensitiveDetector.hh
 }
 
 HRSDCSD::~HRSDCSD()
@@ -62,21 +63,37 @@ G4bool HRSDCSD::ProcessHits(G4Step* aStep,G4TouchableHistory* /*aROHist*/)
 	if(edep/keV<=0.)  return true;
 
 
-	G4StepPoint* postStepPoint = aStep->GetPostStepPoint();
 	G4StepPoint* preStepPoint = aStep->GetPreStepPoint();
 	G4TouchableHistory* theTouchable = (G4TouchableHistory*)(preStepPoint->GetTouchable());
 	G4VPhysicalVolume* thePhysical = theTouchable->GetVolume();
 	
 	G4int copyNo = thePhysical->GetCopyNo();
+	G4int trackId = aStep->GetTrack()->GetTrackID();
 	G4double hitTime = preStepPoint->GetGlobalTime();
+
+	G4StepPoint* postStepPoint = aStep->GetPostStepPoint();
+	G4ThreeVector outpos = postStepPoint->GetPosition();       
+	G4ThreeVector outmom = postStepPoint->GetMomentum();
+
+	//By Jixie; it turns out that this is always zero due to the fact that G4 physics process never set 
+	//a value to it
+	G4double edep_NonIon = aStep->GetNonIonizingEnergyDeposit();
+	G4String process=postStepPoint->GetProcessDefinedStep()->GetProcessName();
+	if(process=="Transportation" || process=="msc") edep_NonIon=edep;	
+	//if(edep_NonIon) G4cout<<"edep_NonIon="<<edep_NonIon<<G4endl;
+
+	
+	// check if this finger already has a hit
+	// generally a hit is the total energy deposit in a sensitive detector within a time window
+	// it does not care which particle deposite the energy
+	// But for drift chamber, I only care the time and position, and also I need to know 
+	// which track create this hit, therefore I also store the trackid
 
 	HRSDCHit* aHit = new HRSDCHit(copyNo,hitTime);
 
-	G4double edep_NonIon = 0;
-	G4String process=postStepPoint->GetProcessDefinedStep()->GetProcessName();
-	if(process=="Transportation" || process=="msc")
-		edep_NonIon=edep;	
-	//if(edep_NonIon) G4cout<<"edep_NonIon="<<edep_NonIon<<G4endl;
+	G4int parentTrackId=aStep->GetTrack()->GetParentID();
+	G4ThreeVector inpos = preStepPoint->GetPosition();       
+	G4ThreeVector inmom = preStepPoint->GetMomentum();
 
 	G4int pdgid=aStep->GetTrack()->GetParticleDefinition()->GetPDGEncoding();
 	if(pdgid>3000)
@@ -87,17 +104,24 @@ G4bool HRSDCSD::ProcessHits(G4Step* aStep,G4TouchableHistory* /*aROHist*/)
 	}
 
 	aHit->SetPhysV(theTouchable->GetVolume());
-	aHit->SetPdgid(pdgid);
 	aHit->SetEdep(edep);
 	aHit->SetNonIonEdep(edep_NonIon);
-	aHit->SetInPos(preStepPoint->GetPosition());
-	aHit->SetInMom(preStepPoint->GetMomentum());
-	aHit->SetOutPos(postStepPoint->GetPosition());
-	aHit->SetOutMom(postStepPoint->GetMomentum());
-	aHit->SetTrackId(aStep->GetTrack()->GetTrackID());
-	aHit->SetParentTrackId(aStep->GetTrack()->GetParentID());
+	aHit->SetTrackId(trackId);
+	aHit->SetOutPos(outpos);
+	aHit->SetOutMom(outmom);
+	aHit->SetInPos(inpos);
+	aHit->SetInMom(inmom);
+	aHit->SetParentTrackId(parentTrackId);
+	aHit->SetPdgid(pdgid);
 
 	hitsCollection->insert(aHit);
+
+	if(verboseLevel >= 2)
+	{
+		G4cout<<"<<<Create a new DC Hit of type <" << SensitiveDetectorName << "/"<<collectionName[0]
+		<<" in "<<theTouchable->GetVolume()->GetName()<<"["<<copyNo<<"] \n"
+			<<" at "<<inpos<<", by track "<< trackId <<", momentum="<<inmom<<G4endl;
+	}
 
 	return true;
 }
@@ -110,8 +134,7 @@ void HRSDCSD::EndOfEvent(G4HCofThisEvent* HCE)
 	int nhitC = hitsCollection->GetSize();
 	if(!nhitC) return;
 	
-	int HIT_VERBOSITY=0;
-	if(HIT_VERBOSITY >= 2 && nhitC)
+	if(verboseLevel >= 2 && nhitC)
 	{
 		G4cout<<"<<<End of Hit Collections <" << SensitiveDetectorName << "/"<<collectionName[0]
 		<<">: " << nhitC << " hits." << G4endl; 

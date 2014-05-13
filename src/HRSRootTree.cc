@@ -329,6 +329,18 @@ void HRSRootTree::Initilize()
 	}
 
 	/////////////////////////////////////////////////////
+	//LAC
+	gConfig->GetParameter("SetupLAC",mSetupLAC); 
+	if(mSetupLAC)
+	{
+		gConfig->GetParameter("LACAngle",mLACAngle); //deg
+		mLACAngle*=deg;
+		gConfig->GetParameter("LACTiltAngle",mLACTiltAngle); //deg
+		mLACTiltAngle*=deg;
+		gConfig->GetParameter("Pivot2LACFace",mPivot2LACFace); //mm
+	}
+
+	/////////////////////////////////////////////////////
 	//BigBite
 	gConfig->GetParameter("SetupBigBite",mSetupBigBite); 
 	if(mSetupBigBite)
@@ -382,6 +394,7 @@ void HRSRootTree::Initilize()
 		gConfig->GetParameter("HMSAngle",mHMSAngle); //deg
 		mHMSAngle*=deg;
 		gConfig->GetParameter("Pivot2HMSFace",mPivot2HMSFace); //mm
+		gConfig->GetParameter("HMSMomentum",mHMSMomentum); //GeV
 	}
 
 	/////////////////////////////////////////////////////
@@ -577,6 +590,12 @@ void HRSRootTree::Initilize()
 		config->Branch("Pivot2VDFace",&mPivot2VDFace,"Pivot2VDFace/D");
 
 		/////////////////////////////////////////////////////
+		config->Branch("SetupLAC",&mSetupLAC,"SetupLAC/I");
+		config->Branch("LACAngle",&mLACAngle,"LACAngle/D");
+		config->Branch("LACTiltAngle",&mLACTiltAngle,"LACTiltAngle/D");
+		config->Branch("Pivot2LACFace",&mPivot2LACFace,"Pivot2LACFace/D");
+
+		/////////////////////////////////////////////////////
 		config->Branch("SetupBigBite",&mSetupBigBite,"SetupBigBite/I");
 		config->Branch("BigBiteAngle",&mBigBiteAngle,"BigBiteAngle/D");
 		config->Branch("BigBiteTiltAngle",&mBigBiteTiltAngle,"BigBiteTiltAngle/D");
@@ -608,6 +627,7 @@ void HRSRootTree::Initilize()
 		config->Branch("SetupHMS",&mSetupHMS,"SetupHMS/I");
 		config->Branch("HMSAngle",&mHMSAngle,"HMSAngle/D");
 		config->Branch("Pivot2HMSFace",&mPivot2HMSFace,"Pivot2HMSFace/D");
+		config->Branch("HMSMomentum",&mHMSMomentum,"HMSMomentum/D");
 
 
 		/////////////////////////////////////////////////////
@@ -817,7 +837,7 @@ void HRSRootTree::Initilize()
 				tree[j]->Branch("Helicity",&Helicity,"Helicity/I");
 				tree[j]->Branch("Pol",&(track[j]->Pol),"Pol/D");	
 
-				tree[j]->SetMaxTreeSize((Long64_t)(3.0E+09));
+				tree[j]->SetMaxTreeSize((Long64_t)(9.0E+09));
 
 			}
 		}
@@ -1214,7 +1234,7 @@ bool HRSRootTree::TransportThruVD(int i, double pEndPlaneAngle)
 		pTrack->Theta0_tr, pTrack->Phi0_tr);
 
 	////////////////////////////////////////////////////////////////////
-	//Project|Drift this X0_tr,Y0_tr to target plane
+	//Project|Drift this 0_tr to target plane tg_tr
 	TVector3 X,P;  //ThreeVector in Hall system for Drift(), in unit of m, GeV
 	double pCharge = mPrimaryGeneratorAction->GetPDGCharge(i);  
 	double pMass = mPrimaryGeneratorAction->GetPDGMass(i)/GeV;  
@@ -1223,7 +1243,7 @@ bool HRSRootTree::TransportThruVD(int i, double pEndPlaneAngle)
 		cout<<"TransportThruVD(): Charge="<<pCharge<<"  Mass="<<pMass
 			<<"  Name="<<mPrimaryGeneratorAction->GetParticleName()<<endl;
 #endif
-	if(!mUseHelmField || abs(pCharge)<1.0E-8)
+	if(!mUseHelmField || fabs(pCharge)<1.0E-8)
 	{
 		double tmpZtg_tr=0;
 		Transform::Project(pTrack->X0_tr, pTrack->Y0_tr,pTrack->Z0_tr, -pTrack->Z0_tr, pTrack->Theta0_tr, 
@@ -1241,13 +1261,13 @@ bool HRSRootTree::TransportThruVD(int i, double pEndPlaneAngle)
 
 		int ret=0;
 		double pZtrLimit=0.0, pTLLimit=1.0;
-		if(pTrack->Z0_tr<pZtrLimit)
+		if(pTrack->Z0_tr-pZtrLimit<-1.0E-6)
 		{
 			//forward
 			DriftSieve2Tg::Drift2Ztr(X,P,pEndPlaneAngle,pMass, pCharge,pZtrLimit,
 				pTLLimit,0.00005,mTargetZOffset/1000);				
 		}
-		else if(pTrack->Z0_tr>pZtrLimit)
+		else if(pTrack->Z0_tr-pZtrLimit>1.0E-6)
 		{
 			//backward
 			P*=-1;	//flip P for backward, make sure the particle is positron
@@ -1261,28 +1281,7 @@ bool HRSRootTree::TransportThruVD(int i, double pEndPlaneAngle)
 		double tmpZtg_tr=0;
 		Transform::X_HCS2TCS(X.x()*1000-mPivotXOffset,X.y()*1000-mPivotYOffset, X.z()*1000-mPivotZOffset,
 			pEndPlaneAngle, pTrack->Xtg_tr,pTrack->Ytg_tr,tmpZtg_tr);
-		Transform::P_HCS2TCS(P.Theta(), P.Phi(), pEndPlaneAngle,pTrack->Thetatg_tr,pTrack->Phitg_tr);
-
-		////you can also use the following block	
-		////Drift from vertex plane to target plane
-		////need to drift forward if Z0_tr<0 or backward if Z0_tr>0
-
-		//double pV5In[]={pTrack->X0/1000.,pTrack->Theta0,pTrack->Y0/1000.,pTrack->Phi0,pTrack->Delta}; //in unit of m, rad
-		//double pV5Out[5];
-		//double pZtrOut = pTrack->Z0_tr;
-
-		//double pZtrLimit=0.0, pTLLimit=1.0;
-
-		//int ret=DriftSieve2Tg::Drift2Ztr(V5In,V5Out,pZtrOut,mLHRSMomentum,pEndPlaneAngle,pMass, pCharge,
-		//	pZtrLimit,pTLLimit=0.1,0.00005,mTargetZOffset/1000);				
-		//
-		//if(ret<0) return false; 
-
-		////now take the result after convert them to the right unit 
-		//pTrack->Xtg_tr=pV5Out[0]*1000;
-		//pTrack->Thetatg_tr=pV5Out[1];
-		//pTrack->Ytg_tr=pV5Out[2]*1000;
-		//pTrack->Phitg_tr=pV5Out[3];
+		Transform::P_HCS2TCS(P.Theta(), P.Phi(), pEndPlaneAngle,pTrack->Thetatg_tr,pTrack->Phitg_tr);		
 	}
 
 	////////////////////////////////////////////////////////////////////
@@ -1308,6 +1307,7 @@ bool HRSRootTree::TransportThruVD(int i, double pEndPlaneAngle)
 	Transform::P_TCS2HCS(pTrack->Theta_rec_tr, pTrack->Phi_rec_tr, pEndPlaneAngle, 
 	pTrack->Theta_rec, pTrack->Phi_rec);
 	*/
+	
 	return true;
 }
 
@@ -1331,7 +1331,7 @@ bool HRSRootTree::TransportThruBigBite(int i)
 	TVector3 X,P;  //ThreeVector in Hall system for Drift(), in unit of m, GeV
 	double pCharge = mPrimaryGeneratorAction->GetPDGCharge(i);  
 	double pMass = mPrimaryGeneratorAction->GetPDGMass(i)/GeV;  
-	if(!mUseHelmField || abs(pCharge)<1.0E-8)
+	if(!mUseHelmField || fabs(pCharge)<1.0E-8)
 	{
 		double tmpZtg_tr=0;
 		Transform::Project(pTrack->X0_tr, pTrack->Y0_tr,pTrack->Z0_tr, -pTrack->Z0_tr, pTrack->Theta0_tr, 
@@ -1350,13 +1350,13 @@ bool HRSRootTree::TransportThruBigBite(int i)
 
 		int ret=0;
 		double pZtrLimit=0.0, pTLLimit=1.0;
-		if(pTrack->Z0_tr<pZtrLimit)
+		if(pTrack->Z0_tr-pZtrLimit<-1.0E-6)
 		{
 			//forward
 			DriftSieve2Tg::Drift2Ztr(X,P,pEndPlaneAngle,pMass, pCharge,pZtrLimit,
 				pTLLimit,0.00005,mTargetZOffset/1000);				
 		}
-		else if(pTrack->Z0_tr>pZtrLimit)
+		else if(pTrack->Z0_tr-pZtrLimit>1.0E-6)
 		{
 			//backward
 			P*=-1;	//flip P for backward, make sure the particle is positron
@@ -1482,6 +1482,480 @@ double HRSRootTree::ElossCorr(double pMomentum_GeV)
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////
+//HRSRootTree::TransportThruHMS() has been rewritten. 
+//Here is the 'plane' it goes thrught and the key word of the variables names:
+//vertex  -> target-> sieve(vb) -> target     -> focal -> target     -> sieve       -> target    -> vertex
+//$0,$0_tr-> $tg_tr-> $vb,$vb_tr->$_proj2tg_tr-> $fp_tr-> $_rec2tg_tr-> $_proj2sl_tr-> $tg_rec_tr-> $_rec,$_rec_tr
+//	
+//This routine will do the following:
+
+//Section 1: 
+//	A) Convert vertex, vb variable from HTC to TCS, 
+//	B) Project vertex plane to target plane	
+//	C) Determine TrackClass, stop if it less than SkimLevel
+//Section 2:
+//	A) Project Sieve plane (or VB plane) (_vb_tr) to target plane (_proj2tg_tr)
+//	B) Use snake model to transport the _proj2tg_tr to focal plane (_fp), and also
+//   reconstruct them to target plane (_rec2tg_tr)
+//	C) Stop if fail to call SNAKE model
+//Section 3:
+//  If the reconstrction is good, set the following tree variables:
+//  $fp_tr -> $_rec2tg_tr -> $_proj2sl_tr -> $tg_rec_tr -> $_rec,$_rec_tr
+//  A) Stored $fp_tr and $_rec2tg_tr
+//  B) If target field is off, set $tg_rec_tr=$rec2tg_tr, then calculate vertexZ, then
+//     project from target plane to vertex plane
+//  C) If target field is on, do the following:
+//     I)  Project $rec2tg_tr to sieve plane: $_proj2sl_tr 
+//     II) Call Drift2Ztr() to get them back to target plane: $tg_rec_tr 
+//  III)Calculate vertexZ, call Drift2Z() move them from target plane to vertex plane: $_rec,$rec_tr 
+
+bool HRSRootTree::TransportThruHMS(int i)
+{
+	MyTrack *pTrack=track[i];
+	if(pTrack->Pvb/keV<1.0) return false;
+
+	//I do not check if this particle hit HMS or not, 
+	//caller should check this
+	
+	double pEndPlaneAngle=mHMSAngle;
+	double pDetectorP0=mHMSMomentum;
+	double pTrackL_vb2tg=mPivot2HMSFace;
+
+	//in this code, default pDetectorP0=mHMSMomentum=0;
+	//This is used to simulate the whole momentum range [0,8.0) Gev
+	//In this case, I would like to set pDetectorP0 = Pvb
+	//if one want to check the transportation without considering the delta, just set
+	//pDetectorP0 less than 10 Kev
+	if(pDetectorP0<1.0E-05) pDetectorP0=pTrack->Pvb;
+
+	// *************************************************************************
+	//Section 1: 
+	//A) Convert vertex, vb variable from HTC to TCS, 
+	//B) Project vertex plane to target plane	
+	//C) Determine TrackClass, stop if it less than SkimLevel
+	// *************************************************************************
+
+	//Convert HCS to TCS at vertex
+	Transform::X_HCS2TCS(pTrack->X0-mPivotXOffset,pTrack->Y0-mPivotYOffset,
+		pTrack->Z0-mPivotZOffset, pEndPlaneAngle, pTrack->X0_tr, pTrack->Y0_tr,pTrack->Z0_tr);
+	Transform::P_HCS2TCS(pTrack->Theta0, pTrack->Phi0, pEndPlaneAngle, 
+		pTrack->Theta0_tr, pTrack->Phi0_tr);
+
+	////////////////////////////////////////////////////////////////////
+	//Project|Drift this X0_tr,Y0_tr to target plane
+	TVector3 X,P;  //ThreeVector in Hall system for Drift(), in unit of m, GeV
+	double pCharge = mPrimaryGeneratorAction->GetPDGCharge(i);  
+	double pMass = mPrimaryGeneratorAction->GetPDGMass(i);
+	if(!mUseHelmField || fabs(pCharge)<1.0E-8)
+	{
+		double tmpZtg_tr=0;
+		Transform::Project(pTrack->X0_tr, pTrack->Y0_tr,pTrack->Z0_tr, -pTrack->Z0_tr, pTrack->Theta0_tr, 
+			pTrack->Phi0_tr,pTrack->Xtg_tr,pTrack->Ytg_tr,tmpZtg_tr);
+
+		pTrack->Thetatg_tr=pTrack->Theta0_tr;
+		pTrack->Phitg_tr=pTrack->Phi0_tr;
+	}
+	else
+	{
+		//Drift from vertex plane to target plane
+		//need to drift forward if Z0_tr<0 or backward if Z0_tr>0
+
+		X.SetXYZ(pTrack->X0/1000.,pTrack->Y0/1000.,pTrack->Z0/1000.);
+		P.SetMagThetaPhi(pTrack->P0,pTrack->Theta0,pTrack->Phi0); 
+
+		int ret=0;
+		double pZtrLimit=0.0, pTLLimit=1.0;
+		if(pTrack->Z0_tr-pZtrLimit<-1.0E-6)
+		{
+			//forward
+			DriftSieve2Tg::Drift2Ztr(X,P,pEndPlaneAngle,pMass, pCharge,pZtrLimit,
+				pTLLimit,0.00005,mTargetZOffset/1000);				
+		}
+		else if(pTrack->Z0_tr-pZtrLimit>1.0E-6)
+		{
+			//backward
+			P*=-1;	//flip P for backward, make sure the particle is positron
+			DriftSieve2Tg::Drift2Ztr(X,P,pEndPlaneAngle,pMass,-pCharge,pZtrLimit,
+				pTLLimit,0.00005,mTargetZOffset/1000);				
+			P*=-1;  //flip it back
+		}
+		if(ret<0) return false; 
+
+		//now convert the result from HCS to TCS 
+		double tmpZtg_tr=0;
+		Transform::X_HCS2TCS(X.x()*1000-mPivotXOffset,X.y()*1000-mPivotYOffset, X.z()*1000-mPivotZOffset,
+			pEndPlaneAngle, pTrack->Xtg_tr,pTrack->Ytg_tr,tmpZtg_tr);
+		Transform::P_HCS2TCS(P.Theta(), P.Phi(), pEndPlaneAngle,pTrack->Thetatg_tr,pTrack->Phitg_tr);
+	}
+
+	////////////////////////////////////////////////////////////////////
+	//Convert HCS to TCS at VB
+	//For HMS, no septum will be used
+	DriftSieve2Tg::SetUseSeptumInDrift(0);
+	Transform::X_HCS2TCS(pTrack->Xvb-mPivotXOffset,pTrack->Yvb-mPivotYOffset,
+		pTrack->Zvb-mPivotZOffset, pEndPlaneAngle, pTrack->Xvb_tr, pTrack->Yvb_tr,pTrack->Zvb_tr);
+
+	Transform::P_HCS2TCS(pTrack->Thetavb, pTrack->Phivb, pEndPlaneAngle, 
+		pTrack->Thetavb_tr, pTrack->Phivb_tr);
+
+	////////////////////////////////////////////////////////////////////
+	//Determine the TrackClass
+	//choose eplice shape
+	if(pow((pTrack->Phivb_tr-0.0)/0.035,2.0) + pow((pTrack->Thetavb_tr-0.0)/0.070,2.0) < 1.0) 
+	{
+		pTrack->TrackClass=1;
+
+		if( (pTrack->P0 - pTrack->Pvb) / pTrack->P0 < 0.10 )
+		{
+			pTrack->TrackClass=2;
+
+			if( pow((pTrack->Phivb_tr-0.0)/0.028,2.0) + pow((pTrack->Thetavb_tr-0.0)/0.060,2.0) < 1.0 &&
+				(pTrack->P0 - pTrack->Pvb) / pTrack->P0 < 0.08 ) pTrack->TrackClass=3;
+		}
+	}
+	//Jixie: to make it run fast, stop tracking if less than skim level
+	if (track[0]->TrackClass<iSkimLevel) return false;
+
+
+	// *************************************************************************
+	//Section 2:
+	//  A) Project Sieve plane (or VB plane) (_vb_tr) to target plane (_proj2tg_tr)
+	//  B) Use snake model to transport the _proj2tg_tr to focal plane (_fp), and also
+	//     reconstruct them to target plane (_rec2tg_tr)
+	//  C) Stop if fail to call SNAKE model
+	// *************************************************************************
+
+	pTrack->Delta = (pTrack->Pvb - pDetectorP0) / pDetectorP0;
+	//We know that this particle will not go thrught HRS, stop here to save time
+	if(fabs(pTrack->Delta)>0.1) return false;
+
+
+	// To use the transportation functions (from target plane to focus plane), 
+	// we have to project back to the target plane (Z_tg=0), all length in unit of mm
+	double Z_proj2tg_tr;
+	Transform::Project(pTrack->Xvb_tr, pTrack->Yvb_tr, pTrack->Zvb_tr, -pTrack->Zvb_tr, pTrack->Thetavb_tr,
+		pTrack->Phivb_tr, pTrack->X_proj2tg_tr, pTrack->Y_proj2tg_tr, Z_proj2tg_tr);
+
+
+	////////////////////////////////////////////////////////////////////////
+	//transport from tg_tr to fp_tr
+	//currently there is no HMS transportation package, so I skip this transport 
+	//will add it back once it is ready
+
+	bool bGoodParticle=false;
+	double pV5_fp[5]={0,0,0,0,0};
+	//temporally comment this part out, will add it back later
+	//Fill the vector to be used in forward transportation functions 
+	//in meter and rad
+	//double pV5_proj2tg[5]={pTrack->X_proj2tg_tr/1000.,pTrack->Thetavb_tr,
+	//	pTrack->Y_proj2tg_tr/1000.,pTrack->Phivb_tr,pTrack->Delta};
+	//bGoodParticle=mHMSTranModel->Forward(pV5_proj2tg, pV5_fp);
+	//bool bApplyVDCSmearing=false;
+	//if(bApplyVDCSmearing)
+	//{
+	//	// Resolutions 
+	//	double mWireChamberRes_x = 0.0013; //m;
+	//	double mWireChamberRes_y = 0.0013; //m;
+	//	double mWireChamberRes_theta = 0.0003; //rad;
+	//	double mWireChamberRes_phi = 0.0003; //rad;
+	//	pV5_fp[0] += mWireChamberRes_x * HRSRand::fGaus();
+	//	pV5_fp[2] += mWireChamberRes_y * HRSRand::fGaus();
+	//	pV5_fp[1] += mWireChamberRes_theta * HRSRand::fGaus();
+	//	pV5_fp[3] += mWireChamberRes_phi * HRSRand::fGaus();
+	//}
+	bGoodParticle=true;
+	if(!bGoodParticle) return false;
+
+	/////////////////////////////////////////////////////////////////////////
+	////snake backward
+	////Get the smeared BPM vetical position
+	//double X_BPM_tr_m=pTrack->Xtg_tr/1000. + mBPMYRes/1000.*HRSRand::fGaus();
+
+	////to get the effective X_BPM_tr, we need to go thrught 2 steps: 
+	////1) Use P0 to get X_BPM_tr_AtP0, use it in the snake backward model to get P_rec
+	////2) Use P_rec to get X_BPM_tr_eff, then put it into snake backward model for reconstruction
+
+	////Apply the correction to get the effective X_BPM_tr at target plane
+	//double X_BPM_tr_eff=GetEffBPMVertical(X_BPM_tr_m, pDetectorP0);
+	//pV5_fp[4]=X_BPM_tr_eff;
+	//mHMSTranModel->Backward(pV5_fp,pV5_rec);
+	//double tmpPrec=pDetectorP0*(1.0+pV5_rec[4]);
+	//X_BPM_tr_eff=GetEffBPMVertical(X_BPM_tr_m, tmpPrec);
+
+	//pV5_fp[4]=X_BPM_tr_eff;
+	////////////////////////////////////////////////////////////////////////
+	//Fill the vector to be used in backward transportation functions 
+	double pV5_rec[5]={pTrack->X_proj2tg_tr/1000.,pTrack->Thetavb_tr,
+		pTrack->Y_proj2tg_tr/1000.,pTrack->Phivb_tr,pTrack->Delta};
+	//mHMSTranModel->Backward(pV5_fp,pV5_rec);
+
+
+
+	//////////////////////////////////////////////////////////////////////
+
+	// *************************************************************************
+	//Section 3:
+	//  If the reconstrction is good, set the following tree variables:
+	//  $fp_tr -> $_rec2tg_tr -> $_proj2sl_tr -> $tg_rec_tr -> $_rec,$_rec_tr
+	//  A) Stored $fp_tr and $_rec2tg_tr
+	//  B) If target field is off, set $tg_rec_tr=$rec2tg_tr, then calculate vertexZ, then
+	//     project from target plane to vertex plane
+	//  C) If target field is on, do the following:
+	//     I)  Project $rec2tg_tr to sieve plane: $_proj2sl_tr 
+	//     II) Call Drift2Ztr() to get them back to target plane: $tg_rec_tr 
+	//  III)Calculate vertexZ, call Drift2Z() move them from target plane to vertex plane: $_rec,$rec_tr 
+	// *************************************************************************
+
+
+	//Update TrackClass and store focal plane variables
+	pTrack->TrackClass+=4;
+	// in unit of mm and rad
+	pTrack->Xfp_tr=pV5_fp[0]*1000.;
+	pTrack->Thetafp_tr=pV5_fp[1];
+	pTrack->Yfp_tr=pV5_fp[2]*1000.;
+	pTrack->Phifp_tr=pV5_fp[3];
+
+	
+	//currently there is no HMS transportation package, so I simply do these smearing  
+	double pDetRes_x = 0.001; //m; 
+	double pDetRes_y = 0.001; //m; 
+	double pDetRes_theta = 0.001; //rad; 
+	double pDetRes_phi = 0.001; //rad;
+	double pDetRes_delta = 0.002; //rad;
+	pV5_rec[0]=pTrack->X_proj2tg_tr/1000.+HRSRand::fGaus(0,pDetRes_x);
+	pV5_rec[2]=pTrack->Y_proj2tg_tr/1000.+HRSRand::fGaus(0,pDetRes_y);
+	pV5_rec[1]=pTrack->Thetavb_tr+HRSRand::fGaus(0,pDetRes_theta);
+	pV5_rec[3]=pTrack->Phivb_tr+HRSRand::fGaus(0,pDetRes_phi);
+	pV5_rec[4]=pTrack->Delta+HRSRand::fGaus(0,pDetRes_delta);
+
+	pTrack->X_rec2tg_tr     = pV5_rec[0]*1000.;  //turn into mm
+	pTrack->Theta_rec2tg_tr = pV5_rec[1];
+	pTrack->Y_rec2tg_tr     = pV5_rec[2]*1000.;
+	pTrack->Phi_rec2tg_tr   = pV5_rec[3];
+	pTrack->Delta_rec       = pV5_rec[4];
+
+	pTrack->P_rec2tg = pDetectorP0*(1.0+pV5_rec[4]);	
+
+	//By Jixie:
+	//People will be very interested to compare the reconstruction results among stop
+	//drifting at the following location: target plane, vertex plane and exact z0
+	//therefore I introduce a variable mWhereToStopRecon to 
+	//specify where to stop reconstruction
+	//0 is at target plane, 1 is at vertex plane, 2 is at exact vertex z 
+
+	//ReconstructToExactZ0 is to test how good the uncertainty will be if we know 
+	//vertexZ perfectly (HRS always has trouble in vertex z resolution).	
+
+
+	/////////////////////////////////////////////////
+	//If target field off, just calculate the variables
+	//When target field is on, linearly project to sieve slit
+	//then Drift() or SNAKE_SL2TG() it back to target plane
+	/////////////////////////////////////////////////
+
+	if(!mUseHelmField)
+	{
+		////////////////////////
+		//Target field is off ....
+		////////////////////////
+
+		//I do not need to deal with $_proj2sl_tr here, just for completeness
+		//can comment it out to speed up
+		double Z_proj2sl_tr;		
+		Transform::Project(pTrack->X_rec2tg_tr,pTrack->Y_rec2tg_tr,0.0,pTrackL_vb2tg,pTrack->Theta_rec2tg_tr,
+			pTrack->Phi_rec2tg_tr,pTrack->X_proj2sl_tr,pTrack->Y_proj2sl_tr,Z_proj2sl_tr);
+
+		pTrack->Xtg_rec_tr     = pTrack->X_rec2tg_tr;  
+		pTrack->Thetatg_rec_tr = pTrack->Theta_rec2tg_tr; 
+		pTrack->Ytg_rec_tr     = pTrack->Y_rec2tg_tr; 
+		pTrack->Phitg_rec_tr   = pTrack->Phi_rec2tg_tr; 
+
+		if(mWhereToStopRecon>=3)
+		{
+			//Reconstruct To BPMXRes/sin(pEndPlaneAngle) smeared Z0 
+			const double pZRes_mm = mBPMXRes/sin(pEndPlaneAngle); 
+			pTrack->Z_rec = pTrack->Z0 + pZRes_mm*HRSRand::fGaus();
+		}
+		else if(mWhereToStopRecon==2)
+		{
+			//ReconstructToExactZ0 
+			pTrack->Z_rec = pTrack->Z0;
+		}
+		else if(mWhereToStopRecon==1)
+		{			
+			double Y_BPM_tr_mm=pTrack->X0 + mBPMXRes*HRSRand::fGaus();
+			pTrack->Z_rec = -pTrack->Ytg_rec_tr*cos(pTrack->Phitg_rec_tr) / sin(pEndPlaneAngle+pTrack->Phitg_rec_tr) + 
+				Y_BPM_tr_mm/tan(pEndPlaneAngle+pTrack->Phitg_rec_tr);  //in unit of mm
+			pTrack->Z_rec += mTargetZOffset;
+		}
+		else if(mWhereToStopRecon==0) pTrack->Z_rec = mTargetZOffset;
+
+		//NO field, do linear projection to vertex plane
+		double pVZ2TargetPlane=(pTrack->Z_rec-mTargetZOffset)*cos(pEndPlaneAngle);
+
+		//The snake model has the target at the target center, Got confirmed by Min and John 
+		double tmpZ_tg_snake=0;  //will be useful in case there is an offset
+		Transform::Project(pTrack->Xtg_rec_tr,pTrack->Ytg_rec_tr,tmpZ_tg_snake,pVZ2TargetPlane-tmpZ_tg_snake,
+			pTrack->Thetatg_rec_tr,pTrack->Phitg_rec_tr,pTrack->X_rec_tr,pTrack->Y_rec_tr,pTrack->Z_rec_tr);
+
+		Transform::X_TCS2HCS(pTrack->X_rec_tr, pTrack->Y_rec_tr, pTrack->Z_rec_tr, pEndPlaneAngle, 
+			pTrack->X_rec, pTrack->Y_rec, pTrack->Z_rec);
+		pTrack->X_rec+=this->mTargetXOffset;
+		pTrack->Y_rec+=this->mTargetYOffset;
+		pTrack->Z_rec+=this->mTargetZOffset; 
+
+		//This is my recostruction for Theta_rec and Phi_rec
+		pTrack->Theta_rec_tr = pTrack->Thetatg_rec_tr; 
+		pTrack->Phi_rec_tr = pTrack->Phitg_rec_tr; 
+		Transform::P_TCS2HCS(pTrack->Theta_rec_tr, pTrack->Phi_rec_tr, pEndPlaneAngle, 
+			pTrack->Theta_rec, pTrack->Phi_rec);
+	}
+	else
+	{
+		////////////////////////
+		//Target field is on ...
+		////////////////////////
+
+		//By Jixie: HMS reconstruction only reconstruct to the target plane
+		//Here I project it to the sieve slit plane, which is pTrackL_vb2tg, going forward
+		//Note that pTrackL_vb2tg has been set above
+		double Z_proj2sl_tr=0.0;
+		Transform::Project(pTrack->X_rec2tg_tr,pTrack->Y_rec2tg_tr,0.0,pTrackL_vb2tg,pTrack->Theta_rec2tg_tr,
+			pTrack->Phi_rec2tg_tr,pTrack->X_proj2sl_tr,pTrack->Y_proj2sl_tr,Z_proj2sl_tr);
+
+
+		//Now reconstruct from sieve slit plane to target plane using Drift package
+
+#if defined DEBUG_HRS_RECONSTRUCTION && (DEBUG_HRS_RECONSTRUCTION>=6)
+		//use the exact simulated values to debug this drift routine
+		X.SetXYZ(pTrack->Xvb/1000.,pTrack->Yvb/1000.,pTrack->Zvb/1000.); 
+		P.SetMagThetaPhi(pTrack->Pvb,pTrack->Thetavb,pTrack->Phivb);
+#else
+		//convert proj2sl variables from TCS to HCS, 
+		//should compatible for both non-septum and SeptumPlusSTDHRS situation
+		double tmpX,tmpY,tmpZ,tmpTheta,tmpPhi;	
+		Transform::X_TCS2HCS(pTrack->X_proj2sl_tr,pTrack->Y_proj2sl_tr,Z_proj2sl_tr,
+			pEndPlaneAngle,tmpX,tmpY,tmpZ);
+		Transform::P_TCS2HCS(pTrack->Theta_rec2tg_tr,pTrack->Phi_rec2tg_tr,
+			pEndPlaneAngle,tmpTheta,tmpPhi);
+		//convert to meter 
+		X.SetXYZ((tmpX+mPivotXOffset)/1000.,(tmpY+mPivotYOffset)/1000.,(tmpZ+mPivotZOffset)/1000.);
+		P.SetMagThetaPhi(pTrack->P_rec2tg,tmpTheta,tmpPhi); 
+#endif
+
+
+		//Drift from SL to Target, must be in Hall Coordinate system and in meter, GeV
+		//backward
+		double tmpZtrLimit=0.0;  
+		P*=-1.0;	//flip momentum	for backward drift
+		int ret=DriftSieve2Tg::Drift2Ztr(X,P,pEndPlaneAngle,pMass,-pCharge,tmpZtrLimit,
+			2.0*pTrackL_vb2tg/1000,0.00001,mTargetZOffset/1000.0);				
+		P*=-1.0;	//flip momentum	for forward drift
+		//if something wrong with the drift, stop
+		if(ret<0)  return false;
+
+
+		//now convert the result from HCS to TCS and store them into pV5tg_rec_tr, in unit of m
+		double tmpZtg_tr_mm;
+		Transform::X_HCS2TCS(X.x()*1000-mPivotXOffset,X.y()*1000-mPivotYOffset, X.z()*1000-mPivotZOffset,
+			pEndPlaneAngle, pTrack->Xtg_rec_tr, pTrack->Ytg_rec_tr, tmpZtg_tr_mm);
+		Transform::P_HCS2TCS(P.Theta(), P.Phi(), pEndPlaneAngle, pTrack->Thetatg_rec_tr, pTrack->Phitg_rec_tr);
+
+
+		////////////////////////////////////////////////////////
+		//Reconstruction to the target plane is completed. Now
+		//reconstruct theta, phi, x, y, z at vertex in HCS and TCS
+		//
+		//The snake always reconstruct to target plane
+		//Now I have to calculate vertexZ 
+		//then Drift from target plane to vertexZ plane 
+		////////////////////////////////////////////////////////
+
+		if(mWhereToStopRecon>=1)
+		{
+			//mWhereToStopRecon=0 is stop drifting at target plane, 1 is at vertex plane, 
+			//2 is at exact vertex z0, 3 is exact z0 smeared with BPMXRes/sin(pEndPlaneAngle)
+
+			//Get Vertex Z
+			if(mWhereToStopRecon>=3)
+			{
+				//erconstruct to smeared thrown Z0
+				//Reconstruct To BPMXRes/sin(pEndPlaneAngle) smeared Z0 
+				const double pHRSZRes_mm = mBPMXRes/sin(pEndPlaneAngle); 
+				pTrack->Z_rec=pTrack->Z0 + pHRSZRes_mm*HRSRand::fGaus();
+			}
+			else if(mWhereToStopRecon==2)
+			{
+				//Reconstruct To Exact Z0 
+				pTrack->Z_rec = pTrack->Z0;
+			}
+			else
+			{
+				//reconstruct to V5tg_rec_tr predicted Z0
+				//This line is from Nilanga's optics note, page 9
+				//It has been debugged
+				//double Y_BPM_tr_mm=pTrack->X0;
+				double Y_BPM_tr_mm=pTrack->X0 + mBPMXRes*HRSRand::fGaus();
+				pTrack->Z_rec = -pTrack->Ytg_rec_tr*cos(pTrack->Phitg_rec_tr) / sin(pEndPlaneAngle+pTrack->Phitg_rec_tr) + 
+					Y_BPM_tr_mm/tan(pEndPlaneAngle+pTrack->Phitg_rec_tr);  //in unit of mm
+				pTrack->Z_rec+=mTargetZOffset;
+			}
+
+			//////////////////////////////////////////
+			//Drift from target plane to ideal vertexZ  
+			//this part is complicate: if Z_rec is at downstream of target plane, we have to drift forward
+			//otherwise drift backward
+
+			if(pTrack->Z_rec/1000 > X.z())
+			{
+				//forward
+				//set the tracklength limit to 0.2 m to save time
+				//P is already ready for forward, make sure the particle is electron
+				DriftSieve2Tg::Drift2Z(X,P,pMass,pCharge,pTrack->Z_rec/1000,0.2,0.0001);				
+			}
+			else if(pTrack->Z_rec/1000 < X.z())
+			{
+				//backward
+				//set the tracklength limit to 0.2 m to save time
+				P*=-1;	//flip P for backward, make sure the particle is positron
+				DriftSieve2Tg::Drift2Z(X,P,pMass,-pCharge,pTrack->Z_rec/1000,0.2,0.0001);	
+				P*=-1;  //flip it back
+			}
+
+		}
+
+		//now convert the result from HCS to TCS, converted to mm at the same time 
+		Transform::X_HCS2TCS(X.x()*1000-mPivotXOffset,X.y()*1000-mPivotYOffset, X.z()*1000-mPivotZOffset,
+			pEndPlaneAngle, pTrack->X_rec_tr,pTrack->Y_rec_tr,pTrack->Z_rec_tr);
+		Transform::P_HCS2TCS(P.Theta(), P.Phi(), pEndPlaneAngle,pTrack->Theta_rec_tr,pTrack->Phi_rec_tr);
+
+		//////////////////////////////////////////
+		//now store the vertex plane variables in mm
+
+		pTrack->X_rec=X.x()*1000;
+		pTrack->Y_rec=X.y()*1000;
+		pTrack->Z_rec=X.z()*1000;  
+		pTrack->Theta_rec=P.Theta();
+		pTrack->Phi_rec=P.Phi();
+
+	}
+
+
+	////////////////////////////////////////////////////////
+	//Energy loss correction
+	////////////////////////////////////////////////////////	
+
+	//pTrack->P_rec = ElossCorr(pTrack->P_rec2tg);
+	//Delta is defined by (Pvb-pDetectorP0)/pDetectorP0
+	//therefore I do not want to correct Delta_rec after Eloss corr.
+	//pTrack->Delta_rec = (pTrack->P_rec-pDetectorP0)/pDetectorP0;
+
+	return bGoodParticle;
+}
+
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////
 //HRSRootTree::TransportThruHRS() has been rewritten. 
 //Here is the 'plane' it goes thrught and the key word of the variables names:
 //vertex  -> target-> sieve(vb) -> target     -> focal -> target     -> sieve       -> target    -> vertex
@@ -1576,13 +2050,13 @@ bool HRSRootTree::TransportThruHRS(int i)
 
 		int ret=0;
 		double pZtrLimit=0.0, pTLLimit=1.0;
-		if(pTrack->Z0_tr<pZtrLimit)
+		if(pTrack->Z0_tr-pZtrLimit<-1.0E-6)
 		{
 			//forward
 			DriftSieve2Tg::Drift2Ztr(X,P,pEndPlaneAngle,pMass, pCharge,pZtrLimit,
 				pTLLimit,0.00005,mTargetZOffset/1000);				
 		}
-		else if(pTrack->Z0_tr>pZtrLimit)
+		else if(pTrack->Z0_tr-pZtrLimit>1.0E-6)
 		{
 			//backward
 			P*=-1;	//flip P for backward, make sure the particle is positron
@@ -1626,19 +2100,17 @@ bool HRSRootTree::TransportThruHRS(int i)
 	//Determine the TrackClass
 	//choose eplice shape
 	if(pow((pTrack->Phivb_tr-0.0)/0.035,2.0) + pow((pTrack->Thetavb_tr-0.0)/0.060,2.0) < 1.0) 
+	{
 		pTrack->TrackClass=1;
 
-	if(pTrack->TrackClass==1)
-	{
-		if( (pTrack->P0 - pTrack->Pvb) / pTrack->P0 < 0.05 ) pTrack->TrackClass=2;
-	}
+		if( (pTrack->P0 - pTrack->Pvb) / pTrack->P0 < 0.05 ) 
+		{
+			pTrack->TrackClass=2;
 
-	if(pTrack->TrackClass==2)
-	{
-		if( pow((pTrack->Phivb_tr-0.0)/0.028,2.0) + pow((pTrack->Thetavb_tr-0.0)/0.050,2.0) < 1.0 &&
-			(pTrack->P0 - pTrack->Pvb) / pTrack->P0 < 0.04 ) pTrack->TrackClass=3;
+			if( pow((pTrack->Phivb_tr-0.0)/0.028,2.0) + pow((pTrack->Thetavb_tr-0.0)/0.050,2.0) < 1.0 &&
+				(pTrack->P0 - pTrack->Pvb) / pTrack->P0 < 0.04 ) pTrack->TrackClass=3;
+		}
 	}
-
 	//Jixie: to make it run fast, stop tracking if less than skim level
 	if (track[0]->TrackClass<iSkimLevel) return false;
 
@@ -1667,7 +2139,7 @@ bool HRSRootTree::TransportThruHRS(int i)
 	//in meter and rad
 	double pV5_rec[5]={pTrack->X_proj2tg_tr/1000.,pTrack->Thetavb_tr,
 		pTrack->Y_proj2tg_tr/1000.,pTrack->Phivb_tr,pTrack->Delta};
-	double pV5_fp[5];
+	double pV5_fp[5]={0,0,0,0,0};
 
 #if defined DEBUG_HRS_RECONSTRUCTION && (DEBUG_HRS_RECONSTRUCTION>=5)
 	//debug the routine, set the initial at (0,0,0,0,0)
@@ -2366,12 +2838,17 @@ void HRSRootTree::DoRootTree()
 			else if(track[j]->VBName.find("HMS") != string::npos)  
 			{
 				// Transportation through HMS
-				bGoodParticle=TransportThruVD(j,mHMSAngle);
+				bGoodParticle=TransportThruHMS(j);
 			}
 			else if(track[j]->VBName.find("VD") != string::npos)  
 			{
 				// Transportation through a Virtual Plane
 				bGoodParticle=TransportThruVD(j,mVDAngle);
+			}
+			else if(track[j]->VBName.find("LAC") != string::npos)  
+			{
+				// Transportation through a Virtual Plane
+				bGoodParticle=TransportThruVD(j,mLACAngle);
 			}
 			else if(track[j]->VBName.find("BB") != string::npos)  
 			{

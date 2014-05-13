@@ -52,6 +52,7 @@
 #include "RTPCDetectorConstruction.hh"
 #include "CREXDetectorConstruction.hh"
 #include "HMSDetectorConstruction.hh"
+#include "LACDetectorConstruction.hh"
 
 //To verify some geometry, I use this flag to place some unit
 //just for debugging
@@ -236,6 +237,8 @@ void HRSDetectorConstruction::GetConfig()
 
 	gConfig->GetParameter("SetupHMS",mSetupHMS);
 
+	gConfig->GetParameter("SetupLAC",mSetupLAC);
+
 	G4cout<<"\n****Load detector config parameters done!***"<<G4endl;
 
 	///////////////////////////////////////////////////////////////////////////
@@ -320,7 +323,8 @@ G4VPhysicalVolume* HRSDetectorConstruction::Construct()
 	}
 
 	if( mSetupBigBite==0 && mSetupSuperBigBite==0 && pSetupChicane==0 && 
-		(mSetupVirtualDetector==0 || mPivot2VDFace<8000*mm)  && mSetupHMS<=1 )
+		(mSetupVirtualDetector==0 || mPivot2VDFace<8000*mm)  && mSetupHMS<=1 
+		&& mSetupLAC<1 )
 	{		
 		if(mSetupLHRS<2 && mSetupRHRS<2)
 		{
@@ -336,7 +340,8 @@ G4VPhysicalVolume* HRSDetectorConstruction::Construct()
 			{
 				mFieldX=2*(mPivot2VDFace+2000*mm)*fabs(sin(mVDRotYAngle))+2000*mm;
 				mFieldY=mFieldX;
-				mFieldZ=2*(mPivot2VDFace+2000*mm)*fabs(cos(mVDRotYAngle));
+				mFieldZ=2*(mPivot2VDFace+2000*mm)*fabs(cos(mVDRotYAngle))+2000*mm;
+				if(mFieldZ<800*cm) mFieldZ=800.0*cm;
 			}
 		}
 		else
@@ -543,6 +548,17 @@ G4VPhysicalVolume* HRSDetectorConstruction::Construct()
 	}
 
 	/////////////////////////
+	// LAC
+	/////////////////////////
+	if(mSetupLAC)  
+	{
+		LACDetectorConstruction* theLAC = new LACDetectorConstruction(magneticLogical); 
+		theLAC->Construct();
+		//update the parameters
+		this->GetConfig(); 
+	}
+
+	/////////////////////////
 	// Cylinder Virtual Boundary
 	/////////////////////////
 	//-VB or -VirtualBoundary <SetupVirtualBoundary(0)> [VBRin(537)] [VBRout(540)] [VBHeight(2000)] [VBRotAxis(1)]
@@ -645,6 +661,7 @@ G4VPhysicalVolume* HRSDetectorConstruction::Construct()
 			pV3VDPos.y()+mPivotYOffset,pV3VDPos.z()+mPivotZOffset),
 			virtualDetectorLogical,mVDPhysVolName,magneticLogical,0,0);
 	}
+
 
 #ifdef G4DEBUG_GEOMETRY
 	if(G4DEBUG_GEOMETRY>=0)
@@ -1159,5 +1176,6 @@ G4VPhysicalVolume* HRSDetectorConstruction::ConstructRadiator(G4LogicalVolume* m
 
 	return theRadiatorPhys;
 }
+
 /////////////////////////////////////////////////////////////////////
 

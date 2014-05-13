@@ -33,6 +33,7 @@ public:
 	
 	void ProcessDCSDHits(G4HCofThisEvent* HCE);
 	void ProcessStdSDHits(G4HCofThisEvent* HCE);
+	void ProcessCalorimeterSDHits(G4HCofThisEvent* HCE);
 
 	void ProcessSDHits(G4HCofThisEvent* HCE);
 

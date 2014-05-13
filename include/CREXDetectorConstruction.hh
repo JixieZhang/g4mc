@@ -60,12 +60,13 @@ private:
 	int    mSetupCREXTarget,mTargetType;
 	double mTargetW,mTargetH,mTargetL;
 	
-	double mBlockRin,mBlockThick;
-	double mDownBlockThickAt0cm,mDownBlockThickAt15cm;
+	double mUpBlockRin,mUpBlockThick;
+	double mDownBlockRin;
+	double mDownBlockThickAt0cm,mDownBlockThickAt5cm;
 	double mUpBlockLength,mDownBlockLength;
 
 	//thickness of target window, not for scattering chamber
-	double mEntranceWindowThick,mExitWindowThick;
+	double mUpCapThick,mDownCapThick;
 
 	//vacuum chamber R,thickness and up|down cap thickness
 	double mVCRin,mVCThick,mVCUpCapThick,mVCDownCapThick,mVCLength;

@@ -86,22 +86,25 @@ void CREXDetectorConstruction::GetConfig()
 
 	gConfig->GetParameter("SetupStdScatChamber",mSetupStdScatChamber);
 
-	gConfig->GetParameter("BlockRin",mBlockRin); mBlockRin*=mm;
-	gConfig->GetParameter("BlockThick",mBlockThick); mBlockThick*=mm;
-
+	gConfig->GetParameter("UpBlockRin",mUpBlockRin); 
+	mUpBlockRin*=mm;
+	gConfig->GetParameter("UpBlockThick",mUpBlockThick); 
+	mUpBlockThick*=mm;
+	gConfig->GetParameter("DownBlockRin",mDownBlockRin); 
+	mDownBlockRin*=mm;
 	gConfig->GetParameter("DownBlockThickAt0cm",mDownBlockThickAt0cm); 
 	mDownBlockThickAt0cm*=mm;
-	gConfig->GetParameter("DownBlockThickAt15cm",mDownBlockThickAt15cm); 
-	mDownBlockThickAt15cm*=mm;
+	gConfig->GetParameter("DownBlockThickAt5cm",mDownBlockThickAt5cm); 
+	mDownBlockThickAt5cm*=mm;
 	gConfig->GetParameter("UpBlockLength",mUpBlockLength); 
 	mUpBlockLength*=mm;
 	gConfig->GetParameter("DownBlockLength",mDownBlockLength); 
 	mDownBlockLength*=mm;
 
-	gConfig->GetParameter("EntranceWindowThick",mEntranceWindowThick); 
-	mEntranceWindowThick*=mm;
-	gConfig->GetParameter("ExitWindowThick",mExitWindowThick); 
-	mExitWindowThick*=mm;
+	gConfig->GetParameter("UpCapThick",mUpCapThick); 
+	mUpCapThick*=mm;
+	gConfig->GetParameter("DownCapThick",mDownCapThick); 
+	mDownCapThick*=mm;
 
 	gConfig->GetParameter("VCRin",mVCRin); 
 	mVCRin*=mm;
@@ -321,17 +324,17 @@ G4VPhysicalVolume* CREXDetectorConstruction::ConstructTargetChamber(G4LogicalVol
 	double pSCWindowRin=mScatChamberRin-1*mm;
 	double pSCWindowRout=mScatChamberRout+1*mm;
 	double pSCEntranceWindowH=6.44*inch;
-	double pSCExitWindowH=15.0*inch;
+	double pSCDownCapH=15.0*inch;
 	
 	//rectangle EntranceWindow covering 80 to 100 degrees
 	startphi=80*deg;deltaphi=20*deg;
 	G4VSolid* SCEntranceWindowSolid = new G4Tubs("SCEntranceWindowTubs",
 		pSCWindowRin,pSCWindowRout,pSCEntranceWindowH/2.0,startphi,deltaphi);
 
-	//rectangle ExitWindow covering -225 to 45 degrees
+	//rectangle DownCap covering -225 to 45 degrees
 	startphi=-225*deg;deltaphi=270*deg;
-	G4VSolid* SCExitWindowSolid = new G4Tubs("SCExitWindowTubs",
-		pSCWindowRin,pSCWindowRout,pSCExitWindowH/2.0,startphi,deltaphi);
+	G4VSolid* SCDownCapSolid = new G4Tubs("SCDownCapTubs",
+		pSCWindowRin,pSCWindowRout,pSCDownCapH/2.0,startphi,deltaphi);
 
 
 	// subtract the Entrance window 
@@ -340,7 +343,7 @@ G4VPhysicalVolume* CREXDetectorConstruction::ConstructTargetChamber(G4LogicalVol
 
 	// subtract the Exit window 
 	G4SubtractionSolid* SCSubtractEntranceNExitSolid=new G4SubtractionSolid(
-		"SCSubtractEntranceNExit",SCSubtractEntranceSolid,SCExitWindowSolid);
+		"SCSubtractEntranceNExit",SCSubtractEntranceSolid,SCDownCapSolid);
 
 	//setup the scatter chamber
 	G4LogicalVolume* scatChamberLogical = new G4LogicalVolume(
@@ -372,20 +375,20 @@ G4VPhysicalVolume* CREXDetectorConstruction::ConstructTargetChamber(G4LogicalVol
 	new G4PVPlacement(0,G4ThreeVector(),SCEntranceWindowCoverLogical,
 		"SCEntranceWindowCoverPhys",scatChamberContainerLogical,false,0);
 
-	//ExitWindowCover
-	double pSCExitWindowCoverH=pSCExitWindowH+0.8*inch;
-	double pSCExitWindowCoverRin=mScatChamberRout;
-	double pSCExitWindowCoverRout=mScatChamberRout+mScatChamberExitWindowThick;
+	//DownCapCover
+	double pSCDownCapCoverH=pSCDownCapH+0.8*inch;
+	double pSCDownCapCoverRin=mScatChamberRout;
+	double pSCDownCapCoverRout=mScatChamberRout+mScatChamberExitWindowThick;
 
 	startphi=-227*deg;deltaphi=274*deg;
-	G4VSolid* SCExitWindowCoverSolid = new G4Tubs("SCExitWindowCoverTubs",
-		pSCExitWindowCoverRin,pSCExitWindowCoverRout,pSCExitWindowCoverH/2.0,startphi,deltaphi);
-	G4LogicalVolume* SCExitWindowCoverLogical = new G4LogicalVolume(
-		SCExitWindowCoverSolid,aluminum,"SCExitWindowCoverLogical",0,0,0);
-	SCExitWindowCoverLogical->SetVisAttributes(LightYellowVisAtt); 
+	G4VSolid* SCDownCapCoverSolid = new G4Tubs("SCDownCapCoverTubs",
+		pSCDownCapCoverRin,pSCDownCapCoverRout,pSCDownCapCoverH/2.0,startphi,deltaphi);
+	G4LogicalVolume* SCDownCapCoverLogical = new G4LogicalVolume(
+		SCDownCapCoverSolid,aluminum,"SCDownCapCoverLogical",0,0,0);
+	SCDownCapCoverLogical->SetVisAttributes(LightYellowVisAtt); 
 
-	new G4PVPlacement(0,G4ThreeVector(),SCExitWindowCoverLogical,
-		"SCExitWindowCoverPhys",scatChamberContainerLogical,false,0);
+	new G4PVPlacement(0,G4ThreeVector(),SCDownCapCoverLogical,
+		"SCDownCapCoverPhys",scatChamberContainerLogical,false,0);
 
 
 	return scatChamberContainerPhys;
@@ -480,9 +483,7 @@ G4VPhysicalVolume* CREXDetectorConstruction::ConstructTarget(G4LogicalVolume *pM
 
 	//the tube without caps
 	double pVCLengthWithoutCaps=mVCLength-mVCUpCapThick-mVCDownCapThick;
-
 	double pVCRout=mVCRin+mVCThick;
-	double pBlockRout=mBlockRin+mBlockThick;
 
 	G4VSolid* VCSolid = new G4Tubs("VCTubs",
 		mVCRin,pVCRout,pVCLengthWithoutCaps/2.0,0,360*deg);
@@ -499,7 +500,7 @@ G4VPhysicalVolume* CREXDetectorConstruction::ConstructTarget(G4LogicalVolume *pM
 	//the vacuum Chamber up cap
 	//////////////////////////
 	G4VSolid* VCUpCapSolid = new G4Tubs("VCUpCapTubs",
-		mBlockRin,pVCRout,mVCUpCapThick/2.0,0,360*deg);
+		mUpBlockRin,pVCRout,mVCUpCapThick/2.0,0,360*deg);
 
 	G4LogicalVolume* VCUpCapLogical = new G4LogicalVolume(
 		VCUpCapSolid,stainlesssteel,"VCUpCapLogical",0,0,0);
@@ -514,7 +515,7 @@ G4VPhysicalVolume* CREXDetectorConstruction::ConstructTarget(G4LogicalVolume *pM
 	//the vacuum Chamber down cap
 	//////////////////////////
 	G4VSolid* VCDownCapSolid = new G4Tubs("VCDownCapTubs",
-		mBlockRin,pVCRout,mVCDownCapThick/2.0,0,360*deg);
+		mDownBlockRin,pVCRout,mVCDownCapThick/2.0,0,360*deg);
 
 	G4LogicalVolume* VCDownCapLogical = new G4LogicalVolume(
 		VCDownCapSolid,stainlesssteel,"VCDownCapLogical",0,0,0);
@@ -529,7 +530,7 @@ G4VPhysicalVolume* CREXDetectorConstruction::ConstructTarget(G4LogicalVolume *pM
 	//the upstream blocker
 	//////////////////////////
 	G4VSolid* UpBlockSolid = new G4Tubs("UpBlockTubs",
-		mBlockRin,pBlockRout,mUpBlockLength/2.0,0,360*deg);
+		mUpBlockRin,mUpBlockRin+mUpBlockThick,mUpBlockLength/2.0,0,360*deg);
 
 	G4LogicalVolume* UpBlockLogical = new G4LogicalVolume(
 		UpBlockSolid,aluminum,"UpBlockLogical",0,0,0);
@@ -542,50 +543,46 @@ G4VPhysicalVolume* CREXDetectorConstruction::ConstructTarget(G4LogicalVolume *pM
 
 
 	//////////////////////////
-	//the upstream window
+	//the upstream end cap
 	//////////////////////////
-	G4VSolid* EntranceWindowSolid = new G4Tubs("EntranceWindowTubs",
-		0,mBlockRin,mEntranceWindowThick/2.0,0,360*deg);
+	G4VSolid* UpCapSolid = new G4Tubs("UpCapTubs",
+		0,mUpBlockRin,mUpCapThick/2.0,0,360*deg);
 
-	G4LogicalVolume* EntranceWindowLogical = new G4LogicalVolume(
-		EntranceWindowSolid,aluminum,"EntranceWindowLogical",0,0,0);
-	EntranceWindowLogical->SetVisAttributes(LightYellowVisAtt); 
+	G4LogicalVolume* UpCapLogical = new G4LogicalVolume(
+		UpCapSolid,aluminum,"UpCapLogical",0,0,0);
+	UpCapLogical->SetVisAttributes(LightYellowVisAtt); 
 
-	double pEntranceWindow2SC_Z=mVC2SCZOffset-(mVCLength/2+mUpBlockLength-mEntranceWindowThick/2);
-	new G4PVPlacement(pRotX270deg,G4ThreeVector(0,-pEntranceWindow2SC_Z,0),
-		EntranceWindowLogical,"EntranceWindowPhys",targetContainerLogical,0,0);
+	double pUpCap2SC_Z=mVC2SCZOffset-(mVCLength/2+mUpBlockLength-mUpCapThick/2);
+	new G4PVPlacement(pRotX270deg,G4ThreeVector(0,-pUpCap2SC_Z,0),
+		UpCapLogical,"UpCapPhys",targetContainerLogical,0,0);
 
 	
 	//////////////////////////
-	//the downstream window
+	//the downstream end cap
 	//////////////////////////
-	G4VSolid* ExitWindowSolid = new G4Tubs("ExitWindowTubs",
-		0,mBlockRin,mExitWindowThick/2.0,0,360*deg);
+	G4VSolid* DownCapSolid = new G4Tubs("DownCapTubs",
+		0,mDownBlockRin,mDownCapThick/2.0,0,360*deg);
 
-	G4LogicalVolume* ExitWindowLogical = new G4LogicalVolume(
-		ExitWindowSolid,aluminum,"ExitWindowLogical",0,0,0);
-	ExitWindowLogical->SetVisAttributes(LightYellowVisAtt); 
+	G4LogicalVolume* DownCapLogical = new G4LogicalVolume(
+		DownCapSolid,aluminum,"DownCapLogical",0,0,0);
+	DownCapLogical->SetVisAttributes(LightYellowVisAtt); 
 
-	double pExitWindow2SC_Z=mVC2SCZOffset+mVCLength/2-mExitWindowThick/2;
-	new G4PVPlacement(pRotX270deg,G4ThreeVector(0,-pExitWindow2SC_Z,0),
-		ExitWindowLogical,"ExitWindowPhys",targetContainerLogical,0,0);
+	double pDownCap2SC_Z=mVC2SCZOffset+mVCLength/2-mDownCapThick/2;
+	new G4PVPlacement(pRotX270deg,G4ThreeVector(0,-pDownCap2SC_Z,0),
+		DownCapLogical,"DownCapPhys",targetContainerLogical,0,0);
 
 	//////////////////////////
 	//the downstream blocker
 	//////////////////////////
-	//the downstream block can be tapered, starting at a thickness of 2 mm nearest the target 
-	//and increasing to 9 mm thick 15 cm further downstream.
-	//namely will be 10mm thick at 15*(10-2)/(9-2)=120/7
+	//the downstream block can be taped, starting at a thickness of 2 mm nearest the target 
+	//and increasing to 4 mm thick 5 cm further downstream.
 
 	startphi=0.*deg; deltaphi=360.*deg;
 	const int kNPlane_DownBlock=3;
-	double rInner_DownBlock[] = {mBlockRin,mBlockRin,mBlockRin};
-	double rOuter_DownBlock[] = {mBlockRin+mDownBlockThickAt0cm,pBlockRout,pBlockRout};
-	double pDownBlockFace2VC=mVC2SCZOffset+mVCLength/2;
-	//start from the front face., where the thickness reach the maximum blcok thickness
-	double pDownBlockZMaxR=15*cm*(mBlockThick-mDownBlockThickAt0cm)/
-		(mDownBlockThickAt15cm-mDownBlockThickAt0cm);
-	double zPlane_DownBlock[] = {0,pDownBlockZMaxR,mDownBlockLength};
+	double pDownBlockRout=mDownBlockRin+mDownBlockThickAt5cm;
+	double rInner_DownBlock[] = {mDownBlockRin,mDownBlockRin,mDownBlockRin};
+	double rOuter_DownBlock[] = {mDownBlockRin+mDownBlockThickAt0cm,pDownBlockRout,pDownBlockRout};
+	double zPlane_DownBlock[] = {0,5*cm,mDownBlockLength};
 
 	G4Polycone* DownBlockSolid = new G4Polycone("DownBlockPolycone",startphi,deltaphi,
 		kNPlane_DownBlock,zPlane_DownBlock,rInner_DownBlock,rOuter_DownBlock);
@@ -595,6 +592,7 @@ G4VPhysicalVolume* CREXDetectorConstruction::ConstructTarget(G4LogicalVolume *pM
 	DownBlockLogical->SetVisAttributes(WhiteVisAtt);
 	DownBlockLogical->SetSensitiveDetector(SDDownBlock); 
 
+	double pDownBlockFace2VC=mVC2SCZOffset+mVCLength/2;
 	new G4PVPlacement(pRotX270deg,G4ThreeVector(0,-pDownBlockFace2VC,0),
 		DownBlockLogical,"DownBlockPhys",targetContainerLogical,0,0);
 
@@ -678,9 +676,9 @@ G4VPhysicalVolume* CREXDetectorConstruction::ConstructSeptumNSieve(G4LogicalVolu
 	double pSieveSlitLargeHoleR=1.3462*mm;      //radius of large hole 0.106/2 inch
 	double pSieveSlitHoldL=pSieveSlitZ+0.1*mm;  //need to make it longer to avoid round off in the subtraction
 
-	//the big center hole horizontal and vertical offset, From Alan
-	double pSieveSlitLargeHoleH=2.967*mm;    //positive means shift away from the beam line
-	double pSieveSlitLargeHoleV=2.606*mm;
+	//the big center hole horizontal and vertical offset, From servey
+	double pSieveSlitLargeHoleH=0*mm;    //positive means shift away from the beam line
+	double pSieveSlitLargeHoleV=0*mm;
 
 	//please note that the following constants are for the sieve in the right arm only
 	//need to mirror(flip) it in order to put in the left arm  
@@ -812,7 +810,7 @@ G4VPhysicalVolume* CREXDetectorConstruction::ConstructSeptumNSieve(G4LogicalVolu
 		////////////////////////////////////////////////////////////////////
 		//Septum block, 140 cm width, 84.4 cm height and 74 cm in length, silicon steel
 		//Tunnel size: started from x=8.4cm, 30.4cm wide and 24.4 cm in height
-		//located at z=686.46 mm, no rotation
+		//located at z=700 mm, no rotation
 		double pSeptumX=140.0*cm;
 		double pSeptumY=84.4*cm;
 		double pSeptumZ=74.0*cm;
@@ -822,7 +820,7 @@ G4VPhysicalVolume* CREXDetectorConstruction::ConstructSeptumNSieve(G4LogicalVolu
 		double pSeptumBeamHoleY=8.0*cm;
 
 		double pSeptumTunnelPos_X=8.4*cm+pSeptumTunnelX/2.0;
-		double pSeptumPos_Z=68.646*cm;		
+		double pSeptumPos_Z=70.0*cm;		
 		gConfig->GetParameter("Septum_OriginZ",pSeptumPos_Z); 
 		pSeptumPos_Z*=cm;
 
@@ -926,13 +924,13 @@ G4VPhysicalVolume* CREXDetectorConstruction::ConstructSeptumNSieve(G4LogicalVolu
 		//######      |###|      |#####
 		//######      |###|      |#####
 		//####11######8###12#####13####
-		G4RotationMatrix* pSeptumCoilRotBackDwon = new G4RotationMatrix();
-		pSeptumCoilRotBackDwon->rotateY(270*deg);
+		G4RotationMatrix* pSeptumCoilRotBackDown = new G4RotationMatrix();
+		pSeptumCoilRotBackDown->rotateY(270*deg);
 		G4RotationMatrix* pSeptumCoilRotBackUp = new G4RotationMatrix();
 		pSeptumCoilRotBackUp->rotateY(270*deg);
 		pSeptumCoilRotBackUp->rotateX(180*deg);
 
-		new G4PVPlacement(pSeptumCoilRotBackDwon,
+		new G4PVPlacement(pSeptumCoilRotBackDown,
 			G4ThreeVector(pSeptumCoilPos_X_in,pSeptumCoilPos_Y,pSeptumCoilPos_Z_down),
 			septumCoilLogical,"septumCoilPhys",motherLogical,true,8,0);
 		new G4PVPlacement(pSeptumCoilRotBackUp,
@@ -941,11 +939,11 @@ G4VPhysicalVolume* CREXDetectorConstruction::ConstructSeptumNSieve(G4LogicalVolu
 		new G4PVPlacement(pSeptumCoilRotBackUp,
 			G4ThreeVector(pSeptumCoilPos_X_out,-pSeptumCoilPos_Y,pSeptumCoilPos_Z_down),
 			septumCoilLogical,"septumCoilPhys",motherLogical,true,10,0);
-		new G4PVPlacement(pSeptumCoilRotBackDwon,
+		new G4PVPlacement(pSeptumCoilRotBackDown,
 			G4ThreeVector(pSeptumCoilPos_X_out,pSeptumCoilPos_Y,pSeptumCoilPos_Z_down),
 			septumCoilLogical,"septumCoilPhys",motherLogical,true,11,0);
 
-		new G4PVPlacement(pSeptumCoilRotBackDwon,
+		new G4PVPlacement(pSeptumCoilRotBackDown,
 			G4ThreeVector(-pSeptumCoilPos_X_out,pSeptumCoilPos_Y,pSeptumCoilPos_Z_down),
 			septumCoilLogical,"septumCoilPhys",motherLogical,true,12,0);
 		new G4PVPlacement(pSeptumCoilRotBackUp,
@@ -954,7 +952,7 @@ G4VPhysicalVolume* CREXDetectorConstruction::ConstructSeptumNSieve(G4LogicalVolu
 		new G4PVPlacement(pSeptumCoilRotBackUp,
 			G4ThreeVector(-pSeptumCoilPos_X_in,-pSeptumCoilPos_Y,pSeptumCoilPos_Z_down),
 			septumCoilLogical,"septumCoilPhys",motherLogical,true,14,0);
-		new G4PVPlacement(pSeptumCoilRotBackDwon,
+		new G4PVPlacement(pSeptumCoilRotBackDown,
 			G4ThreeVector(-pSeptumCoilPos_X_in,pSeptumCoilPos_Y,pSeptumCoilPos_Z_down),
 			septumCoilLogical,"septumCoilPhys",motherLogical,true,15,0);
 	}
@@ -993,24 +991,20 @@ G4VPhysicalVolume* CREXDetectorConstruction::ConstructSeptumNSieve(G4LogicalVolu
 
 		if(mSetupLHRS)
 		{
-			double pLHRSVBPos_X=(pHallCenter2VB-mHRSVBThick/2)*
-				sin(mLHRSAngle)+mPivotXOffset;
+			double pLHRSVBPos_X=(pHallCenter2VB-mHRSVBThick/2)*sin(mLHRSAngle)+mPivotXOffset;
 			double pLHRSVBPos_Y=mPivotYOffset;
 			//no need to correct for pivot since the distance is from the hall center
 			double pLHRSVBPos_Z=(pHallCenter2VB-mHRSVBThick/2.0)*cos(mLHRSAngle);
-			new G4PVPlacement(pRotLHRS,
-				G4ThreeVector(pLHRSVBPos_X,pLHRSVBPos_Y,pLHRSVBPos_Z),
+			new G4PVPlacement(pRotLHRS,G4ThreeVector(pLHRSVBPos_X,pLHRSVBPos_Y,pLHRSVBPos_Z),
 				HRSVBLogical,"virtualBoundaryPhys_LHRS",motherLogical,0,0,0);
 		}
 		if(mSetupRHRS)
 		{
-			double pRHRSVBPos_X=(pHallCenter2VB-mHRSVBThick/2)*
-				sin(mRHRSAngle)+mPivotXOffset;
+			double pRHRSVBPos_X=(pHallCenter2VB-mHRSVBThick/2)*sin(mRHRSAngle)+mPivotXOffset;
 			double pRHRSVBPos_Y=mPivotYOffset;
 			//no need to correct for pivot since the distance is from the hall center
 			double pRHRSVBPos_Z=(pHallCenter2VB-mHRSVBThick/2)*cos(mRHRSAngle); 
-			new G4PVPlacement(pRotRHRS,
-				G4ThreeVector(pRHRSVBPos_X,pRHRSVBPos_Y,pRHRSVBPos_Z),
+			new G4PVPlacement(pRotRHRS,G4ThreeVector(pRHRSVBPos_X,pRHRSVBPos_Y,pRHRSVBPos_Z),
 				HRSVBLogical,"virtualBoundaryPhys_RHRS",motherLogical,0,0,0);
 		}
 	}

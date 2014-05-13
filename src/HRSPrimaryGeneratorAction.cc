@@ -384,7 +384,8 @@ void HRSPrimaryGeneratorAction::GetMomentum(int i)
 	if(useMom3V[i] && pPtot>=keV) return;
 
 	//comparing string is very slow ...... need to improve this
-	if(primaryEngine[i]=="HRSElasEl")           {HRSElasElectronEngine(i);return;}
+	if(primaryEngine[i]=="Uniform")			 {/*do thing, jump over this if block;*/;}
+	else if(primaryEngine[i]=="HRSElasEl")           {HRSElasElectronEngine(i);return;}
 	else if(primaryEngine[i]=="HRSElasNucleus") {HRSElasNucleusEngine(i); return;}
 	else if(primaryEngine[i]=="HRSQuasiElasEl") {HRSQuasiElasElectronEngine(i); return;}
 	else if(primaryEngine[i]=="HRSQuasiElasNucleon") {HRSQuasiElasNucleonEngine(i); return;}
@@ -396,6 +397,11 @@ void HRSPrimaryGeneratorAction::GetMomentum(int i)
 	else if(primaryEngine[i]=="RootNtuple")  {HRSNtupleEngine(i); return;}
 	else if(primaryEngine[i]=="H90UserFit")  {H90UserFitEngine(i); return;}
 	else if(primaryEngine[i]=="BdL")         {BdLEngine(i); return;}
+	else 
+	{
+		G4cout<<"Warning: Unknown event generator \""<<primaryEngine[i]
+		<<"\". Assuming 'Uniform' !"<<endl; 
+	}
 
 	//Uniform Engine in HCS or TCS
 	G4double pTheta=0.0,pPhi=0.0;
@@ -959,14 +965,23 @@ void HRSPrimaryGeneratorAction::ComptonEngine(int index)
 		//the effective angle
 		effectiveTheta[index] = pTheta;
 
-		double pE_gamma;
 		//RCS energy at theta_gamma_lab angle
 		double pM_pr = proton_mass_c2;
+		double pPtot = 0;
 
-		double cosTh_gamma = cos(effectiveTheta[index]);
-		pE_gamma =  incidentEnergy / (1.0 + incidentEnergy/pM_pr * (1.0-cosTh_gamma) );
+		//if this is a photon, set its polarization value
+		if(particle[index]->GetPDGEncoding()==22) 
+		{
+			double cosTh_gamma = cos(effectiveTheta[index]);
+			pPtot =  incidentEnergy / (1.0 + incidentEnergy/pM_pr * (1.0-cosTh_gamma) );
+		}
+		else
+		{
+			//I am assuming this is proton all the time
+			pPtot = GetElasMomentumX(incidentEnergy, effectiveTheta[index], pM_pr);
+		}
 	
-		momentum3V[index].setRThetaPhi(pE_gamma,pTheta,pPhi);
+		momentum3V[index].setRThetaPhi(pPtot,pTheta,pPhi);
 	}
 
 	//if this is a photon, set its polarization value
@@ -993,6 +1008,7 @@ void HRSPrimaryGeneratorAction::GetHelmBdL(G4ThreeVector &V3BdL, double pEndPlan
 	double pStep0=(position3V.z()-kHelmZOffset)/cos(pEndPlaneAngle);
 	//G4cout<<"Z0="<<position3V.z()/cm<<"cm  HelmZ="<<kHelmZOffset/cm<<"cm"<<G4endl;
 	
+	V3BdL.set(0,0,0);
 	for(double step=pStep0;step<805*mm;step+=pStepLength)
 	{
 		tmpPos[0]=step*sin(pEndPlaneAngle)+kHelmXOffset;	
@@ -1110,7 +1126,19 @@ void HRSPrimaryGeneratorAction::HRSElasElectronEngine(int index)
 
 }
 
-double HRSPrimaryGeneratorAction::GetElasMomentumX(double pE0,double pTheta,double pMtg)
+//This is the routine based on Jixie's calculation
+//It gives the elastic momentum for X' in  kX->k'X'elastic scattering
+//where k can be either electron or photon
+double HRSPrimaryGeneratorAction::GetElasMomentumX(double E0,double Th_x,double M_x)
+{
+	double A = E0 * cos(Th_x) / (E0 + M_x);
+	double P_x = 2 * M_x * A / (1 - A*A);
+	return P_x;
+}
+
+//It turns out that this routine does not work
+//It does gives the same elastic momentum as the above one
+double HRSPrimaryGeneratorAction::GetElasMomentumX_old(double pE0,double pTheta,double pMtg)
 {
 	//pMx is the mass of the outgoing Nucleon
 	double pPlab=0.0, pMe=electron_mass_c2,pMx=pMtg;
@@ -1208,7 +1236,7 @@ void   HRSPrimaryGeneratorAction::HRSQuasiElasNucleonEngine(int index)
 	}
 	else
 	{
-		G4double pTheta,pPhi;
+		G4double pTheta,pPhi,pPtot;
 
 		if(randomizeInTCS[index]>0) RandTCSThetaPhi(index,pTheta,pPhi);
 		else RandHCSThetaPhi(index,pTheta,pPhi);
@@ -1217,7 +1245,13 @@ void   HRSPrimaryGeneratorAction::HRSQuasiElasNucleonEngine(int index)
 		//E-N elastic energy at theta angle
 		//double pMassN = neutron_mass_c2;
 		double pMassN = particle[index]->GetPDGMass();
-		double pPtot=GetElasMomentumX(beamEnergy,effectiveTheta[index],pMassN);
+
+		//Conclusion: Both rutione return the same Ptot 
+		//pPtot=GetElasMomentumX_old(beamEnergy,effectiveTheta[index],pMassN);
+		//G4cout<<"Old HRSQuasiElasNucleonEngine return  Theta="<<effectiveTheta[index]/deg<<"  Ptot="<<pPtot<<G4endl;
+
+		pPtot=GetElasMomentumX(beamEnergy,effectiveTheta[index],pMassN);
+		//G4cout<<"New HRSQuasiElasNucleonEngine return  Theta="<<effectiveTheta[index]/deg<<"  Ptot="<<pPtot<<G4endl;
 		momentum3V[index].setRThetaPhi(pPtot,pTheta,pPhi);
 	}
 }
