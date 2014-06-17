@@ -69,7 +69,10 @@ void RTPCDetectorConstruction::GetConfig()
 {
 	gConfig->ReadFile("Detector_RTPC.ini");
 	//////////////////////////////////////////////////////////////////
+
+	const double mH2GasD_STP=0.08988*mg/cm3;
 	const double mD2GasD_STP=0.180*mg/cm3;
+	const double mHe3GasD_STP=0.1777*mg/cm3;
 	const double mHeGasD_STP=0.1786*mg/cm3;
 	const double mDMEGasD_STP=1.97*mg/cm3;
 
@@ -79,16 +82,20 @@ void RTPCDetectorConstruction::GetConfig()
 	mTargetYOffset*=mm;
 	gConfig->GetParameter("TargetZOffset",mTargetZOffset);
 	mTargetZOffset*=mm;
-
 	
 	gConfig->GetParameter("RTPCLength",mRTPCLength);mRTPCLength*=mm;
 
 	gConfig->GetParameter("D2GasL",mD2GasL);mD2GasL*=mm;
 	gConfig->GetParameter("D2GasR",mD2GasR);mD2GasR*=mm;
 
+	gConfig->GetParameter("TargetType",mTargetType);
 	gConfig->GetParameter("D2GasT",mD2GasT);mD2GasT*=kelvin;
 	gConfig->GetParameter("D2GasP",mD2GasP);mD2GasP*=atmosphere;
-	mD2GasD=mD2GasD_STP*mD2GasP/atmosphere*273.15/mD2GasT;
+	double pTgGasD_STP = mD2GasD_STP;
+	if(mTargetType==1) pTgGasD_STP = mH2GasD_STP;
+	else if(mTargetType==3) pTgGasD_STP = mHe3GasD_STP;
+	else if(mTargetType==4) pTgGasD_STP = mHeGasD_STP;
+	mD2GasD=pTgGasD_STP*mD2GasP/atmosphere*273.15/mD2GasT;
 
 	gConfig->GetParameter("HeGasT",mHeGasT);mHeGasT*=kelvin;
 	gConfig->GetParameter("HeGasP",mHeGasP);mHeGasP*=atmosphere;
@@ -283,6 +290,21 @@ void RTPCDetectorConstruction::ConstructMaterials()
 
 	/////////////////////////////////////////////////////////
 
+	//Target Gas 1=H2, 2=D2,3=He3,4=He4
+
+	a = 1.0081*g/mole;
+	H2TgGas = new G4Material(name="H2TgGas", z=1., a, density=mD2GasD,
+		kStateGas, temperature=mD2GasT, pressure=mD2GasP);
+	a = 2.01410178*g/mole;
+	D2TgGas = new G4Material(name="D2TgGas", z=1., a, density=mD2GasD,
+		kStateGas, temperature=mD2GasT, pressure=mD2GasP);
+	a = 3.0160293*g/mole;
+	He3TgGas = new G4Material(name="He3TgGas", z=2., a, density=mD2GasD,
+		kStateGas, temperature=mD2GasT, pressure=mD2GasP);
+	a = 4.0026*g/mole;
+	He4TgGas = new G4Material(name="He4TgGas", z=2., a, density=mD2GasD,
+		kStateGas, temperature=mD2GasT, pressure=mD2GasP);
+	
 	//Helium Gas at 1 atm & room temprature, density=0.163 *mg/cm3;
 	a = 4.0026*g/mole;
 	density = mHeGasD ;
@@ -444,10 +466,14 @@ G4VPhysicalVolume* RTPCDetectorConstruction::Construct()
 	/////////////////////
 	//Target 
 	/////////////////////
+	if(mTargetType==1) targetMaterial=H2TgGas;
+	else if(mTargetType==3) targetMaterial=He3TgGas;
+	else if(mTargetType==4) targetMaterial=He4TgGas;
+	else targetMaterial=D2TgGas;
 	G4VSolid* targetVesselSolid = new G4Tubs("targetVesselTubs",
 		0.,mD2GasR,mD2GasL/2.0,0.,360.*deg);
 	G4LogicalVolume* targetVesselLogical = new G4LogicalVolume(targetVesselSolid,
-		deuteriumGas,"targetVesselLogical",0,0,0);
+		targetMaterial,"targetVesselLogical",0,0,0);
 	new G4PVPlacement(0,G4ThreeVector(),targetVesselLogical,
 		"targetPhys",RTPCContainerLogical,0,0);
 

@@ -664,7 +664,8 @@ void HRSPrimaryGeneratorAction::RandHCSThetaPhi(int i,double &pTheta,double &pPh
 	if (thetaAngle[i]/deg<0.)
 	{
 		//use random theta angle,Let low<=theta<high
-		pTheta = mRand.fRand(thetaLow[i],thetaHigh[i]);
+		//By Jixie:  we should randomize in costheta, not theta
+		pTheta = acos(mRand.fRand(cos(thetaLow[i]),cos(thetaHigh[i])));
 	}
 	else
 	{

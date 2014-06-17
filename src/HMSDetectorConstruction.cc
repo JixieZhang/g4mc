@@ -293,9 +293,9 @@ G4VPhysicalVolume* HMSDetectorConstruction::ConstructHMS(G4LogicalVolume* mother
 	// HMS Q1 
 	/////////////////////////
 	double pHallCenter2Q1Face=mPivot2HMSFace+25*cm;
-	double pQ1Rin=22.0*cm;
-	double pQ1Rout=37.0*cm;
-	double pQ1Length=160*cm;
+	double pQ1Rin=25.0*cm;
+	double pQ1Rout=65.0*cm;
+	double pQ1Length=189*cm;
 
 	G4VSolid* Q1Solid = new G4Tubs("Q1Tub",pQ1Rin,pQ1Rout,pQ1Length/2.0,0.0,360.0*deg);
 

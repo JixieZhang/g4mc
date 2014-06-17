@@ -529,7 +529,7 @@ bool BField_Septum::Interpolation(double Pos[3],double B[3],int n)
 #endif
 
 	//just flip by z
-	double x=Pos[0],y=Pos[1],z=fabs(Pos[2]);
+	double x=Pos[0],y=Pos[1],z=Pos[2];
 
 	int StartIndexX=0,StartIndexY=0,StartIndexZ=0;  //the first point to do the interpolation
 	StartIndexX=int((x-mBField[0][0][0][0])/mStepX);
@@ -696,7 +696,7 @@ void BField_Septum::Transform_Field2Lab(const double FieldP[3],double LabP[3])
 
 
 /////////////////////////////////////////////////////////////////////
-bool BField_Septum::GetBField(const double Pos[3],double B[3])
+bool BField_Septum::GetBField(double Pos[3],double B[3])
 {//input x,y,z in centimeter, return B field in Tesla
 	int i;
 
@@ -721,12 +721,14 @@ bool BField_Septum::GetBField(const double Pos[3],double B[3])
 		return true;
 	}
 
-	//the map provide fields for whole range of x and y, but only half of z
+	//the map provide fields for the whole range of x and y, but only half of z
 	//field is y direction. Need to flip for -z 
-	//in Z-Y plane, flip B_z. Bx and By do not need to flip 
+	//if z<0, flip Bz. Bx does not need to flip 
 	if (pPos[2]<0) {flag[2]*=-1.0;}
 
-	if(!Interpolation(pPos,pB,1)) {B[0]=B[1]=B[2]=0.0; return false;}
+	//Note that the map is only covers z>0, I have to take the absolute values
+	double pPosAtMap[]={pPos[0],pPos[1],fabs(pPos[2])};
+	if(!Interpolation(pPosAtMap,pB,1)) {B[0]=B[1]=B[2]=0.0; return false;}
 
 #ifdef BFIELD_SEPTUM_DEBUG
 	if(Global_Debug_Level>=3)
@@ -771,7 +773,7 @@ bool BField_Septum::GetBField(const double Pos[3],double B[3])
 }
 
 /////////////////////////////////////////////////////////////////////
-bool BField_Septum::GetBField(const float fPos[3],float fB[3])
+bool BField_Septum::GetBField(float fPos[3],float fB[3])
 {//input x,y,z in centimeter
 	bool status=false;
 	double dPos[3],dB[3];

@@ -22,8 +22,8 @@ public:
 		const char *inifile="BField_Septum.ini",
 		const char *mapfile="g2p_septumfield.dat");
 	virtual ~BField_Septum();
-	bool GetBField(const double Pos[3],double B[3]);
-	bool GetBField(const float fPos[3],float fB[3]);
+	bool GetBField(double Pos[3],double B[3]);
+	bool GetBField(float fPos[3],float fB[3]);
 	
 	void SetCurrentRatio(double valL,double valR);
 	void SetCurrentRatioL(double valL);

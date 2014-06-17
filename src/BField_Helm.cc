@@ -21,7 +21,7 @@
 
 
 //#define CREATE_MAP_NTUPLE 1
-//#define BFIELD_HELM_DEBUG 3
+//#define BFIELD_HELM_DEBUG 4
 //#define CREATE_NTUPLE_BY_FORTRAN 1
 
 #ifdef BFIELD_HELM_DEBUG
@@ -52,7 +52,7 @@ void GetHelmField_F(double pos[3],double b[3],double helmr=0.20, double amp=1166
 //switch on the hallb coil routine, if UseHallBRoutine<2 will recalculate the buffer elements
 //and will do interpolate the buffer when GetField() is called, 
 //Otherwise will do the calculation for the given position in each call
-//By Jixie: only use it for hall b coil, do not define it is you are using other coils 
+//By Jixie: only use it for hall b coil, do not define it if you are using other coils 
 //#define UseHallBRoutine 1
 
 #ifdef UseHallBRoutine
@@ -449,7 +449,7 @@ bool BField_Helm::ReadMap(const char *filename)
 			{
 				for(col=0;col<2;col++) printf(" %8.2f ",mBField[indexR][indexZ][col]);
 				for(col=2;col<mNPara;col++) printf(" %8.6f ",mBField[indexR][indexZ][col]);
-				printf(" %8.6f ",sqrt(pow(mBField[indexR][indexZ][2],2.0)+pow(mBField[indexR][indexZ][3],2.0)));
+				if(mNPara<5) printf(" %8.6f ",sqrt(pow(mBField[indexR][indexZ][2],2.0)+pow(mBField[indexR][indexZ][3],2.0)));
 				printf("\n");
 			}
 		}
@@ -492,6 +492,12 @@ bool BField_Helm::Interpolation(double Pos[3],double B[3],int n)
 	StartIndexZ=int((z-mBField[0][0][0])/mStepZ);
 	StartIndexR=int((r-mBField[0][0][1])/mStepR);
 
+#ifdef BFIELD_HELM_DEBUG 
+	if(BFIELD_HELM_DEBUG>=4) 
+	  {
+	    printf("StartIndexZ=%d  StartIndexR=%d\n",StartIndexZ,StartIndexR);
+	  }
+#endif
 	if ((StartIndexR<0 || StartIndexR>=mRNum) || 
 		(StartIndexZ<0 || StartIndexZ>=mZNum) )
 	{
@@ -662,7 +668,7 @@ bool BField_Helm::GetBField(const double Pos[3],double B[3])
 #if defined UseHallBRoutine && (UseHallBRoutine>=2)
 	GetHallBField_F(pPos,pB);
 #else
-	if(!Interpolation(pPos,pB,2)) return false;
+	if(!Interpolation(pPos,pB,2)) {B[0]=B[1]=B[2]=0.0; return false;}
 #endif
 
 #ifdef BFIELD_HELM_DEBUG

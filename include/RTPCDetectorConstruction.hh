@@ -50,6 +50,11 @@ private:
 	G4Material* copper;
 	G4Material* stainlesssteel;
 
+	G4Material* H2TgGas;
+	G4Material* D2TgGas;
+	G4Material* He3TgGas;
+	G4Material* He4TgGas;
+
 	G4Material* ultem;
 	G4Material* SiO2;
 	G4Material* epoxy;
@@ -58,6 +63,7 @@ private:
 	G4Material* pcbNchip;
 	G4Material* cable;
 
+	G4Material* targetMaterial;
 	G4Material* targetWallMaterial;
 
 	G4double mD2GasD,mHeGasD,mMixHeGasD,mMixDMEGasD,mMixDMEHeD;
@@ -65,6 +71,7 @@ private:
 	G4double mD2GasL,mD2GasR,mD2GasT,mD2GasP,mHeGasT,mHeGasP;
 	G4double mMixGasT,mMixGasP,mRatioHe2DME;
 
+	G4int mTargetType;  //1=H2, 2=D2,3=He3,4=He4
 	G4int mTgWallMaterialType;  //1 is kapton, 2 is aluminum
 	G4double mRTPCLength,mTgWallThick;
 	G4double m1stMylarR,m1stAlThick,m1stMylarThick;
