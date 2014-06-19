@@ -12,12 +12,14 @@
 #include "G4SDManager.hh"
 #include "G4VProcess.hh"
 #include "G4ios.hh"
-//By Jixie: The std SD is just a flux detector or calorimeter detector. 
+//By Jixie: The std SD can not be use for tracking, but it is good for measuring energy. 
 //It will not pay attention to the time window. It will do the following: 
-//1) record the inpos and inmom from the first hit
-//2) record the time, outpos,outmom from the last hit
-//3) accumulate deposited energy (ionized or non-ionized) from all hits which 
-//   are belonging to the same track.
+//1) It will create only one hit for each SD for one track in each event
+//   ( one hit one track )
+//2) This hit will record the inpos and inmom from the initial interatction and
+//   will record the time, outpos and outmom from the last interaction
+//3) This hit will accumulate deposited energy (ionized or non-ionized) from all 
+//   interactions which belong to the same track.
 //In the event action, these hits will be stored into the root ntuple
 
 
@@ -83,9 +85,9 @@ G4bool HRSStdSD::ProcessHits(G4Step* aStep,G4TouchableHistory* /*aROHist*/)
 
 	// check if this finger already has a hit
 	// generally a hit is the total energy deposit in a sensitive detector within a time window
-	// it does not care which particle deposite the energy
-	// In order to study the radiation, I need to isolate the hit source, therefore I require
-	// comparing the trackid here
+	// it does not matter which particle deposite the energy
+	// In order to study the radiation, I need to isolate the hit source, therefore I 
+	// also store parent trackid 
 
 
 	HRSStdHit* aHit = 0;

@@ -130,7 +130,7 @@ V1.05
 #    3 gold: A, B, C, D satisfied
 #    will plus 4 if it can be transported to the focus plane 
 
-22. Fixed a bug in the bremsstralung distribution which is needed in Compton engine. In order to
+22. Fixed a bug in the bremsstrahlung distribution which is needed in Compton engine. In order to
     fixed this bug, I have added this routine in class HRSRand:
 	//generate a non-uniform x using the constrain(distribution) of f(x,npar,par)
 	//this function f should be in this form double f(double,double *)
@@ -146,6 +146,15 @@ V1.05
 26. Updated CREX geometry according to http://ace.phys.virginia.edu/HAPPEX/2866
     user: happex
     psw: strangeFF
+27. Modified RTPC geometry class such that user can also change the presure|density for the drift
+    gas. And also allow to change target material from configuration file.
+    This is driven by TDIS simulation.
+28. In the PrimaryEventGenerator, The random generator throw event randomly in theta and phi angle, 
+    This is not quite right. I changed it to randomize in costheta and phi. 
+    But the random generator in TCS remains. I plan to change it later.  
+29. To study the radiator, I need to make the target sensitive. It is better to 
+    EC type SD. But in order to study the heat deposite as a function of z, I use
+    DC type SD.
 
 ---------------------------------------------------------------------------
 V1.04
@@ -154,7 +163,6 @@ V1.04
 3. Updated HRSRecUseDB.
 4. Modify HRSRootTree to adapt the above changes. No bug at all.
 5. Modify GNUMakefile to support fortran code. Put fortran files in src.
-
 
  
 ---------------------------------------------------------------------------

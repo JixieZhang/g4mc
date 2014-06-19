@@ -171,7 +171,7 @@ void HRSEventAction::ProcessDCSDHits(G4HCofThisEvent* HCE)
 				int ii=gHRSTree->SD_N;
 				if(ii<MaxSDHit)
 				{
-					gHRSTree->SD_Id[ii]=theSDID;   //changed by Jixie
+					gHRSTree->SD_Id[ii]=theSDID*1.0E06+aHit->GetId();   //one hit one interaction
 					gHRSTree->SD_Pid[ii]=aHit->GetPdgid(); 
 					gHRSTree->SD_Tid[ii]=aHit->GetTrackId(); 
 					gHRSTree->SD_ParentTid[ii]=aHit->GetParentTrackId(); 
@@ -318,7 +318,7 @@ void HRSEventAction::ProcessStdSDHits(G4HCofThisEvent* HCE)
 					int ii=gHRSTree->SD_N;
 					if(ii<MaxSDHit)
 					{
-						gHRSTree->SD_Id[ii]=theSDID;   //changed by Jixie
+						gHRSTree->SD_Id[ii]=theSDID*1.0E06+aHit->GetId();   //one hit one track
 						gHRSTree->SD_Pid[ii]=aHit->GetPdgid(); 
 						gHRSTree->SD_Tid[ii]=aHit->GetTrackId(); 
 						gHRSTree->SD_ParentTid[ii]=aHit->GetParentTrackId(); 
@@ -418,7 +418,7 @@ void HRSEventAction::ProcessCalorimeterSDHits(G4HCofThisEvent* HCE)
 				int ii=gHRSTree->SD_N;
 				if(ii<MaxSDHit)
 				{
-					gHRSTree->SD_Id[ii]=theSDID;   //changed by Jixie
+					gHRSTree->SD_Id[ii]=theSDID;   //one hit one event, no need to multiple 1.0E6
 					gHRSTree->SD_Pid[ii]=aHit->GetPdgid(); 
 					gHRSTree->SD_Tid[ii]=aHit->GetTrackId(); 
 					gHRSTree->SD_ParentTid[ii]=aHit->GetParentTrackId(); 
@@ -520,7 +520,7 @@ void HRSEventAction::ProcessSDHits(G4HCofThisEvent* HCE)
 				int ii=gHRSTree->SD_N;
 				if(ii<MaxSDHit)
 				{
-					gHRSTree->SD_Id[ii]=theSDID*1.0E06+aHit->GetId();   //changed by Jixie
+					gHRSTree->SD_Id[ii]=theSDID*1.0E06+aHit->GetId();   //one hit one interaction
 					gHRSTree->SD_Pid[ii]=aHit->GetPdgid(); 
 					gHRSTree->SD_Tid[ii]=aHit->GetTrackId(); 
 					gHRSTree->SD_ParentTid[ii]=aHit->GetParentTrackId(); 
@@ -619,7 +619,7 @@ void HRSEventAction::ProcessSDHits(G4HCofThisEvent* HCE)
 					int ii=gHRSTree->SD_N;
 					if(ii<MaxSDHit)
 					{
-						gHRSTree->SD_Id[ii]=theSDID*1.0E06+aHit->GetId();   //changed by Jixie
+						gHRSTree->SD_Id[ii]=theSDID*1.0E06+aHit->GetId();   //one hit one track
 						gHRSTree->SD_Pid[ii]=aHit->GetPdgid(); 
 						gHRSTree->SD_Tid[ii]=aHit->GetTrackId(); 
 						gHRSTree->SD_ParentTid[ii]=aHit->GetParentTrackId(); 
@@ -669,7 +669,7 @@ void HRSEventAction::ProcessSDHits(G4HCofThisEvent* HCE)
 				int ii=gHRSTree->SD_N;
 				if(ii<MaxSDHit)
 				{
-					gHRSTree->SD_Id[ii]=theSDID*1.0E06+aHit->GetId();   //changed by Jixie
+					gHRSTree->SD_Id[ii]=theSDID;   //one hit one event, no need to multiple 1.0E6
 					gHRSTree->SD_Pid[ii]=aHit->GetPdgid(); 
 					gHRSTree->SD_Tid[ii]=aHit->GetTrackId(); 
 					gHRSTree->SD_ParentTid[ii]=aHit->GetParentTrackId(); 

@@ -80,7 +80,9 @@
 #
 #add cut view
 #/vis/viewer/set/cutawayMode intersection
-#/vis/viewer/set/sectionPlane on 0 0 0 cm -1 -1 0
+#/vis/viewer/set/sectionPlane on 0 0 0 cm 0 1 0
+#/vis/viewer/set/cutawayMode union
+#/vis/viewer/set/sectionPlane on 0 0 0 cm -1 -0.01 0
 
-#/control/execute rtpc.mac
-/control/execute twopr.mac
+/control/execute rtpc.mac
+#/control/execute twopr.mac

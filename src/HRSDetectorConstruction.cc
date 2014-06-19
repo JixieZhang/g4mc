@@ -1154,7 +1154,7 @@ G4VPhysicalVolume* HRSDetectorConstruction::ConstructRadiator(G4LogicalVolume* m
 	/////////////////////////
 	if(mSetupRadiatorVD)
 	{
-		double pRadVDX=50*cm, pRadVDY=50*cm, pRadVDZ=2*mm;
+		double pRadVDX=20*cm, pRadVDY=20*cm, pRadVDZ=2*mm;
 
 		G4VSolid* radiatorVDSolid = new G4Box("radiatorVDBox",
 			pRadVDX/2.0,pRadVDY/2.0,pRadVDZ/2.0);
@@ -1166,9 +1166,9 @@ G4VPhysicalVolume* HRSDetectorConstruction::ConstructRadiator(G4LogicalVolume* m
 		radiatorVDLogical->SetVisAttributes(LightYellowVisAtt);
 
 
-		//place the VD 20 cm downstream from the down end plane of the radiator
+		//place the VD 2 cm downstream from the downstream end plane of the radiator
 		double pRadVDPos_X=pRadPos_X, pRadVDPos_Y=pRadPos_Y;
-		double pRadVDPos_Z=pRadPos_Z + mRaditorThickness/2 + 20*cm;
+		double pRadVDPos_Z=pRadPos_Z + mRaditorThickness/2 + 2*cm;
 		G4String VDPhysName = (mSetupRadiatorVD==2) ? "virtualBoundaryPhys_Rad" : "radiatorVDPhys";
 		new G4PVPlacement(0,G4ThreeVector(pRadVDPos_X,pRadVDPos_Y,pRadVDPos_Z),
 			radiatorVDLogical,VDPhysName,motherLogical,0,0);

@@ -4,10 +4,13 @@
 // --------------------------------------------------------------
 //
 //By Jixie: The DC SD is just for position detector, good for DC and SC. 
+//It can also be used to measure energy with complicate analysis.
 //It will do the following: 
-//1) record the inpos and inmom from the prestep of current hit
-//2) record the time, outpos,outmom from the poststep of current hit 
-//3) sign deposited energy to non-ionized energy if it is a transportation or msc   
+//1) It will create one hit for each interaction 
+//  (one hit one interaction, therefore multiple hits for each track)
+//2) Record the inpos and inmom from the prestep of current interaction, and
+//   record the time, outpos and outmom from the poststep of current interaction 
+//3) Sign deposited energy to non-ionized energy if it is a transportation or MSC   
 //In the event action, these hits will be stored into the root ntuple
 
 
@@ -83,11 +86,10 @@ G4bool HRSDCSD::ProcessHits(G4Step* aStep,G4TouchableHistory* /*aROHist*/)
 	//if(edep_NonIon) G4cout<<"edep_NonIon="<<edep_NonIon<<G4endl;
 
 	
-	// check if this finger already has a hit
 	// generally a hit is the total energy deposit in a sensitive detector within a time window
-	// it does not care which particle deposite the energy
-	// But for drift chamber, I only care the time and position, and also I need to know 
-	// which track create this hit, therefore I also store the trackid
+	// it does not matter which particle deposite the energy
+	// For drift chamber, I only care the time and position, and also I need to know 
+	// which track create this hit, therefore I also store parent trackid
 
 	HRSDCHit* aHit = new HRSDCHit(copyNo,hitTime);
 

@@ -39,6 +39,7 @@ using namespace std;
 #include "G4UserLimits.hh"
 
 #include "HRSStdSD.hh"
+#include "HRSDCSD.hh"
 #include "UsageManager.hh"
 #include "HRSMaterial.hh"
 #include "HRSEMFieldSetup.hh"
@@ -1051,8 +1052,8 @@ G4VPhysicalVolume* G2PDetectorConstruction::ConstructG2PScatChamber(G4LogicalVol
 		G4LogicalVolume* HeCBLogical = new G4LogicalVolume(HeCBSolid,
 			mMaterialManager->stainlesssteel,"HeCBLogical",0,0,0);
 		HeCBLogical->SetVisAttributes(DarkBlueVisAtt);
-		//By Jixie: The tub is not shown correctly in the visulization, 
-		// Chao use an intersection solid to replace it, this is a bug of HEPREP iwer
+		//By Jixie: The tub is not shown correctly in the HEPREP visulization, 
+		// Chao use an intersection solid to replace it, this is a bug of HEPREP viewer
 		//G4Tubs* BeamTubSolid = new G4Tubs("BeamTubSolid",36.5*mm,36.6*mm,146.5/2.0*mm,startphi,deltaphi);
 		G4Tubs* BeamTubs = new G4Tubs("BeamTubs",36.5*mm,36.6*mm,300.0/2.0*mm,startphi,deltaphi);
 		G4Box* BeamBox = new G4Box("BeamBox",200.0/2.0*mm,200.0/2.0*mm,146.5/2.0*mm);
@@ -1208,6 +1209,15 @@ G4VPhysicalVolume* G2PDetectorConstruction::ConstructG2PScatChamber(G4LogicalVol
 /////////////////////////////////////////////////////////////////////
 G4VPhysicalVolume* G2PDetectorConstruction::ConstructG2PTarget(G4LogicalVolume* motherLogical)
 {
+	G4String SDname;
+
+	G4VSensitiveDetector* targetSD=new HRSDCSD(SDname="targetMaterial");
+	G4VSensitiveDetector* targetNoseSD=new HRSDCSD(SDname="targetNose");
+	G4VSensitiveDetector* targetEndCapSD=new HRSDCSD(SDname="targetEndCap");
+	G4VSensitiveDetector* targetWallSD=new HRSDCSD(SDname="targetWall");
+
+	G4SDManager* SDman = G4SDManager::GetSDMpointer();
+
 	const double inch=2.54*cm;
 	double startphi,deltaphi;
 
@@ -1279,6 +1289,10 @@ G4VPhysicalVolume* G2PDetectorConstruction::ConstructG2PTarget(G4LogicalVolume* 
 	G4LogicalVolume* innerOfNoseLogical = new G4LogicalVolume(innerOfNoseSolid,
 		theCoolant,"innerOfNoseLogical",0,0,0);
 	innerOfNoseLogical->SetVisAttributes(LightPurpleVisAtt);  //light purple
+	
+	SDman->AddNewDetector(targetNoseSD);
+	innerOfNoseLogical->SetSensitiveDetector(targetNoseSD);
+
 	//By Jixie: Add this step limit can help to calculate the integrated BdL
 	double pTargetStepLimit=10;
 	gConfig->GetArgument("TargetStepLimit",pTargetStepLimit);
@@ -1410,6 +1424,10 @@ G4VPhysicalVolume* G2PDetectorConstruction::ConstructG2PTarget(G4LogicalVolume* 
 		G4LogicalVolume* targetWallLogical = new G4LogicalVolume(targetWallSolid,
 			mMaterialManager->PCTFE,"targetWallLogical",0,0,0);
 		targetWallLogical->SetVisAttributes(LightYellowVisAtt);
+	
+		SDman->AddNewDetector(targetWallSD);
+		targetWallLogical->SetSensitiveDetector(targetWallSD);
+
 
 		new G4PVPlacement(pRotX270deg,G4ThreeVector(),
 			targetWallLogical,"targetWallPhys",innerOfNoseLogical,0,0);
@@ -1430,6 +1448,9 @@ G4VPhysicalVolume* G2PDetectorConstruction::ConstructG2PTarget(G4LogicalVolume* 
 		G4LogicalVolume* targetCapLogical = new G4LogicalVolume(targetCapSolid,
 			mMaterialManager->aluminum,"targetCapLogical",0,0,0);
 		targetCapLogical->SetVisAttributes(GrayVisAtt);  //Grey invisable
+
+		SDman->AddNewDetector(targetEndCapSD);
+		targetCapLogical->SetSensitiveDetector(targetEndCapSD);
 
 		//Entrance cap, 
 		new G4PVPlacement(pRotX270deg,
@@ -1477,6 +1498,10 @@ G4VPhysicalVolume* G2PDetectorConstruction::ConstructG2PTarget(G4LogicalVolume* 
 		"targetLogical",0,0,0);
 	targetLogical->SetVisAttributes(VioletVisAtt); 
 	targetLogical->SetUserLimits(uTNStepLimits);
+
+	//By Jixie: to study the radiator, I make the target sensitive
+	SDman->AddNewDetector(targetSD);
+	targetLogical->SetSensitiveDetector(targetSD);
 
 	//since I place the target inside the nose, I will put the center of the nose at the
 	//target position, therefore only the nose should use the target offset
