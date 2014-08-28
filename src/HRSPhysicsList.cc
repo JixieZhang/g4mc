@@ -40,6 +40,7 @@
 
 #include "G4DecayPhysics.hh"
 #include "G4EmStandardPhysics.hh"
+#include "ElectroNuclearPhysics.hh"
 
 HRSPhysicsList::HRSPhysicsList():  G4VModularPhysicsList()
 {
@@ -76,9 +77,13 @@ HRSPhysicsList::HRSPhysicsList():  G4VModularPhysicsList()
 	// EM physics
 	//RegisterPhysics( new G4EmStandardPhysics());
 
+	// Electro-Nuclear Physics
+	RegisterPhysics(  new ElectroNuclearPhysics("Electro-Nuclear"));
+
+
 	// Muon Physics
 	RegisterPhysics(  new HRSMuonPhysics("muon"));
-	
+
 	int verboseLevel=1;
 	//By Jixie: G4EmExtraPhysics is not working in this file, it caused a segmentation fault
 	//if used with my EM physics and general physics

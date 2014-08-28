@@ -75,7 +75,7 @@ void HRSHadronPhysics::ConstructProcess()
 	pManager->AddDiscreteProcess(thePionPlusInelasticProcess);
 
 	G4VProcess* theppMultipleScattering = new G4hMultipleScattering();
-	G4VProcess* theppIonisation        = new G4hIonisation();
+	G4VProcess* theppIonisation         = new G4hIonisation();
 	//
 	pManager->AddProcess(theppIonisation);
 	pManager->AddProcess(theppMultipleScattering);
@@ -85,11 +85,11 @@ void HRSHadronPhysics::ConstructProcess()
 
 	// set ordering for AlongStepDoIt
 	pManager->SetProcessOrdering(theppMultipleScattering, idxAlongStep,1);
-	pManager->SetProcessOrdering(theppIonisation,        idxAlongStep,2);
+	pManager->SetProcessOrdering(theppIonisation,         idxAlongStep,2);
 	//
 	// set ordering for PostStepDoIt
 	pManager->SetProcessOrdering(theppMultipleScattering, idxPostStep,1);
-	pManager->SetProcessOrdering(theppIonisation,        idxPostStep,2);
+	pManager->SetProcessOrdering(theppIonisation,         idxPostStep,2);
 
 
 	// Pi- Physics
@@ -123,11 +123,11 @@ void HRSHadronPhysics::ConstructProcess()
 	//
 	// set ordering for AlongStepDoIt
 	pManager->SetProcessOrdering(thepmMultipleScattering, idxAlongStep,1);
-	pManager->SetProcessOrdering(thepmIonisation,        idxAlongStep,2);
+	pManager->SetProcessOrdering(thepmIonisation,         idxAlongStep,2);
 	//
 	// set ordering for PostStepDoIt
 	pManager->SetProcessOrdering(thepmMultipleScattering, idxPostStep,1);
-	pManager->SetProcessOrdering(thepmIonisation,        idxPostStep,2);
+	pManager->SetProcessOrdering(thepmIonisation,         idxPostStep,2);
 
 
 	// K+ Physics
@@ -149,7 +149,7 @@ void HRSHadronPhysics::ConstructProcess()
 	pManager->AddDiscreteProcess(theKaonPlusInelasticProcess);
 
 	G4VProcess* thekpMultipleScattering = new G4hMultipleScattering();
-	G4VProcess* thekpIonisation        = new G4hIonisation();
+	G4VProcess* thekpIonisation         = new G4hIonisation();
 	//
 	// add processes
 	pManager->AddProcess(thekpIonisation);
@@ -160,11 +160,11 @@ void HRSHadronPhysics::ConstructProcess()
 
 	// set ordering for AlongStepDoIt
 	pManager->SetProcessOrdering(thekpMultipleScattering, idxAlongStep,1);
-	pManager->SetProcessOrdering(thekpIonisation,        idxAlongStep,2);
+	pManager->SetProcessOrdering(thekpIonisation,         idxAlongStep,2);
 	//
 	// set ordering for PostStepDoIt
 	pManager->SetProcessOrdering(thekpMultipleScattering, idxPostStep,1);
-	pManager->SetProcessOrdering(thekpIonisation,        idxPostStep,2);
+	pManager->SetProcessOrdering(thekpIonisation,         idxPostStep,2);
 
 
 	// K- Physics
@@ -187,7 +187,7 @@ void HRSHadronPhysics::ConstructProcess()
 	pManager->AddDiscreteProcess(theKaonMinusInelasticProcess);
 
 	G4VProcess* thekmMultipleScattering = new G4hMultipleScattering();
-	G4VProcess* thekmIonisation        = new G4hIonisation();
+	G4VProcess* thekmIonisation         = new G4hIonisation();
 
 	pManager->AddProcess(thekmIonisation);
 	pManager->AddProcess(thekmMultipleScattering);
@@ -197,11 +197,11 @@ void HRSHadronPhysics::ConstructProcess()
 
 	// set ordering for AlongStepDoIt
 	pManager->SetProcessOrdering(thekmMultipleScattering, idxAlongStep,1);
-	pManager->SetProcessOrdering(thekmIonisation,        idxAlongStep,2);
+	pManager->SetProcessOrdering(thekmIonisation,         idxAlongStep,2);
 	//
 	// set ordering for PostStepDoIt
 	pManager->SetProcessOrdering(thekmMultipleScattering, idxPostStep,1);
-	pManager->SetProcessOrdering(thekmIonisation,        idxPostStep,2);
+	pManager->SetProcessOrdering(thekmIonisation,         idxPostStep,2);
 
 	// Kaon0L Phsics
 	pManager = G4KaonZeroLong::KaonZeroLong()->GetProcessManager();
@@ -261,7 +261,7 @@ void HRSHadronPhysics::ConstructProcess()
 	pManager->AddDiscreteProcess(theProtonInelasticProcess);
 
 	G4VProcess* thepMultipleScattering = new G4hMultipleScattering();
-	G4VProcess* thepIonisation        = new G4hIonisation();
+	G4VProcess* thepIonisation         = new G4hIonisation();
 
 	pManager->AddProcess(thepIonisation);
 	pManager->AddProcess(thepMultipleScattering);
@@ -275,11 +275,11 @@ void HRSHadronPhysics::ConstructProcess()
 
 	// set ordering for AlongStepDoIt
 	pManager->SetProcessOrdering(thepMultipleScattering, idxAlongStep,1);
-	pManager->SetProcessOrdering(thepIonisation,        idxAlongStep,2);
+	pManager->SetProcessOrdering(thepIonisation,         idxAlongStep,2);
 	//
 	// set ordering for PostStepDoIt
 	pManager->SetProcessOrdering(thepMultipleScattering, idxPostStep,1);
-	pManager->SetProcessOrdering(thepIonisation,        idxPostStep,2);
+	pManager->SetProcessOrdering(thepIonisation,         idxPostStep,2);
 
 
 	// anti-proton Physics
@@ -306,18 +306,18 @@ void HRSHadronPhysics::ConstructProcess()
 	pManager->AddRestProcess(theAntiProtonAnnihilation);
 
 	G4VProcess* theapMultipleScattering = new G4hMultipleScattering();
-	G4VProcess* theapIonisation        = new G4hIonisation();
+	G4VProcess* theapIonisation         = new G4hIonisation();
 
 	pManager->AddProcess(theapIonisation);
 	pManager->AddProcess(theapMultipleScattering);
 
 	// set ordering for AlongStepDoIt
 	pManager->SetProcessOrdering(theapMultipleScattering, idxAlongStep,1);
-	pManager->SetProcessOrdering(theapIonisation,        idxAlongStep,2);
+	pManager->SetProcessOrdering(theapIonisation,         idxAlongStep,2);
 	//
 	// set ordering for PostStepDoIt
 	pManager->SetProcessOrdering(theapMultipleScattering, idxPostStep,1);
-	pManager->SetProcessOrdering(theapIonisation,        idxPostStep,2);
+	pManager->SetProcessOrdering(theapIonisation,         idxPostStep,2);
 
 
 	// neutron Physics
@@ -437,18 +437,18 @@ void HRSHadronPhysics::ConstructProcess()
 	pManager->AddDiscreteProcess(theSigmaPlusInelasticProcess);
 
 	G4VProcess* thespMultipleScattering = new G4hMultipleScattering();
-	G4VProcess* thespIonisation        = new G4hIonisation();
+	G4VProcess* thespIonisation         = new G4hIonisation();
 
 	pManager->AddProcess(thespIonisation);
 	pManager->AddProcess(thespMultipleScattering);
 
 	// set ordering for AlongStepDoIt
 	pManager->SetProcessOrdering(thespMultipleScattering, idxAlongStep,1);
-	pManager->SetProcessOrdering(thespIonisation,        idxAlongStep,2);
+	pManager->SetProcessOrdering(thespIonisation,         idxAlongStep,2);
 	//
 	// set ordering for PostStepDoIt
 	pManager->SetProcessOrdering(thespMultipleScattering, idxPostStep,1);
-	pManager->SetProcessOrdering(thespIonisation,        idxPostStep,2);
+	pManager->SetProcessOrdering(thespIonisation,         idxPostStep,2);
 
 
 	// anti-Sigma+ Physics
@@ -471,18 +471,18 @@ void HRSHadronPhysics::ConstructProcess()
 	pManager->AddDiscreteProcess(theAntiSigmaPlusInelasticProcess);
 
 	G4VProcess* theaspMultipleScattering = new G4hMultipleScattering();
-	G4VProcess* theaspIonisation        = new G4hIonisation();
+	G4VProcess* theaspIonisation         = new G4hIonisation();
 
 	pManager->AddProcess(theaspIonisation);
 	pManager->AddProcess(theaspMultipleScattering);
 
 	// set ordering for AlongStepDoIt
 	pManager->SetProcessOrdering(theaspMultipleScattering, idxAlongStep,1);
-	pManager->SetProcessOrdering(theaspIonisation,        idxAlongStep,2);
+	pManager->SetProcessOrdering(theaspIonisation,         idxAlongStep,2);
 	//
 	// set ordering for PostStepDoIt
 	pManager->SetProcessOrdering(theaspMultipleScattering, idxPostStep,1);
-	pManager->SetProcessOrdering(theaspIonisation,        idxPostStep,2);
+	pManager->SetProcessOrdering(theaspIonisation,         idxPostStep,2);
 
 
 	// Sigma- Physics
@@ -505,18 +505,18 @@ void HRSHadronPhysics::ConstructProcess()
 	pManager->AddDiscreteProcess(theSigmaMinusInelasticProcess);
 
 	G4VProcess* thesmMultipleScattering = new G4hMultipleScattering();
-	G4VProcess* thesmIonisation        = new G4hIonisation();
+	G4VProcess* thesmIonisation         = new G4hIonisation();
 
 	pManager->AddProcess(thesmIonisation);
 	pManager->AddProcess(thesmMultipleScattering);
 
 	// set ordering for AlongStepDoIt
 	pManager->SetProcessOrdering(thesmMultipleScattering, idxAlongStep,1);
-	pManager->SetProcessOrdering(thesmIonisation,        idxAlongStep,2);
+	pManager->SetProcessOrdering(thesmIonisation,         idxAlongStep,2);
 	//
 	// set ordering for PostStepDoIt
 	pManager->SetProcessOrdering(thesmMultipleScattering, idxPostStep,1);
-	pManager->SetProcessOrdering(thesmIonisation,        idxPostStep,2);
+	pManager->SetProcessOrdering(thesmIonisation,         idxPostStep,2);
 
 
 	// anti-Sigma- Physics
@@ -539,18 +539,18 @@ void HRSHadronPhysics::ConstructProcess()
 	pManager->AddDiscreteProcess(theAntiSigmaMinusInelasticProcess);
 
 	G4VProcess* theasmMultipleScattering = new G4hMultipleScattering();
-	G4VProcess* theasmIonisation        = new G4hIonisation();
+	G4VProcess* theasmIonisation         = new G4hIonisation();
 
 	pManager->AddProcess(theasmIonisation);
 	pManager->AddProcess(theasmMultipleScattering);
 
 	// set ordering for AlongStepDoIt
 	pManager->SetProcessOrdering(theasmMultipleScattering, idxAlongStep,1);
-	pManager->SetProcessOrdering(theasmIonisation,        idxAlongStep,2);
+	pManager->SetProcessOrdering(theasmIonisation,         idxAlongStep,2);
 	//
 	// set ordering for PostStepDoIt
 	pManager->SetProcessOrdering(theasmMultipleScattering, idxPostStep,1);
-	pManager->SetProcessOrdering(theasmIonisation,        idxPostStep,2);
+	pManager->SetProcessOrdering(theasmIonisation,         idxPostStep,2);
 
 
 	// Xi0 Physics
@@ -620,11 +620,11 @@ void HRSHadronPhysics::ConstructProcess()
 
 	// set ordering for AlongStepDoIt
 	pManager->SetProcessOrdering(thexmMultipleScattering, idxAlongStep,1);
-	pManager->SetProcessOrdering(thexmIonisation,        idxAlongStep,2);
+	pManager->SetProcessOrdering(thexmIonisation,         idxAlongStep,2);
 	//
 	// set ordering for PostStepDoIt
 	pManager->SetProcessOrdering(thexmMultipleScattering, idxPostStep,1);
-	pManager->SetProcessOrdering(thexmIonisation,        idxPostStep,2);
+	pManager->SetProcessOrdering(thexmIonisation,         idxPostStep,2);
 
 
 	// anti-Xi- Physics
@@ -647,18 +647,18 @@ void HRSHadronPhysics::ConstructProcess()
 	pManager->AddDiscreteProcess(theAntiXiMinusInelasticProcess);
 
 	G4VProcess* theaxmMultipleScattering = new G4hMultipleScattering();
-	G4VProcess* theaxmIonisation        = new G4hIonisation();
+	G4VProcess* theaxmIonisation         = new G4hIonisation();
 
 	pManager->AddProcess(theaxmIonisation);
 	pManager->AddProcess(theaxmMultipleScattering);
 
 	// set ordering for AlongStepDoIt
 	pManager->SetProcessOrdering(theaxmMultipleScattering, idxAlongStep,1);
-	pManager->SetProcessOrdering(theaxmIonisation,        idxAlongStep,2);
+	pManager->SetProcessOrdering(theaxmIonisation,         idxAlongStep,2);
 	//
 	// set ordering for PostStepDoIt
 	pManager->SetProcessOrdering(theaxmMultipleScattering, idxPostStep,1);
-	pManager->SetProcessOrdering(theaxmIonisation,        idxPostStep,2);
+	pManager->SetProcessOrdering(theaxmIonisation,         idxPostStep,2);
 
 
 	// Omega- Physics
@@ -681,18 +681,18 @@ void HRSHadronPhysics::ConstructProcess()
 	pManager->AddDiscreteProcess(theOmegaMinusInelasticProcess);
 
 	G4VProcess* theomMultipleScattering = new G4hMultipleScattering();
-	G4VProcess* theomIonisation        = new G4hIonisation();
+	G4VProcess* theomIonisation         = new G4hIonisation();
 
 	pManager->AddProcess(theomIonisation);
 	pManager->AddProcess(theomMultipleScattering);
 
 	// set ordering for AlongStepDoIt
 	pManager->SetProcessOrdering(theomMultipleScattering, idxAlongStep,1);
-	pManager->SetProcessOrdering(theomIonisation,        idxAlongStep,2);
+	pManager->SetProcessOrdering(theomIonisation,         idxAlongStep,2);
 	//
 	// set ordering for PostStepDoIt
 	pManager->SetProcessOrdering(theomMultipleScattering, idxPostStep,1);
-	pManager->SetProcessOrdering(theomIonisation,        idxPostStep,2);
+	pManager->SetProcessOrdering(theomIonisation,         idxPostStep,2);
 
 
 	// anti-Omega- Physics
@@ -715,17 +715,17 @@ void HRSHadronPhysics::ConstructProcess()
 	pManager->AddDiscreteProcess(theAntiOmegaMinusInelasticProcess);
 
 	G4VProcess* theaomMultipleScattering = new G4hMultipleScattering();
-	G4VProcess* theaomIonisation        = new G4hIonisation();
+	G4VProcess* theaomIonisation         = new G4hIonisation();
 
 	pManager->AddProcess(theaomIonisation);
 	pManager->AddProcess(theaomMultipleScattering);
 
 	// set ordering for AlongStepDoIt
 	pManager->SetProcessOrdering(theaomMultipleScattering, idxAlongStep,1);
-	pManager->SetProcessOrdering(theaomIonisation,        idxAlongStep,2);
+	pManager->SetProcessOrdering(theaomIonisation,         idxAlongStep,2);
 	//
 	// set ordering for PostStepDoIt
 	pManager->SetProcessOrdering(theaomMultipleScattering, idxPostStep,1);
-	pManager->SetProcessOrdering(theaomIonisation,        idxPostStep,2);
+	pManager->SetProcessOrdering(theaomIonisation,         idxPostStep,2);
 
 }

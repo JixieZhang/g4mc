@@ -23,67 +23,46 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
+// $Id: ElectroNuclearPhysics.hh,v 1.4 2010/06/03 10:42:44 gunter Exp $
+// GEANT4 tag $Name: geant4-09-04-beta-01 $
 //
-// $Id: PhysicsList.hh, v 1.0, 2010/12/26  HRS Exp $
-// GEANT4 tag $Name: geant4-09-04 $
+//---------------------------------------------------------------------------
 //
-/////////////////////////////////////////////////////////////////////////
+// ClassName:   ElectroNuclearPhysics
+//
+// Author: 2014 Jixie Zhang
+//
+// Call G4ElectroNuclearBuilder to build electro- or photo- nuclear physics
+//----------------------------------------------------------------------------
+//
+#ifndef ElectroNuclearPhysics_h
+#define ElectroNuclearPhysics_h 1
 
-
-#ifndef PhysicsList_h
-#define PhysicsList_h 1
-
-#include "G4VModularPhysicsList.hh"
 #include "globals.hh"
+#include "G4ios.hh"
 
-class G4VPhysicsConstructor;
-class PhysicsListMessenger;
+#include "G4VPhysicsConstructor.hh"
+#include "G4ElectroNuclearBuilder.hh"
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-class PhysicsList: public G4VModularPhysicsList
+class ElectroNuclearPhysics : public G4VPhysicsConstructor
 {
-public:
+  public: 
+    ElectroNuclearPhysics(G4int verbose = 1);
+    ElectroNuclearPhysics(const G4String& name, int verbose = 1);
+    virtual ~ElectroNuclearPhysics();
 
-  PhysicsList(G4String phys="");
-  virtual ~PhysicsList();
+  public: 
+    virtual void ConstructParticle();
+    virtual void ConstructProcess();
 
-  void ConstructParticle();
+
+  private:
+    void CreateModels();
+
+    G4ElectroNuclearBuilder * theElectroNuclearBuilder;
     
-  void SetCuts();
-  void SetCutForGamma(G4double);
-  void SetCutForElectron(G4double);
-  void SetCutForPositron(G4double);
-  void SetCutForProton(G4double);
-        
-  void AddPhysicsList(const G4String& name);
-  void ConstructProcess();
-  void List();
-  
-private:
-
-  void SetBuilderList0(G4bool flagHP = false);
-  void SetBuilderList1(G4bool flagHP = false);
-  void SetBuilderList2(G4bool addStopping = false);
-  void SetBuilderList3();
-  void SetBuilderList4();
-
-  G4double cutForGamma;
-  G4double cutForElectron;
-  G4double cutForPositron;
-  G4double cutForProton;
-
-  G4VPhysicsConstructor*  emPhysicsList;
-  G4VPhysicsConstructor*  particleList;
-  G4VPhysicsConstructor*  electroNuclear;
-
-  std::vector<G4VPhysicsConstructor*>  hadronPhys;
-    
-  PhysicsListMessenger* pMessenger;
-  G4bool dump;
 };
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 #endif
 

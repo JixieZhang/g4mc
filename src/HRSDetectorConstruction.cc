@@ -49,6 +49,7 @@
 #include "BigBiteDetectorConstruction.hh"
 #include "SBSDetectorConstruction.hh"
 #include "G2PDetectorConstruction.hh"
+#include "BoNuSDetectorConstruction.hh"
 #include "RTPCDetectorConstruction.hh"
 #include "CREXDetectorConstruction.hh"
 #include "HMSDetectorConstruction.hh"
@@ -449,10 +450,17 @@ G4VPhysicalVolume* HRSDetectorConstruction::Construct()
 	/////////////////////////
 	//RTPC geometries
 	/////////////////////////
-	if (mSetupRTPCGeometry) 
+	if (mSetupRTPCGeometry==1) 
 	{
-		RTPCDetectorConstruction* theRTPC = new RTPCDetectorConstruction(magneticLogical); 
-		theRTPC->Construct();
+		BoNuSDetectorConstruction* theBoNuS6 = new BoNuSDetectorConstruction(magneticLogical); 
+		theBoNuS6->Construct();
+		//update the parameters
+		this->GetConfig(); 
+	}
+	if (mSetupRTPCGeometry==2) 
+	{
+		RTPCDetectorConstruction* theBoNuS12 = new RTPCDetectorConstruction(magneticLogical); 
+		theBoNuS12->Construct();
 		//update the parameters
 		this->GetConfig(); 
 	}

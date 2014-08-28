@@ -31,6 +31,24 @@ waste a lot of CPU cycles to propagate some unwanted particles. Need to find out
 a way to optimize the speed.
 
 ---------------------------------------------------------------------------
+V1.06
+1.  Added New geometry class for RTPC12. Keep original RTPC6. One can choose it 
+	using parameter "SetupRTPCGeometry" in Detector ini
+	#Build RTPC detector with 2 options: 
+	# 1 BoNuS6(Detector_BoNuS.ini),  2 BoNuS12(Detector_RTPC.ini)
+	#This is a NEW RTPC setup, you can config it to 100% support BoNuS RTPC
+	#or config it in the way you want in Detector_RTPC.ini
+	#RTPC need a target field, which is handled by class BField_Helm. Use command
+	#line argument -targetfield to provide your filed
+	
+2.  Added CLAS12 solenoid field. change RTPC12 endcap thickness from 0.1 mm to 
+	0.254 mm (10 mil).Add Beam exit window, which is 10 mil berllyium. 
+
+3.  Added electro-nuclear and photo-nuclear physics models.
+
+	
+
+---------------------------------------------------------------------------
 V1.05
 1. Added RTPC Geometry. Do not add reconstruction part yet. Added RTPC target field maps.
    I still use BField_Helm to read and interpolate this map, since it is also a RZ field.

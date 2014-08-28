@@ -81,6 +81,9 @@
 #include "G4Positron.hh"
 #include "G4Proton.hh"
 
+#include "ElectroNuclearPhysics.hh"
+
+
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo.....
 
 PhysicsList::PhysicsList(G4String phys) : G4VModularPhysicsList()
@@ -100,6 +103,10 @@ PhysicsList::PhysicsList(G4String phys) : G4VModularPhysicsList()
 
   // EM physics
   emPhysicsList = new G4EmStandardPhysics();
+
+  // Electro-Nuclear or Photo-Nuclear physics
+  electroNuclear = new ElectroNuclearPhysics("Electro-Nuclear");
+
   if(phys!="") AddPhysicsList(phys); 
 }
 
@@ -110,6 +117,7 @@ PhysicsList::~PhysicsList()
   delete pMessenger;
   delete particleList;
   delete emPhysicsList;
+  delete electroNuclear;
   for(size_t i=0; i<hadronPhys.size(); i++) {
     delete hadronPhys[i];
   }
@@ -129,6 +137,8 @@ void PhysicsList::ConstructProcess()
   AddTransportation();
   emPhysicsList->ConstructProcess();
   particleList->ConstructProcess();
+  electroNuclear->ConstructProcess();
+
   for(size_t i=0; i<hadronPhys.size(); i++) {
     hadronPhys[i]->ConstructProcess();
   }

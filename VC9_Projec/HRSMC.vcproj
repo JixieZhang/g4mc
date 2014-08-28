@@ -230,10 +230,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\HRSEMPhysics.cc"
-				>
-			</File>
-			<File
 				RelativePath="..\src\HRSEventAction.cc"
 				>
 			</File>
@@ -636,6 +632,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Detector_BoNuS.ini"
+				>
+			</File>
+			<File
 				RelativePath=".\Detector_CREX.ini"
 				>
 			</File>
@@ -716,6 +716,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\src\BoNuSDetectorConstruction.cc"
+				>
+			</File>
+			<File
 				RelativePath="..\src\CREXDetectorConstruction.cc"
 				>
 			</File>
@@ -791,6 +795,14 @@
 		<Filter
 			Name="Physics"
 			>
+			<File
+				RelativePath="..\src\ElectroNuclearPhysics.cc"
+				>
+			</File>
+			<File
+				RelativePath="..\src\HRSEMPhysics.cc"
+				>
+			</File>
 			<File
 				RelativePath="..\src\HRSGeneralPhysics.cc"
 				>

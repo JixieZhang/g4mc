@@ -1,13 +1,13 @@
 // ********************************************************************
 //
-// $Id: RTPCDetectorConstruction.hh,v 1.00, 2013/10/06 HRS Exp $
+// $Id: BoNuSDetectorConstruction.hh,v 1.00, 2013/10/06 HRS Exp $
 // --------------------------------------------------------------
 //
 //Construct RTPC detector
 //This is not an independent class, it has to be invoke by class HRSDetectorConstruction
 
-#ifndef RTPCDetectorConstruction_H_
-#define RTPCDetectorConstruction_H_ 1
+#ifndef BoNuSDetectorConstruction_H_
+#define BoNuSDetectorConstruction_H_ 1
 
 #include "globals.hh"	//for units and g4types and g4io
 #include "HRSVisAttribute.hh"
@@ -17,11 +17,11 @@ class G4LogicalVolume;
 class G4VPhysicalVolume;
 class G4Material;
 
-class RTPCDetectorConstruction : public G4VUserDetectorConstruction, public HRSVisAttribute
+class BoNuSDetectorConstruction : public G4VUserDetectorConstruction, public HRSVisAttribute
 {
 public:
-	RTPCDetectorConstruction(G4LogicalVolume *mother=0);
-	~RTPCDetectorConstruction();
+	BoNuSDetectorConstruction(G4LogicalVolume *mother=0);
+	~BoNuSDetectorConstruction();
 
 	// the function which builds everything
 	G4VPhysicalVolume* Construct();
@@ -50,7 +50,6 @@ private:
 	G4Material* copper;
 	G4Material* silicon;
 	G4Material* stainlesssteel;
-	G4Material* beryllium;
 
 	G4Material* H2TgGas;
 	G4Material* D2TgGas;
@@ -95,5 +94,5 @@ private:
 	G4double mLGEMV,mRGEMV,mLCathodeV,mRCathodeV;
 };
 
-#endif  //RTPCDetectorConstruction_H_
+#endif  //BoNuSDetectorConstruction_H_
 
