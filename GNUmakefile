@@ -19,7 +19,7 @@ endif
 all: HRSLIB XSLIB lib FORLIB bin 
 
 #include the libHRSTransport.a
-HRSLIBDIR := obj.$(shell arch)#put this # here to avoid space
+HRSLIBDIR := obj.$(shell uname -m)#put this # here to avoid space
 EXTRALIBS += -l$(G4TARGET)_FOR -LHRSTransport/$(HRSLIBDIR) -lHRSTransport -LXSModel/$(HRSLIBDIR) -lXSModel 
 
 #Need to link against libgfortran if fortran code used
