@@ -698,7 +698,7 @@ void HRSEventAction::ProcessSDHits(G4HCofThisEvent* HCE)
 
 void HRSEventAction::EndOfEventAction(const G4Event* evt)
 {
-	if(!gHRSTree->iNoDetectorResponse)
+	if(gHRSTree->iNoDetectorResponse==0 || gHRSTree->iNoDetectorResponse==99)
 	{
 		UsageManager* pConfig=UsageManager::GetUsageManager(); 
 

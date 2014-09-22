@@ -46,7 +46,13 @@ V1.06
 
 3.  Added electro-nuclear and photo-nuclear physics models.
 
-	
+4.  Added by Jixie @ 20140902 to control filling only detector response tree:
+	if iNoDetectorResponse==99, I will not fill the primary trees, but only fill detector tree
+	this will reduce the output file size very much so one can simulate many many event 
+		
+5.  Changed the maximum root tree file size to 9.0E10, about 87.9GB. 
+
+
 
 ---------------------------------------------------------------------------
 V1.05

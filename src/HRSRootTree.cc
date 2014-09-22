@@ -635,41 +635,46 @@ void HRSRootTree::Initilize()
 		config->Branch("RatioHe2DME",&mRatioHe2DME,"RatioHe2DME/D");
 
 		/////////////////////////////////////////////////////
-		if(!iNoDetectorResponse)
+		if(iNoDetectorResponse==0 || iNoDetectorResponse==99)
 		{
 			detector=new TTree("D","detector response tree");
 
 			detector->Branch("Index",&iRootEvtID,"Index/I");	
 
-			detector->Branch("TA1_N",&TA1_N,"TA1_N/I");
-			detector->Branch("TA1_Pid",TA1_Pid,"TA1_Pid[TA1_N]/I");
-			detector->Branch("TA1_Tid",TA1_Tid,"TA1_Tid[TA1_N]/I");
-			detector->Branch("TA1_ParentTid",TA1_ParentTid,"TA1_ParentTid[TA1_N]/I");
-			detector->Branch("TA1_T",TA1_T,"TA1_T[TA1_N]/D");
-			detector->Branch("TA1_X",TA1_X,"TA1_X[TA1_N]/D");
-			detector->Branch("TA1_Y",TA1_Y,"TA1_Y[TA1_N]/D");
-			detector->Branch("TA1_Z",TA1_Z,"TA1_Z[TA1_N]/D");
-			detector->Branch("TA1_Edep",TA1_Edep,"TA1_Edep[TA1_N]/D");;
-			detector->Branch("TA1_NonIonEdep",TA1_NonIonEdep,"TA1_NonIonEdep[TA1_N]/D");
-			detector->Branch("TA1_P",TA1_P,"TA1_P[TA1_N]/D");
-			detector->Branch("TA1_Theta",TA1_Theta,"TA1_Theta[TA1_N]/D");
-			detector->Branch("TA1_Phi",TA1_Phi,"TA1_Phi[TA1_N]/D");
-			detector->Branch("TA1_Pout",TA1_Pout,"TA1_Pout[TA1_N]/D");
+			if(mSetupG2PGeometry)
+			{
+				//only G2P setup the third arm, do not store this into the root tree
+				//if it is not G2P
+				detector->Branch("TA1_N",&TA1_N,"TA1_N/I");
+				detector->Branch("TA1_Pid",TA1_Pid,"TA1_Pid[TA1_N]/I");
+				detector->Branch("TA1_Tid",TA1_Tid,"TA1_Tid[TA1_N]/I");
+				detector->Branch("TA1_ParentTid",TA1_ParentTid,"TA1_ParentTid[TA1_N]/I");
+				detector->Branch("TA1_T",TA1_T,"TA1_T[TA1_N]/D");
+				detector->Branch("TA1_X",TA1_X,"TA1_X[TA1_N]/D");
+				detector->Branch("TA1_Y",TA1_Y,"TA1_Y[TA1_N]/D");
+				detector->Branch("TA1_Z",TA1_Z,"TA1_Z[TA1_N]/D");
+				detector->Branch("TA1_Edep",TA1_Edep,"TA1_Edep[TA1_N]/D");;
+				detector->Branch("TA1_NonIonEdep",TA1_NonIonEdep,"TA1_NonIonEdep[TA1_N]/D");
+				detector->Branch("TA1_P",TA1_P,"TA1_P[TA1_N]/D");
+				detector->Branch("TA1_Theta",TA1_Theta,"TA1_Theta[TA1_N]/D");
+				detector->Branch("TA1_Phi",TA1_Phi,"TA1_Phi[TA1_N]/D");
+				detector->Branch("TA1_Pout",TA1_Pout,"TA1_Pout[TA1_N]/D");
 
-			detector->Branch("TA2_N",&TA2_N,"TA2_N/I");
-			detector->Branch("TA2_Pid",TA2_Pid,"TA2_Pid[TA2_N]/I");
-			detector->Branch("TA2_Tid",TA2_Tid,"TA2_Tid[TA2_N]/I");
-			detector->Branch("TA2_ParentTid",TA2_ParentTid,"TA2_ParentTid[TA2_N]/I");
-			detector->Branch("TA2_T",TA2_T,"TA2_T[TA2_N]/D");
-			detector->Branch("TA2_X",TA2_X,"TA2_X[TA2_N]/D");
-			detector->Branch("TA2_Y",TA2_Y,"TA2_Y[TA2_N]/D");
-			detector->Branch("TA2_Z",TA2_Z,"TA2_Z[TA2_N]/D");
-			detector->Branch("TA2_Edep",TA2_Edep,"TA2_Edep[TA2_N]/D");
-			detector->Branch("TA2_NonIonEdep",TA2_NonIonEdep,"TA2_NonIonEdep[TA2_N]/D");		
-			detector->Branch("TA2_P",TA2_P,"TA2_P[TA2_N]/D");
-			detector->Branch("TA2_Theta",TA2_Theta,"TA2_Theta[TA2_N]/D");
-			detector->Branch("TA2_Phi",TA2_Phi,"TA2_Phi[TA2_N]/D");
-			detector->Branch("TA2_Pout",TA2_Pout,"TA2_Pout[TA2_N]/D");
+				detector->Branch("TA2_N",&TA2_N,"TA2_N/I");
+				detector->Branch("TA2_Pid",TA2_Pid,"TA2_Pid[TA2_N]/I");
+				detector->Branch("TA2_Tid",TA2_Tid,"TA2_Tid[TA2_N]/I");
+				detector->Branch("TA2_ParentTid",TA2_ParentTid,"TA2_ParentTid[TA2_N]/I");
+				detector->Branch("TA2_T",TA2_T,"TA2_T[TA2_N]/D");
+				detector->Branch("TA2_X",TA2_X,"TA2_X[TA2_N]/D");
+				detector->Branch("TA2_Y",TA2_Y,"TA2_Y[TA2_N]/D");
+				detector->Branch("TA2_Z",TA2_Z,"TA2_Z[TA2_N]/D");
+				detector->Branch("TA2_Edep",TA2_Edep,"TA2_Edep[TA2_N]/D");
+				detector->Branch("TA2_NonIonEdep",TA2_NonIonEdep,"TA2_NonIonEdep[TA2_N]/D");		
+				detector->Branch("TA2_P",TA2_P,"TA2_P[TA2_N]/D");
+				detector->Branch("TA2_Theta",TA2_Theta,"TA2_Theta[TA2_N]/D");
+				detector->Branch("TA2_Phi",TA2_Phi,"TA2_Phi[TA2_N]/D");
+				detector->Branch("TA2_Pout",TA2_Pout,"TA2_Pout[TA2_N]/D");
+			}
 
 			detector->Branch("SD_N",&SD_N,"SD_N/I");
 			detector->Branch("SD_Id",SD_Id,"SD_Id[SD_N]/I");
@@ -709,6 +714,9 @@ void HRSRootTree::Initilize()
 		}
 
 		//create branch with standard tracks, no reconstruction variables included yet 
+		//Added by Jixie @ 20140902:
+		//if iNoDetectorResponse=99, I will not fill the primary trees, but only fill detector tree
+		//this will reduce the output file size very much so one can simulate many many event 
 		char treename[100],treetitle[100];
 		for(int j=0;j<iBookTrees;j++)
 		{
@@ -718,7 +726,7 @@ void HRSRootTree::Initilize()
 				sprintf(treetitle,"track %d",j+1);
 				tree[j]=new TTree(treename,treetitle);
 			}
-			if(!mGenHistoOnly)
+			if(!mGenHistoOnly && iNoDetectorResponse!=99)
 			{
 				tree[j]->Branch("Index",&iRootEvtID,"Index/I");		
 
@@ -837,7 +845,7 @@ void HRSRootTree::Initilize()
 				tree[j]->Branch("Helicity",&Helicity,"Helicity/I");
 				tree[j]->Branch("Pol",&(track[j]->Pol),"Pol/D");	
 
-				tree[j]->SetMaxTreeSize((Long64_t)(9.0E+09));
+				tree[j]->SetMaxTreeSize((Long64_t)(9.0E+10));
 
 			}
 		}
@@ -960,7 +968,7 @@ void HRSRootTree::FillTree()
 			//Fill SD table, the value have been filled in HRSEventAction
 
 			config->Branch("SDNum",&mSDNum,"SDNum/I");
-			//I try to build the SD table in this way but it kep only the 1st str
+			//I try to build the SD table in this way but it keeps only the 1st str
 			//config->Branch("SDName",&mSDName,"SDName[SDNum][100]/C");
 			//so I build it in this way:
 			char tmpName[100];
@@ -975,7 +983,7 @@ void HRSRootTree::FillTree()
 				//just for information
 				//the next 2 lines do not work, due to the fact that 
 				//virtual TBranch* TTree::Branch(const char*, void*, const char*, Int_t)
-				// only take const char* as input, not an arry
+				// only take const char* as input, not an array
 				//config->Branch(tmpName,mSDName[ihc],tmpTitle);
 				//config->Branch(Form("SDName_%d",ihc),&mSDName[ihc][0],Form("SDName_%d[100]/C",ihc));
 
@@ -1130,7 +1138,7 @@ void HRSRootTree::Reset()//reset the variables
 	}
 	PartNum=0;	  //primary particle number
 
-	if(!iNoDetectorResponse)
+	if(iNoDetectorResponse==0 || iNoDetectorResponse==99)
 	{
 		for(int i=0;i<TA1_N;i++)
 		{
@@ -2946,7 +2954,7 @@ void HRSRootTree::DoRootTree()
 	} 
 
 	//fill the detector response tree
-	if(!iNoDetectorResponse )
+	if(iNoDetectorResponse==0 || iNoDetectorResponse==99)
 	{
 		detector->Fill();
 	}
