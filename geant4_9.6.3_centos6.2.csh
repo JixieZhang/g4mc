@@ -2,7 +2,7 @@
 #use -m64 sompiler option for all code
 setenv COMPILER_BIT 64
 setenv g2psoft /work/halla/g2p/disk1/centos62
-setenv g4soft /site/12gev_phys/production/Linux_CentOS6.2-x86_64-gcc4.4.6
+setenv g4soft ${g2psoft}/geant
 ######################################################
 ###!set up cernlib
 
@@ -24,27 +24,27 @@ setenv PATH ${ROOTSYS}/bin:${PATH}
 setenv LD_LIBRARY_PATH ${ROOTSYS}/lib:${LD_LIBRARY_PATH}
 ######################################################
 ###!set up XERCES
-setenv XERCESCROOT ${g4soft}/xercesc/3.1.1
+setenv XERCESCROOT ${g2psoft}/xercesc
 setenv PATH ${XERCESCROOT}/bin:${PATH}
 setenv LD_LIBRARY_PATH ${XERCESCROOT}/lib:${LD_LIBRARY_PATH}
 ######################################################
 ###!set up CLHEP
 
-setenv  CLHEP_BASE_DIR     ${g4soft}/clhep/2.1.3.1
-setenv  CLHEP_INCLUDE_DIR  ${CLHEP_BASE_DIR}/include
-setenv  CLHEP_LIB_DIR      ${CLHEP_BASE_DIR}/lib
-setenv  CLHEP_LIB          CLHEP
-
+#setenv  CLHEP_BASE_DIR     ${g4soft}/clhep/2.1.3.1
+#setenv  CLHEP_INCLUDE_DIR  ${CLHEP_BASE_DIR}/include
+#setenv  CLHEP_LIB_DIR      ${CLHEP_BASE_DIR}/lib
+#setenv  CLHEP_LIB          CLHEP
+#setenv  LD_LIBRARY_PATH ${CLHEP_LIB_DIR}:${LD_LIBRARY_PATH}
 ######################################################
 ###!set up Geant4
 
-setenv  G4VERSION  9.6.2
+setenv  G4VERSION  9.6.3
 setenv  G4SYSTEM   Linux-g++
-setenv  G4INSTALL  ${g4soft}/geant4/4.9.6.p02
-setenv  G4INCLUDE  ${G4INSTALL}/include/Geant4
-setenv  G4LIB      ${G4INSTALL}/lib64/Geant4-${G4VERSION}
+setenv  G4INSTALL  ${g4soft}/share/Geant4-${G4VERSION}/geant4make
+setenv  G4INCLUDE  ${g4soft}/include/Geant4
+setenv  G4LIB      ${g4soft}/lib64/Geant4-${G4VERSION}
 
-setenv G4DATADIR /u/site/12gev_phys/noarch/Geant4-9.6.2/data
+setenv G4DATADIR  ${g4soft}/share/Geant4-${G4VERSION}
 setenv G4NEUTRONHPDATA   ${G4DATADIR}/data/G4NDL4.2
 setenv G4LEDATA          ${G4DATADIR}/data/G4EMLOW6.32    
 setenv G4LEVELGAMMADATA  ${G4DATADIR}/data/PhotonEvaporation2.3
@@ -93,15 +93,15 @@ setenv G4LIB_BUILD_GDML  1
 #setenv G4LIB_BUILD_STATIC  1
 
 #use the default qt of centos6.2
-#setenv QTDIR /usr
-#setenv QTMOC ${QTDIR}/bin/moc-qt4
-
-#setenv QTDIR ${g4soft}/qt/4.8.5
 setenv QTDIR /usr
-setenv QTMOC ${QTDIR}/bin/moc
+setenv QTLIBPATH ${QTDIR}/lib64
+setenv QTMOC ${QTDIR}/bin/moc-qt4
+#setenv QTDIR ${g4soft}/qt/4.8.5
+#setenv QTLIBPATH ${QTDIR}/lib
+#setenv QTMOC ${QTDIR}/bin/moc
 setenv QTFLAGS "-I${QTDIR}/include -I${QTDIR}/include/QtCore -I${QTDIR}/include/QtGui  -I${QTDIR}/include/QtOpenGL"
-setenv QTLIBS "-L${QTDIR}/lib64 -lQtCore_debug -lQtGui"
-setenv GLQTLIBS "-L${QTDIR}/lib64 -lQtCore_debug -lQtGui -lQtOpenGL"
+setenv QTLIBS "-L${QTLIBPATH} -lQtCore_debug -lQtGui -lQtXml"
+setenv GLQTLIBS "-L${QTLIBPATH} -lQtCore_debug -lQtGui -lQtOpenGL -lQtXml"
 
 setenv  G4WORKDIR  /u/scratch/$USER/g4work_${G4VERSION}_${OS_NAME}
 if !(-e  $G4WORKDIR) mkdir -p $G4WORKDIR
@@ -116,6 +116,6 @@ setenv G4BIN $HOME/.g4work_${G4VERSION}_${OS_NAME}/bin
 #SET G4TMP so one can recompile the lib with minimum rebuild
 setenv G4TMP ${G4WORKDIR}/tmp
 
-setenv PATH ${G4BIN}/${G4SYSTEM}:${PATH}
-setenv LD_LIBRARY_PATH ${CLHEP_LIB_DIR}:${QTDIR}/lib64:${G4LIB}/${G4SYSTEM}:${LD_LIBRARY_PATH}
+setenv PATH ${G4BIN}/${G4SYSTEM}:${g4soft}/bin:${PATH}
+setenv LD_LIBRARY_PATH ${QTLIBPATH}:${G4LIB}/${G4SYSTEM}:${LD_LIBRARY_PATH}
 

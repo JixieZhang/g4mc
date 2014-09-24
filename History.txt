@@ -52,7 +52,8 @@ V1.06
 		
 5.  Changed the maximum root tree file size to 9.0E10, about 87.9GB. 
 
-
+6.  Fixed the helium collant tube in Hall-B coil geometry to make it pointing vertical up.
+    In the past it is pointing vertical down. This does  not affect physics at all. 
 
 ---------------------------------------------------------------------------
 V1.05

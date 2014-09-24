@@ -403,7 +403,7 @@ G4VPhysicalVolume* G2PDetectorConstruction::ConstructG2PScatChamber(G4LogicalVol
 		0,pScatChamberContainerRout+1*mm,17.25*inch/2.0,0.,360.*deg);
 	G4SubtractionSolid* scatChamberContainerSolid=new G4SubtractionSolid("scatChamberContainerSolid",
 		scatChamberContainerExtendedSolid,scatChamberContainerExtraSolid,
-		0,G4ThreeVector(0,0,-mScatChamberL/2-17.25*inch/2.0));
+		0,G4ThreeVector(0,0,-mScatChamberL/2-17.25*inch/2.0-4.5*inch-10.1*mm));
 
 	G4LogicalVolume* scatChamberContainerLogical = new G4LogicalVolume(scatChamberContainerSolid,
 		mMaterialManager->heliumGas,"scatChamberContainerLogical",0,0,0);
@@ -443,6 +443,18 @@ G4VPhysicalVolume* G2PDetectorConstruction::ConstructG2PScatChamber(G4LogicalVol
 	//If mSetupG2PScatChamber==1, setup the body only, 
 	//If mSetupG2PScatChamber==2, setup the body plus top flange and bottom flange, this
 	//will make the program slower
+	//The bottom flange is like the following
+	//                       II                         II
+	//                       II                         II
+	//                       II                         II     __start here: -mScatChamberL/2
+	//                      /II                         II\                                      0
+	//                     /III                         III\                 -mScatChamberL/2-1.0"
+	//                     IIII                         IIII                
+	//                     IIII                         IIII               
+	//                     IIII                         IIII                 -mScatChamberL/2-3.25"
+	//                     IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII
+	//                     IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII     __end here: -mScatChamberL/2-4.5"
+	//the top flange is similar in shape but upside down
 	if(mSetupG2PScatChamber==1)
 	{
 		scatChamberWholeSolid = new G4Tubs("scatChamberWholeTubs",
@@ -934,7 +946,7 @@ G4VPhysicalVolume* G2PDetectorConstruction::ConstructG2PScatChamber(G4LogicalVol
 		zPlaneTubs[0]=-24.0*mm;zPlaneTubs[1]=24.0*mm;
 		G4Polycone* OuterCoilSolid = new G4Polycone("OuterCoilSolid",startphi,deltaphi,
 			kNTubs,zPlaneTubs,rInnerTubs,rOuterTubs);
-		//By Jixie: The tub is not shown correctly in the visulization, chao use a polycone solid instead        
+		//By Jixie: The tub is not shown correctly in the visulization, Chao use a polycone solid instead        
 		//G4Tubs* OuterCoilSolid = new G4Tubs("OuterCoilSolid",165.5*mm,222.5*mm,48.0*mm/2.0,startphi,deltaphi);
 		G4LogicalVolume* OuterCoilLogical = new G4LogicalVolume(OuterCoilSolid,
 			mMaterialManager->copper,"OuterCoilLogical",0,0,0);
@@ -1027,7 +1039,7 @@ G4VPhysicalVolume* G2PDetectorConstruction::ConstructG2PScatChamber(G4LogicalVol
 		G4Tubs* FridgeTubsOuter = new G4Tubs("FridgeTubsOuter",0.0*mm,22.25*mm,500.0/2.0*mm,
 			startphi,deltaphi);
 		G4RotationMatrix* pRotTub = new G4RotationMatrix();
-		pRotTub->rotateY(25.*deg);
+		pRotTub->rotateY(-25.*deg);
 		G4Tubs* HeBaseFlgTubs1 = new G4Tubs("HeBaseFlgTubs1",38.1*mm,250.0*mm,19.5/2.0*mm,
 			startphi,deltaphi);
 		G4Tubs* HeBaseFlgTubs2 = new G4Tubs("HeBaseFlgTubs2",244.5*mm,250.0*mm,99.4/2.0*mm,
@@ -1036,7 +1048,7 @@ G4VPhysicalVolume* G2PDetectorConstruction::ConstructG2PScatChamber(G4LogicalVol
 			HeBaseFlgTubs1,HeBaseFlgTubs2,0,G4ThreeVector(0,0,-39.95*mm));
 		G4SubtractionSolid* HeBaseFlgSolid = new G4SubtractionSolid("HeBaseFlgSolid",
 			HeBaseFlgU1,FridgeTubsOuter,
-			pRotTub,G4ThreeVector(-(192.15+37.0/sin(25.0*deg))*tan(25.0*deg)*mm,0,0));
+			pRotTub,G4ThreeVector((192.15+37.0/sin(25.0*deg))*tan(25.0*deg)*mm,0,0));
 		G4LogicalVolume *HeBaseFlgLogical = new G4LogicalVolume(HeBaseFlgSolid,
 			mMaterialManager->stainlesssteel,"HeBaseFlgLogical",0,0,0);
 		HeBaseFlgLogical->SetVisAttributes(DarkBlueVisAtt);
@@ -1048,7 +1060,7 @@ G4VPhysicalVolume* G2PDetectorConstruction::ConstructG2PScatChamber(G4LogicalVol
 			HeCanBulkheadTubs1,HeCanBulkheadTubs2,0,G4ThreeVector(0,0,-7.45*mm));
 		G4SubtractionSolid* HeCBSolid = new G4SubtractionSolid("HeCBSolid",
 			HeCanBulkheadU1,FridgeTubsOuter,
-			pRotTub,G4ThreeVector(-(60.15+37.0/sin(25.0*deg))*tan(25.0*deg)*mm,0,0));
+			pRotTub,G4ThreeVector((60.15+37.0/sin(25.0*deg))*tan(25.0*deg)*mm,0,0));
 		G4LogicalVolume* HeCBLogical = new G4LogicalVolume(HeCBSolid,
 			mMaterialManager->stainlesssteel,"HeCBLogical",0,0,0);
 		HeCBLogical->SetVisAttributes(DarkBlueVisAtt);
@@ -1075,7 +1087,7 @@ G4VPhysicalVolume* G2PDetectorConstruction::ConstructG2PScatChamber(G4LogicalVol
 		new G4PVPlacement(pRotUCoil,G4ThreeVector(0,128.65*mm,0),
 			BeamTubLogical,"RightSurfPhys",innerOfChamberLogical,true,2,0);
 		new G4PVPlacement(pRotUCoil,
-			G4ThreeVector(0,128.65*mm,-(128.65+37.0/sin(25.0*deg))*tan(25.0*deg)*mm),
+			G4ThreeVector(0,128.65*mm,(128.65+37.0/sin(25.0*deg))*tan(25.0*deg)*mm),
 			FridgeTubLogical,"RightSurfPhys",innerOfChamberLogical,true,3,0);
 
 		//Left Side LHe Container
@@ -1104,7 +1116,7 @@ G4VPhysicalVolume* G2PDetectorConstruction::ConstructG2PScatChamber(G4LogicalVol
 		G4Polycone* RightHePolycone = new G4Polycone("RightHePcon",startphi,deltaphi,
 			kNPlane_RightHe,zPlane_RightHe,rInner_RightHe,rOuter_RightHe);
 		G4SubtractionSolid* RightHeS1 = new G4SubtractionSolid("RightHeS1",
-			RightHePolycone,FridgeTubsOuter,pRotTub,G4ThreeVector(-37.0/cos(25.0*deg)*mm,0,0));
+			RightHePolycone,FridgeTubsOuter,pRotTub,G4ThreeVector(37.0/cos(25.0*deg)*mm,0,0));
 		G4SubtractionSolid* RightHeS2 = new G4SubtractionSolid("RightHeS2",
 			RightHeS1,LeftHeSPolycone,0,G4ThreeVector(0,0,123.0*mm));
 		G4Tubs* RightHeTubs = new G4Tubs("RightHeTubs",222.5*mm,244.5*mm,(6.5+1.0)/2.0*mm,

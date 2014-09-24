@@ -15,11 +15,6 @@
 /vis/scene/create
 
 #
-# Add axis (has to be after /vis/scene/create )
-#
-/vis/scene/add/axes
-
-#
 # Declare that the world volume should be added to the scene
 #
 /vis/scene/add/volume
@@ -28,6 +23,11 @@
 # Attach scene to scenehandler
 #
 /vis/sceneHandler/attach
+
+#
+# Add axis (has to be after /vis/scene/create )
+#
+/vis/scene/add/axes 0 0 0 2 m
 
 #
 # Draw a picture that has just the detector (no trajectories or hits).

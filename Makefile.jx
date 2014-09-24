@@ -1,0 +1,21 @@
+# --------------------------------------------------------------
+# GNUmakefile for G4MC, compitible with c++ and fortran codes 
+# --------------------------------------------------------------
+
+G4TARGET := G4MC
+
+#add your extra models
+MODELDIR := HRSTransport XSModel 
+
+
+#add your extra flags and libs which is different from  extra models
+EXTRAFLAGS += $(ROOTCFLAGS)
+EXTRALIBS  += $(ROOTLIBS) 
+
+.PHONY: all
+
+all: 
+
+#using Jixie's compiling framework, not geant4's
+#Jixie's framework already include root, 
+include mkrules.jx
