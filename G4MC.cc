@@ -1,6 +1,6 @@
 // ********************************************************************
 //
-// $Id: HRSMC.cc,v 1.05, 2013/10/06  HRS Exp $
+// $Id: HRSMC.cc,v 1.07, 2014/10/27  HRS Exp $
 // --------------------------------------------------------------
 
 #include <stdlib.h>
@@ -151,7 +151,6 @@ int main(int argc,char** argv)
 	// Define (G)UI for interactive mode
 	// The UImanager will be handled by Ranmanager,no need to delete it manually 
 
-	ExecuteMacros()
 
 	////////////////////////////////////////////////////////////////////
 	// interaction mode
@@ -163,8 +162,16 @@ int main(int argc,char** argv)
 		int pUseGui=0;
 		gConfig->GetArgument("UseGui",pUseGui);
 		HRSUIExecutive *pUI = new HRSUIExecutive(argc, argv, pUseGui);
+		//vis.mac or gui.mac will be executed in HRSUIExecutive
+		//execute all other macros before SessionStart 
 	
+		ExecuteMacros();
+
 		pUI->SessionStart();
+	}
+	else
+	{
+	  ExecuteMacros();
 	}
 
 	////////////////////////////////////////////////////////////////////
