@@ -27,7 +27,6 @@ public:
 	G4VPhysicalVolume* Construct();
 	G4VPhysicalVolume* ConstructHMS(G4LogicalVolume* motherLogical);
 
-
 private:
 	void GetConfig();
 	void ConstructMaterials();

@@ -9,7 +9,8 @@ HRS Geant4 Simulation History File, By Jixie Zhang
 TODO:
 (Will be finished in next version or future)
 #######################
-
+1) engine RootHisto is not debuged yet 
+2) BigBite never debuged 
 
 #######################
 # LIKE: Good if have these done
@@ -29,6 +30,13 @@ that all tracks go into them will be killed
 After place the HRS containner, the hall is much larger than before, it will
 waste a lot of CPU cycles to propagate some unwanted particles. Need to find out 
 a way to optimize the speed.
+
+---------------------------------------------------------------------------
+V1.07
+20141027 
+1. Added LDRD detector geometry class and its ssociated ini file Detectorr_LDRD.ini. 
+   In Detector.ini, if SetupRTPC==3, LDRD will be launched. 
+2. Added CLAS12 solenoid CLAS12Sol_rz.dat and its ini file BField_CLAS12Sol.ini    
 
 ---------------------------------------------------------------------------
 V1.06
@@ -53,7 +61,20 @@ V1.06
 5.  Changed the maximum root tree file size to 9.0E10, about 87.9GB. 
 
 6.  Fixed the helium collant tube in Hall-B coil geometry to make it pointing vertical up.
-    In the past it is pointing vertical down. This does  not affect physics at all. 
+    In the past it is pointing vertical down. This does  not affect physics at all.
+    
+7.  HMSContainner is too small to hold Q1, union a box at Q1 region such that it is large 
+    enough to hold Q1.      
+    
+8.  Modified HRSUIExecutive and G4MC. Now vis.mac will be executed if QT is not available
+    and "-i -x 1" option is used.
+    
+9.  Modified G2P chicane configuration. In the past both chicane magnets have to be 
+    placed togather. Now we can config to place only one.    
+    
+10. Made a quick and dirty change in G2PDetectorConstruction.  If SetupChicaneVD==4, will setup
+    a 15 cm thick local dump which is made of lead, located at 2.5m downstream of the FZ dipole.
+    This is only for simulation of Hall C beam line with vertical Chicane. Might change it later.
 
 ---------------------------------------------------------------------------
 V1.05

@@ -44,13 +44,16 @@
 //     HRSUIExecutive* myapp = new HRSUIExecutive(argc, argv, usegui);
 //	   G4UIsession* session = myapp->GetSession();
 //     if (session->IsGUI())
+//     {
 //       // Do any extra for a GUI session
-//
+//     }else{
+//        ...
+//	   }
 //     myapp-> SessionStart();
 //     ...
 //     delete myapp;
-//     ...
-//
+//    }
+//     
 // ====================================================================
 #ifndef HRS_UI_EXECUTIVE_H
 #define HRS_UI_EXECUTIVE_H 1
@@ -98,21 +101,32 @@ public:
 		if(usegui)
 		{
 #if defined(G4UI_USE_QT)
-			session = new G4UIQt(argc, argv);
+			if(usegui==20) 
+			{
+				//if I use Qt, I have to start G4UIQt session
+				//If I use only opengl, without this session is fine
+				pUImanager->ApplyCommand("/control/execute vis.mac");
+			}
+			else 
+			{
+				session = new G4UIQt(argc, argv);
+				pUImanager->ApplyCommand("/control/execute gui.mac");
+			}
 			isGUI = true;
-			//pUImanager->ApplyCommand("/control/execute gui.mac");
 #elif defined(G4UI_USE_XM)
 			session = new G4UIXm(argc, argv);
 			isGUI = true;
-			//pUImanager->ApplyCommand("/control/execute gui.mac");			
+			pUImanager->ApplyCommand("/control/execute vis.mac");			
 #elif defined(G4UI_USE_WIN32)
 		session = new G4UIWin32();
 #elif defined(G4UI_USE_TCSH)
 		shell = new G4UItcsh;
 		session = new G4UIterminal(shell);
+		pUImanager->ApplyCommand("/control/execute vis.mac");
 #else
 		shell = new G4UIcsh;
 		session = new G4UIterminal(shell);
+		pUImanager->ApplyCommand("/control/execute vis.mac");
 #endif
 		}
 		else
@@ -145,7 +159,7 @@ public:
 		if(shell) shell-> SetLsColor(dirColor, cmdColor);
 	};
 
-	void SessionStart() { session->SessionStart(); delete session;};
+	void SessionStart() { if(session) session->SessionStart(); delete session;};
 
 };
 

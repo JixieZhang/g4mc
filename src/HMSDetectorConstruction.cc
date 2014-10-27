@@ -124,7 +124,7 @@ G4VPhysicalVolume* HMSDetectorConstruction::Construct()
 
 	G4VPhysicalVolume* HMSAperContainerPhys = 0;
 	/////////////////////////
-	// HMS Container
+	// HMS Aperture Container
 	/////////////////////////
 	//This container is 8.5 cm long, its front face is the 
 	//upstream end of the collimater,166.37 cm to the target center.
@@ -241,37 +241,50 @@ G4VPhysicalVolume* HMSDetectorConstruction::ConstructHMS(G4LogicalVolume* mother
 	Stuff inside this containner will also use the pivot as the origin, but do not 
 	need to worry about the rotation of the HMS.
 	//                         7.0m above beam line 
-	//                       -----------------------------| 15.76m from pivot,
-	//                      /                             |
-	//                     /                              |
-	//                    /                               |
-	//                   /                           E    |
-	//                  /                         L       |
-	//          --------                       O          |
-	//         /                            P             |
-	//    -----                          I                |
-	//----|----- Q1 --- Q2 --- Q3 --- D   ----------------|------ beam line -----
+	//                           -------------------------| 18.6m from pivot,
+	//                          /                         |
+	//                         /                          |
+	//                        /                           |
+	//                       /                      E     |
+	//               -------                     L        |
+	//             /                           O          |
+	//    A   B  /                           P            |
+	//    -----                           I               |
+	//----|----- Q1 --- Q2 --- Q3 ---  D   ---------------|------ beam line -----
 	//    |                                               |
 	//    ------------------------------------------------|
-	//    1.66m from pivot, 3.05 m below beam line
-
+	//    C   D    
+	//    Front face is 1.66m from pivot, AB is 1.2 m high, AB is 2 m in length
+    //    Bottom is 3.15 m below beam line
 	*/
 
 	double pHMSContainerRin=mPivot2HMSFace+15*cm; //1.66*m,
-	double pHMSContainerRout=15.76*m;
-	double pBeamLine2Ground;
-	pBeamLine2Ground=-3.05*m;
-	//build the container with polycone
+	double pHMSContainerRout=18.6*m;
+	double pBeamLine2Ground=-2.0*m;   //It is -3.15*m to the floor, just take -2 m here
+	//build the container using polycone, but cover only 24 deg
 
-	const int kNPlane_HMSContainer=7;
-	double rInner_HMSContainer[] = {pHMSContainerRin,pHMSContainerRin,2.5*m,
-		3.7*m,9.0*m,pHMSContainerRout-3.0*m,pHMSContainerRout};
+	const int kNPlane_HMSContainer=6;
+	double rInner_HMSContainer[] = {pHMSContainerRin,pHMSContainerRin,pHMSContainerRin+2*m,
+		pHMSContainerRin+6.2*m,11.0*m,pHMSContainerRout-5.0*m};
 	double rOuter_HMSContainer[] = {pHMSContainerRout,pHMSContainerRout,pHMSContainerRout,
-		pHMSContainerRout,pHMSContainerRout,pHMSContainerRout,pHMSContainerRout};
-	double zPlane_HMSContainer[] = {-2.0*m,1.0*m,1.0*m,
-		2.0*m,2.0*m,7.0*m,7.0*m};
-	G4Polycone* HMSContainerSolid = new G4Polycone("HMSContainer",258.0*deg,24.0*deg,
+		pHMSContainerRout,pHMSContainerRout,pHMSContainerRout};
+	double zPlane_HMSContainer[] = {pBeamLine2Ground,1.2*m,1.2*m,3.0*m,3.0*m,7.0*m};
+	G4Polycone* mainHMSContainerSolid = new G4Polycone("mainHMSContainer",258.0*deg,24.0*deg,
 		kNPlane_HMSContainer,zPlane_HMSContainer,rInner_HMSContainer,rOuter_HMSContainer);
+
+	//The Polycone defined above can not hold Q1, I have to union a box at 
+	//point ABCD shown above, Note that the size of ABCD should be consistant with Polycone
+	double pABCD_x=130*cm;
+	double pABCD_y=2.0*m;
+	double pABCD_z=1.2*m-pBeamLine2Ground;
+	G4Box* ABCDBox = new G4Box("ABCDBox",pABCD_x/2,pABCD_y/2,pABCD_z/2);
+
+	double pABCD_xpos=0;
+	double pABCD_ypos=-(pABCD_y/2+pHMSContainerRin);
+	double pABCD_zpos=pABCD_z/2+pBeamLine2Ground;
+	G4UnionSolid* HMSContainerSolid = new G4UnionSolid("HMSContainer",
+			mainHMSContainerSolid,ABCDBox,0,
+			G4ThreeVector(pABCD_xpos,pABCD_ypos,pABCD_zpos));
 
 	G4LogicalVolume* HMSContainerLogical = new G4LogicalVolume(HMSContainerSolid,
 		mMaterialManager->vacuum,"HMSContainerLogical",0,0,0);
@@ -294,7 +307,7 @@ G4VPhysicalVolume* HMSDetectorConstruction::ConstructHMS(G4LogicalVolume* mother
 	/////////////////////////
 	double pHallCenter2Q1Face=mPivot2HMSFace+25*cm;
 	double pQ1Rin=25.0*cm;
-	double pQ1Rout=65.0*cm;
+	double pQ1Rout=64.0*cm;  
 	double pQ1Length=189*cm;
 
 	G4VSolid* Q1Solid = new G4Tubs("Q1Tub",pQ1Rin,pQ1Rout,pQ1Length/2.0,0.0,360.0*deg);

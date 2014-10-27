@@ -39,49 +39,60 @@ public:
 	G4Material* galaxy;
 	G4Material* vacuum;
 	G4Material* air;
-	G4Material* argonGas;
 	G4Material* heliumGas;
 	G4Material* heliumGas4k;
+	G4Material* argonGas;
+
+	G4Material* liquidH2;
+	G4Material* liquidD2;
+	G4Material* liquidHe;
+	G4Material* liquidHe3;
+
+	/////////////////////////////////////////////////////////////
+	G4Material* beryllium;
+	G4Material* carbon;
 	G4Material* aluminum;
+	G4Material* silicon;
 	G4Material* calcium;
 	G4Material* iron;
-	G4Material* carbon;
+	G4Material* copper;
+
+	G4Material* stainlesssteel;
+	G4Material* stainlesssteel304;
+	G4Material* siliconsteel;
 
 	G4Material* tantalum;
 	G4Material* tungsten;
 	G4Material* lead;
-	G4Material* solidNH3;
-	G4Material* liquidHe;
-	G4Material* liquidHe3;
-	G4Material* liquidH2;
-	G4Material* liquidD2;
 
-	G4Material* scintillator;	//EJ-204 Plastic Scintillator
+	/////////////////////////////////////////////////////////////
+	G4Material* ethane;			//C2H6
+	G4Material* EthaneHe;		//ethane and He4 gas mixture
+
 	G4Material* mylar;			//C10_H8
 	G4Material* kapton;			//C22_H10_N2_O5
-	G4Material* copper;
-	G4Material* siliconsteel;
-	G4Material* stainlesssteel;
-	G4Material* stainlesssteel304;
-	G4Material* NH3He;			//55% SolidNH3 + 45% LiquidHe
-
 	G4Material* ultem;			//C37_H24_O6_N2
 	G4Material* SiO2;
 	G4Material* epoxy;			//C11_H12_O3
 	G4Material* G10FR4;			//60% SiO2 and 40% epoxy
 	G4Material* CH2;			//H(CH2)nH
-	G4Material* ethane;			//C2H6
-	G4Material* EthaneHe;		//ethane and He4 gas mixture
+	G4Material* scintillator;	//EJ-204 Plastic Scintillator	
 	G4Material* pcbNchip;
 	G4Material* cable;
+
+	G4Material* solidNH3;
+	G4Material* NH3He;			//55% SolidNH3 + 45% LiquidHe
 	
-	G4Material* beryllium;
 	G4Material* BeO;
+
 
 	G4Material* boron;
 	G4Material* plastic;
 	G4Material* boratedpoly05;
 	G4Material* boratedpoly30;
+	
+	G4Material* polypropylene;  	//C3H6
+	G4Material* isobutane;  		//C4H10
 
 	//PCTFE (Polychlorotrifluoroethylene)  [CF2-CFCl]n
 	//synthetic resin formed by the polymerization of chlorotrifluoroethylene

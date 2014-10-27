@@ -34,6 +34,43 @@
 UsageManager* gConfig=0; //will be initialized in main() before all other classes
 HRSRootTree* gHRSTree=0; //will be initialized in main() after G4RunManager start up before user-action start
 
+void ExecuteMacros()
+{	
+	G4UImanager* UImanager = G4UImanager::GetUIpointer();
+	char cmd[255],tmpstr[255];
+
+
+	//take care of the macro files from -mac or -m option 
+	int pNofMac=0;
+	gConfig->GetArgument("NofMac",pNofMac); 
+	std::string MacFile;
+	for(int i=0;i<pNofMac;i++)
+	{
+		sprintf(tmpstr,"MacFile%d",i+1);
+		MacFile=gConfig->GetArgument(tmpstr);
+		if(CheckFile(MacFile))
+		{
+			sprintf(cmd,"/control/execute %s",MacFile.c_str()); 
+			G4cout<<"Trying to execute cmd: "<<cmd<<G4endl;
+			UImanager->ApplyCommand(cmd);
+		}
+	}
+
+	//By Jixie: Might change the trigger for this part later
+	//gConfig->GetArgument("UseRootNtuple",pUseRootNtuple); 
+	//if(UseRootNtuple) //root ntuple mode	
+	string pPrimaryEngine1=gConfig->GetArgument("PrimaryEngine1"); 
+	if(pPrimaryEngine1=="RootNtuple") //root ntuple mode	
+	{		
+		int pTrigNum=-1;
+		gConfig->GetArgument("TrigNum1",pTrigNum);
+		if(pTrigNum<=0) pTrigNum=9999999;
+		sprintf(cmd,"/run/beamOn %d",pTrigNum); 
+		G4cout<<"Trying to execute cmd: "<<cmd<<G4endl;
+		UImanager->ApplyCommand(cmd);
+	}
+}
+
 int main(int argc,char** argv)
 {
 	////////////////////////////////////////////////////////////////////
@@ -113,38 +150,8 @@ int main(int argc,char** argv)
 	// execute macro files if provided through arguments
 	// Define (G)UI for interactive mode
 	// The UImanager will be handled by Ranmanager,no need to delete it manually 
-	G4UImanager* UImanager = G4UImanager::GetUIpointer();
 
-	char cmd[255],tmpstr[255];
-	//take care of cmd files then the mcin file
-	int pNofMac=0;
-	gConfig->GetArgument("NofMac",pNofMac); 
-	std::string MacFile;
-	for(int i=0;i<pNofMac;i++)
-	{
-		sprintf(tmpstr,"MacFile%d",i+1);
-		MacFile=gConfig->GetArgument(tmpstr);
-		if(CheckFile(MacFile))
-		{
-			sprintf(cmd,"/control/execute %s",MacFile.c_str()); 
-			G4cout<<"Trying to execute cmd: "<<cmd<<G4endl;
-			UImanager->ApplyCommand(cmd);
-		}
-	}
-
-	//By Jixie: Might change the trigger for this part later
-	//gConfig->GetArgument("UseRootNtuple",pUseRootNtuple); 
-	//if(UseRootNtuple) //root ntuple mode	
-	string pPrimaryEngine1=gConfig->GetArgument("PrimaryEngine1"); 
-	if(pPrimaryEngine1=="RootNtuple") //root ntuple mode	
-	{		
-		int pTrigNum=-1;
-		gConfig->GetArgument("TrigNum1",pTrigNum);
-		if(pTrigNum<=0) pTrigNum=9999999;
-		sprintf(cmd,"/run/beamOn %d",pTrigNum); 
-		G4cout<<"Trying to execute cmd: "<<cmd<<G4endl;
-		UImanager->ApplyCommand(cmd);
-	}
+	ExecuteMacros()
 
 	////////////////////////////////////////////////////////////////////
 	// interaction mode
@@ -156,14 +163,7 @@ int main(int argc,char** argv)
 		int pUseGui=0;
 		gConfig->GetArgument("UseGui",pUseGui);
 		HRSUIExecutive *pUI = new HRSUIExecutive(argc, argv, pUseGui);
-		if(pUI->IsGUI())
-		{
-			//put your extra cmd here;
-			if(CheckFile("gui.mac"))
-			{
-				UImanager->ApplyCommand("/control/execute gui.mac");
-			}
-		}
+	
 		pUI->SessionStart();
 	}
 

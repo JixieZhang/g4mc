@@ -4381,7 +4381,8 @@ G4VPhysicalVolume* G2PDetectorConstruction::ConstructG2PChicane(G4LogicalVolume*
 	gConfig->GetArgument("UseDefaultFZB1",pUseDefaultFZB1);
 	gConfig->GetArgument("UseDefaultFZB2",pUseDefaultFZB2); 
 
-
+	G4VPhysicalVolume* FZB1FieldContainerPhys=0;
+	G4VPhysicalVolume* FZB2FieldContainerPhys=0;
 	///////////////////////////////////////////////////////
 	//these parameters is from survey group
 	//From the survey
@@ -4743,13 +4744,16 @@ G4VPhysicalVolume* G2PDetectorConstruction::ConstructG2PChicane(G4LogicalVolume*
 		mMaterialManager->vacuum,"FZB2FieldContainerLogical",FZB2FieldManager,0,uFZBStepLimits);
 	FZB2FieldContainerLogical->SetVisAttributes(HallVisAtt);  
 
-	G4VPhysicalVolume* FZB1FieldContainerPhys=new G4PVPlacement(pRotFZB1,pFZB1Pos3V,
-		FZB1FieldContainerLogical,"FZB1FieldContainerPhys",motherLogical,0,0,0);
-
-	new G4PVPlacement(pRotFZB2,pFZB2Pos3V,
-		FZB2FieldContainerLogical,"FZB2FieldContainerPhys",motherLogical,0,0,0);
-
-	//return FZB1FieldContainerPhys;   //for debug
+	if(mSetupChicane==1 || mSetupChicane==3)
+	{
+		FZB1FieldContainerPhys = new G4PVPlacement(pRotFZB1,pFZB1Pos3V,
+			FZB1FieldContainerLogical,"FZB1FieldContainerPhys",motherLogical,0,0,0);
+	}
+	if(mSetupChicane==2 || mSetupChicane==3)
+	{
+		FZB2FieldContainerPhys = new G4PVPlacement(pRotFZB2,pFZB2Pos3V,
+			FZB2FieldContainerLogical,"FZB2FieldContainerPhys",motherLogical,0,0,0);
+	}
 
 	/////////////////////////
 	// FZB magnet Container
@@ -4769,12 +4773,16 @@ G4VPhysicalVolume* G2PDetectorConstruction::ConstructG2PChicane(G4LogicalVolume*
 	FZBContainerLogical->SetVisAttributes(HallVisAtt);  
 
 	//build one logical volumn but place 2 copies of it
-	new G4PVPlacement(pRotFZB1,pFZB1Pos3V,
-		FZBContainerLogical,"FZB1ContainerPhys",motherLogical,0,0,0);
-
-	new G4PVPlacement(pRotFZB2,pFZB2Pos3V,
-		FZBContainerLogical,"FZB2ContainerPhys",motherLogical,0,0,0);
-
+	if(mSetupChicane==1 || mSetupChicane==3)
+	{
+		new G4PVPlacement(pRotFZB1,pFZB1Pos3V,
+			FZBContainerLogical,"FZB1ContainerPhys",motherLogical,0,0,0);
+	}
+	if(mSetupChicane==2 || mSetupChicane==3)
+	{
+		new G4PVPlacement(pRotFZB2,pFZB2Pos3V,
+			FZBContainerLogical,"FZB2ContainerPhys",motherLogical,0,0,0);
+	}
 
 	/////////////////////////////////////
 	//FZB vacuum pipe and flanges
@@ -4873,10 +4881,12 @@ G4VPhysicalVolume* G2PDetectorConstruction::ConstructG2PChicane(G4LogicalVolume*
 	FZBVacuumFlangeLogical->SetVisAttributes(GrayVisAtt);  
 
 	double pFZBVacuumFlangePosZ=90*inch/2-pFZBVacuumFlangeZ/2;
+
 	new G4PVPlacement(0,G4ThreeVector(0,0,pFZBVacuumFlangePosZ),
 		FZBVacuumFlangeLogical,"FZBVacuumFlangeDownPhys",FZBContainerLogical,true,0,0);
 	new G4PVPlacement(0,G4ThreeVector(0,0,-pFZBVacuumFlangePosZ),
 		FZBVacuumFlangeLogical,"FZBVacuumFlangeUpPhys",FZBContainerLogical,true,1,0);
+
 
 	///////////////////////////////////////////////////////////////
 	//place the mid part of the vacuum pipe into the field containner
@@ -4884,10 +4894,16 @@ G4VPhysicalVolume* G2PDetectorConstruction::ConstructG2PChicane(G4LogicalVolume*
 		mMaterialManager->stainlesssteel,"FZBVacuumPipeLogical",0,0,0);
 	FZBVacuumPipeMidLogical->SetVisAttributes(SilverVisAtt);  
 
+	if(mSetupChicane==1 || mSetupChicane==3)
+	{
 	new G4PVPlacement(0,G4ThreeVector(),FZBVacuumPipeMidLogical,
 		"FZB1VacuumPipeMidPhys",FZB1FieldContainerLogical,false,0,0);
+	}
+	if(mSetupChicane==2 || mSetupChicane==3)
+	{
 	new G4PVPlacement(0,G4ThreeVector(),FZBVacuumPipeMidLogical,
 		"FZB2VacuumPipeMidPhys",FZB2FieldContainerLogical,false,0,0);
+	}
 
 
 
@@ -5017,32 +5033,54 @@ G4VPhysicalVolume* G2PDetectorConstruction::ConstructG2PChicane(G4LogicalVolume*
 	//mSetupChicaneVD = 0 menas none, 1 is VB1VD, 2 is VB2VD, 3 is both
 	if(mSetupChicaneVD)
 	{
-		double pFZBVDWidth=60.0*cm;
-		double pFZBVDHeight=100.0*cm;
-		double pFZBVDThick=1.0*cm;
-		G4VSolid* FZB1VDSolid = new G4Box("FZB1VDBox",
-			pFZBVDWidth/2.0, pFZBVDHeight/2.0, pFZBVDThick/2.0);
-		G4LogicalVolume* FZB1VDLogical = new G4LogicalVolume(FZB1VDSolid, 
-			mMaterialManager->air,"FZB1VDLogical",0,0,0);
-		SDman->AddNewDetector(FZB1SD);
-		FZB1VDLogical->SetSensitiveDetector(FZB1SD);
-		FZB1VDLogical->SetVisAttributes(LightYellowVisAtt); 
-		G4LogicalVolume* FZB2VDLogical = new G4LogicalVolume(FZB1VDSolid, 
-			mMaterialManager->air,"FZB2VDLogical",0,0,0); 
-		SDman->AddNewDetector(FZB2SD);
-		FZB2VDLogical->SetSensitiveDetector(FZB2SD);
-		FZB2VDLogical->SetVisAttributes(LightYellowVisAtt);
+		//setup a local dump
+		if(mSetupChicaneVD==4)
+		{
+			double pFZDumpWidth=50.0*cm;
+			double pFZDumpHeight=50.0*cm;
+			double pFZDumpThick=15.0*cm;
+			G4VSolid* FZDumpSolid = new G4Box("FZDumpBox",
+				pFZDumpWidth/2.0, pFZDumpHeight/2.0, pFZDumpThick/2.0);
+			G4LogicalVolume* FZDumpLogical = new G4LogicalVolume(FZDumpSolid, 
+				mMaterialManager->lead,"FZDumpLogical",0,0,0);
+			SDman->AddNewDetector(FZB1SD);
+			FZDumpLogical->SetSensitiveDetector(FZB1SD);
+			FZDumpLogical->SetVisAttributes(PurpleVisAtt); 
 
-		G4ThreeVector pVD1Center;
-		if(mSetupChicaneVD==1 || mSetupChicaneVD==3)
-		{
-			new G4PVPlacement(0,G4ThreeVector(0,0,150*cm+pFZB1PosZ),
-				FZB1VDLogical,"FZB1VDPhys",motherLogical,0,0,0);
+			new G4PVPlacement(0,G4ThreeVector(0,-40*cm,250*cm+pFZB2PosZ),
+				FZDumpLogical,"FZDumpPhys",motherLogical,0,0,0);
 		}
-		if(mSetupChicaneVD==2 || mSetupChicaneVD==3)
+		else
 		{
-			new G4PVPlacement(0,G4ThreeVector(0,0,150*cm+pFZB2PosZ),
-				FZB2VDLogical,"FZB2VDPhys",motherLogical,0,0,0);
+			double pFZBVDWidth=60.0*cm;
+			double pFZBVDHeight=80.0*cm;
+			double pFZBVDThick=20.0*cm;
+			G4VSolid* FZB1VDSolid = new G4Box("FZB1VDBox",
+				pFZBVDWidth/2.0, pFZBVDHeight/2.0, pFZBVDThick/2.0);
+			G4LogicalVolume* FZB1VDLogical = new G4LogicalVolume(FZB1VDSolid, 
+				mMaterialManager->air,"FZB1VDLogical",0,0,0);
+			SDman->AddNewDetector(FZB1SD);
+			FZB1VDLogical->SetSensitiveDetector(FZB1SD);
+			//FZB1VDLogical->SetVisAttributes(LightYellowVisAtt); 
+			FZB1VDLogical->SetVisAttributes(PurpleVisAtt); 
+
+			G4LogicalVolume* FZB2VDLogical = new G4LogicalVolume(FZB1VDSolid, 
+				mMaterialManager->air,"FZB2VDLogical",0,0,0); 
+			SDman->AddNewDetector(FZB2SD);
+			FZB2VDLogical->SetSensitiveDetector(FZB2SD);
+			FZB2VDLogical->SetVisAttributes(LightYellowVisAtt);
+
+			G4ThreeVector pVD1Center;
+			if(mSetupChicaneVD==1 || mSetupChicaneVD==3)
+			{
+				new G4PVPlacement(0,G4ThreeVector(0,0,120*cm+pFZB1PosZ),
+					FZB1VDLogical,"FZB1VDPhys",motherLogical,0,0,0);
+			}
+			if(mSetupChicaneVD==2 || mSetupChicaneVD==3)
+			{
+				new G4PVPlacement(0,G4ThreeVector(0,0*cm,120*cm+pFZB2PosZ),
+					FZB2VDLogical,"FZB2VDPhys",motherLogical,0,0,0);
+			}
 		}
 	}
 

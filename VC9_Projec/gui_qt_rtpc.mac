@@ -8,17 +8,12 @@
 /gui/addButton viewer "Update viewer"        "/vis/viewer/update"
 /gui/addButton viewer "Update scene"         "/vis/scene/notifyHandlers"
 
-#/vis/open OGLSQt
-/vis/open OGLS
+/vis/open OGLSQt
+#/vis/open OGLS
 #
 # Create a new empty scene
 #
 /vis/scene/create
-
-#
-# Add axis (has to be after /vis/scene/create )
-#
-/vis/scene/add/axes
 
 #
 # Declare that the world volume should be added to the scene
@@ -29,6 +24,11 @@
 # Attach scene to scenehandler
 #
 /vis/sceneHandler/attach
+
+#
+# Add axis (has to be after /vis/scene/create )
+#
+/vis/scene/add/axes 0 0 0 1 m
 
 #
 # Draw a picture that has just the detector (no trajectories or hits).

@@ -438,7 +438,9 @@ void HRSRootTree::Initilize()
 	gConfig->GetParameter("SetupRTPCGeometry",mSetupRTPC);
 	if(mSetupRTPC)
 	{
-		gConfig->GetParameter("RatioHe2DME",mRatioHe2DME); 
+		mRatioHe2DME=0.0;
+		if(mSetupRTPC==1 || mSetupRTPC==2) 
+			gConfig->GetParameter("RatioHe2DME",mRatioHe2DME); 
 		gConfig->GetParameter("TargetL",mTargetL); //mm
 	}
 

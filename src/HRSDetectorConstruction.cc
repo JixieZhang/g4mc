@@ -54,6 +54,7 @@
 #include "CREXDetectorConstruction.hh"
 #include "HMSDetectorConstruction.hh"
 #include "LACDetectorConstruction.hh"
+#include "LERDDetectorConstruction.hh"
 
 //To verify some geometry, I use this flag to place some unit
 //just for debugging
@@ -448,7 +449,7 @@ G4VPhysicalVolume* HRSDetectorConstruction::Construct()
 	}
 
 	/////////////////////////
-	//RTPC geometries
+	//RTPC or LERD geometries
 	/////////////////////////
 	if (mSetupRTPCGeometry==1) 
 	{
@@ -461,6 +462,13 @@ G4VPhysicalVolume* HRSDetectorConstruction::Construct()
 	{
 		RTPCDetectorConstruction* theBoNuS12 = new RTPCDetectorConstruction(magneticLogical); 
 		theBoNuS12->Construct();
+		//update the parameters
+		this->GetConfig(); 
+	}
+	if (mSetupRTPCGeometry==3) 
+	{
+		LERDDetectorConstruction* theLERD = new LERDDetectorConstruction(magneticLogical); 
+		theLERD->Construct();
 		//update the parameters
 		this->GetConfig(); 
 	}
@@ -712,50 +720,40 @@ G4VPhysicalVolume* HRSDetectorConstruction::ConstructHRS(G4LogicalVolume* mother
 	HRS container:covering 24 degrees in X-Z plane, 10.05 m height.
 	Stuff inside this containner will also use the pivot as the origin, but do not 
 	need to worry about the rotation of the HRS.
-	//                         7.0m above beam line 
-	//                       -----------------------------| 20.76m from pivot,
-	//                      /                             |
-	//                     /                        Q3    |
-	//                    /                               |
-	//                   /                       E        |
-	//                  /                     L           |
-	//          --------                   O              |
-	//         /                        P                 |
+	//                         7.32m above beam line 
+	//                          --------------------------| 20.76m from pivot,
+	//                         /                          |
+	//                        /                     Q3    |
+	//                       /                            |
+	//                      /                    E        |
+	//                     /                  L           |
+	//          -----------                O              |
+	//    A   B/                        P                 |
 	//    -----                     I                     |
 	//----|----- Q1 --- Q2 ---- D     --------------------|------ beam line -----
 	//    |                                               |
 	//    ------------------------------------------------|
-	//    1.46m from povot, 3.05 m below beam line
-
+	//    C   D 
+	//    Front face is 1.46m from pivot, AB is 1.2 m high, AB is 1 m in length
+    //    Bottom is 3.05 m below beam line
+	//
 	*/
 
-	double pHRSContainerRin=1.46*m,pHRSContainerRout=20.76*m;
-	double pBeamLine2Ground;
-	pBeamLine2Ground=-3.05*m;
+	double pHRSContainerRin=1.46*m;
+	double pHRSContainerRout=20.76*m;
+	double pBeamLine2Ground=-2.0*m;   //It is -3.05*m to the floor, just take -2 m here
 	//build the container with polycone
 
-	const int kNPlane_HRSContainer=7;
-	double rInner_HRSContainer[] = {pHRSContainerRin,pHRSContainerRin,2.5*m,
-		3.7*m,9.0*m,pHRSContainerRout-3.0*m,pHRSContainerRout};
+	const int kNPlane_HRSContainer=6;
+	double rInner_HRSContainer[] = {pHRSContainerRin,pHRSContainerRin,pHRSContainerRin+1.0*m,
+		pHRSContainerRin+3.0*m,9.0*m,pHRSContainerRout-6.0*m};
 	double rOuter_HRSContainer[] = {pHRSContainerRout,pHRSContainerRout,pHRSContainerRout,
-		pHRSContainerRout,pHRSContainerRout,pHRSContainerRout,pHRSContainerRout};
-	double zPlane_HRSContainer[] = {-2.0*m,1.0*m,1.0*m,
-		2.0*m,2.0*m,7.0*m,7.0*m};
+		pHRSContainerRout,pHRSContainerRout,pHRSContainerRout};
+	double zPlane_HRSContainer[] = {pBeamLine2Ground,1.2*m,1.2*m,3.0*m,3.0*m,7.32*m};
 	G4Polycone* HRSContainerSolid = new G4Polycone("HRSContainer",258.0*deg,24.0*deg,
 		kNPlane_HRSContainer,zPlane_HRSContainer,rInner_HRSContainer,rOuter_HRSContainer);
 
-	////build the container using tube
-	//double pHRSContainerHeight=14.0*m;
-	//G4VSolid* HRSContainerTub = new G4Tubs("HRSContainerTub",pHRSContainerRin,
-	//	pHRSContainerRout,pHRSContainerHeight/2.0,258.0*deg,24.0*deg);
-	////ground
-	//double pGoundHeight=10*m;
-	//G4VSolid* GroundTub = new G4Tubs("GroundTub",0,30*m,pGoundHeight/2,0*deg,360.0*deg);
-	////tube subtract the ground
-	//G4SubtractionSolid* HRSContainerSolid = new G4SubtractionSolid("HRSContainer",
-	//		HRSContainerTub,GroundTub,
-	//		0,G4ThreeVector(0,0,pBeamLine2Ground-pGoundHeight/2));
-
+	
 	G4LogicalVolume* LHRSContainerLogical = new G4LogicalVolume(HRSContainerSolid,
 		mMaterialManager->vacuum,"LHRSContainerLogical",0,0,0);
 	G4LogicalVolume* RHRSContainerLogical = new G4LogicalVolume(HRSContainerSolid,

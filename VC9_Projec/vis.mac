@@ -16,7 +16,7 @@
 /vis/open OGLSX
 #/vis/open OGLIXm
 #/vis/open OGLSXm
-#(OGLSXm good visualization but very slow)
+#(OGLSXm: good visualization but very slow)
 #/vis/open OIX
 /vis/scene/create
 /vis/scene/add/volume

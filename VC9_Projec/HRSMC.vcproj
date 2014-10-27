@@ -14,6 +14,9 @@
 		/>
 	</Platforms>
 	<ToolFiles>
+		<DefaultToolFile
+			FileName="for.rules"
+		/>
 	</ToolFiles>
 	<Configurations>
 		<Configuration
@@ -28,6 +31,9 @@
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="g77Compiler"
 			/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"
@@ -115,6 +121,9 @@
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="g77Compiler"
 			/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"
@@ -208,6 +217,24 @@
 			<File
 				RelativePath="..\src\GlobalDebuger.cc"
 				>
+			</File>
+			<File
+				RelativePath="..\src\hallbfield.f"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="g77Compiler"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="g77Compiler"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\src\HRSAnalysisManager.cc"
@@ -652,6 +679,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Detector_LERD.ini"
+				>
+			</File>
+			<File
 				RelativePath=".\Detector_RTPC.ini"
 				>
 			</File>
@@ -737,6 +768,10 @@
 			</File>
 			<File
 				RelativePath="..\src\LACDetectorConstruction.cc"
+				>
+			</File>
+			<File
+				RelativePath="..\src\LERDDetectorConstruction.cc"
 				>
 			</File>
 			<File
