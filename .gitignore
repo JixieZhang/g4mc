@@ -1,0 +1,31 @@
+# Compiled Object files
+*.slo
+*.lo
+*.o
+
+# Compiled Dynamic libraries
+*.so
+*.so.*
+*.dylib
+*.dylib.*
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.a.*
+
+*.d
+*.pyc
+
+obj.*
+
+*.root
+*.png
+*.dat
+*.map
+*.ini
+*.bak
+
+G4MC
+G2P*.txt
