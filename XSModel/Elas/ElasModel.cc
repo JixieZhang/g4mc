@@ -1,6 +1,7 @@
 #include <cstdio>
 #include <cmath>
 #include <vector>
+#include <iostream>
 
 using namespace std;
 #include "ElasModel.hh"
@@ -478,6 +479,33 @@ namespace  ElasModel
 		return sigma * kFm * kFm * 1e4; // microbarn
 	}
 
+	double XS_Molelr_Core(double Eb, double Thetastar)
+	{
+	  const double Me = 0.000511;
+	  double s = 2*Me*(Me+Eb);
+	  const double Alpha = 1./137.;
+
+	  double CosThstar2 = cos(Thetastar)*cos(Thetastar);
+	  double SinThstar4 = pow(sin(Thetastar),4.0);
+
+	  double Sigma = Alpha*Alpha/s * pow(3+CosThstar2,2.0)/SinThstar4;
+	  //std::cout<<"Ei="<<Eb<<"  Thetastar(deg)="<<Thetastar*57.3<<"  MollerXS="<<Sigma<<" ub\n";
+	  return Sigma;
+	}
+
+	double GetThetastar_Moller(double Eb, double Thetalab)
+	{
+		const double Me = 0.000511;
+		double k = (Eb+Me)/(2*Me)*pow(tan(Thetalab),2.0);
+		double cosThetastar=(1-k)/(1+k);                 
+		return acos(cosThetastar);                       
+	}
+
+	double XS_Moller(double Ei_gev, double Theta_lab_rad)
+	{
+		double Thetastar = GetThetastar_Moller(Ei_gev,Theta_lab_rad);
+		return XS_Molelr_Core(Ei_gev,Thetastar);
+	}
 
 	double GetXS(int Z, int N, double Ei, double Theta, double Mtg_GeV, int iUseLarry)
 	{
@@ -492,6 +520,7 @@ namespace  ElasModel
 		else if ((Z==2)&&(N==2))  return XS_He4(Ei,Theta); 
 		else if ((Z==7)&&(N==7))  return XS_N14(Ei,Theta); 
 		else if ((Z==74)&&(N==110))  return XS_Ta184(Ei,Theta); 
+		else if ((Z==0)&&(N==0))  return XS_Moller(Ei,Theta); 
 		else
 		{
 			const double AMU = 0.9314941;

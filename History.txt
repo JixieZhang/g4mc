@@ -33,73 +33,96 @@ a way to optimize the speed.
 
 ---------------------------------------------------------------------------
 V1.07
-20141027 
-1. Added LDRD detector geometry class and its ssociated ini file Detectorr_LDRD.ini. 
-   In Detector.ini, if SetupRTPC==3, LDRD will be launched. 
-2. Added CLAS12 solenoid CLAS12Sol_rz.dat and its ini file BField_CLAS12Sol.ini    
+20141027
+1. Added LDRD detector geometry class and its associated ini file Detector_LDRD.ini.
+   In Detector.ini, if SetupRTPCGeometry==3, LDRD will be launched.
+2. Added CLAS12 solenoid CLAS12Sol_rz.dat and its ini file BField_CLAS12Sol.ini   
+3. Added Moller XS into ELAS XS model. To simulate moller electron, one can use
+   'HRSElasEl' engine for the first particle and TwoBody engine for the 2nd particle.
+   Other than that, one also have to use G4 command "/mydet/targetMass" plus 
+   "/mydet/targetAtomicNumber" or command line option 
+   "-t or -target <TargetMass(0.9383)> <TargetAtomicNumber(1)> [TargetNeutronNumber(0)]"
+   to set the target is electron. For example:
+   G4MC -target 0.000511 0 0 ......
+   Example of mac file:
+	   
+	/mydet/beamEnergy 11.0 GeV
+	/mydet/targetMass 0.000511
+	/mydet/targetAtomicNumber 0
+	
+	/mydet/particleNum 2
 
+	/mydet/particle1/particleName e-
+	/mydet/particle1/engine HRSElasEl
+	/mydet/particle1/thetaLow 0. deg
+	/mydet/particle1/thetaHigh 5. deg
+	/mydet/particle1/phiLow 0. deg
+	/mydet/particle1/phiHigh 360. deg
+
+	/mydet/particle2/particleName e-
+	/mydet/particle2/engine TwoBody
+	/mydet/particle2/coupleToPrimary  1
+	
+	/run/beamOn 20
+	
 ---------------------------------------------------------------------------
 V1.06
-1.  Added New geometry class for RTPC12. Keep original RTPC6. One can choose it 
-	using parameter "SetupRTPCGeometry" in Detector ini
-	#Build RTPC detector with 2 options: 
-	# 1 BoNuS6(Detector_BoNuS.ini),  2 BoNuS12(Detector_RTPC.ini)
-	#This is a NEW RTPC setup, you can config it to 100% support BoNuS RTPC
-	#or config it in the way you want in Detector_RTPC.ini
-	#RTPC need a target field, which is handled by class BField_Helm. Use command
-	#line argument -targetfield to provide your filed
-	
-2.  Added CLAS12 solenoid field. change RTPC12 endcap thickness from 0.1 mm to 
-	0.254 mm (10 mil).Add Beam exit window, which is 10 mil berllyium. 
+1.  Added New geometry class for RTPC12. Keep original RTPC6. One can choose it
+    using parameter "SetupRTPCGeometry" in Detector ini
+    #Build RTPC detector with 2 options:
+    # 1 BoNuS6(Detector_BoNuS.ini),  2 BoNuS12(Detector_RTPC.ini)
+    #This is a NEW RTPC setup, you can configure it to 100% match BoNuS RTPC
+    #or configure it in any way you want in Detector_RTPC.ini
+    #RTPC need a target field, which is handled by class BField_Helm. Use command
+    #line argument -targetfield to provide your filed
+   
+2.  Changed RTPC12 end cap thickness from 0.1 mm to 0.254 mm (10 mil).
+    Added beam exit window, which is 10 mil beryllium.
 
 3.  Added electro-nuclear and photo-nuclear physics models.
 
 4.  Added by Jixie @ 20140902 to control filling only detector response tree:
-	if iNoDetectorResponse==99, I will not fill the primary trees, but only fill detector tree
-	this will reduce the output file size very much so one can simulate many many event 
-		
-5.  Changed the maximum root tree file size to 9.0E10, about 87.9GB. 
+    if iNoDetectorResponse==99, it will not fill the primary trees, but detector tree only.
+    This will reduce the output file size very much so one can simulate many many events.
+       
+5.  Changed the maximum root tree file size to 9.0E10, about 87.9GB.
 
-6.  Fixed the helium collant tube in Hall-B coil geometry to make it pointing vertical up.
-    In the past it is pointing vertical down. This does  not affect physics at all.
-    
-7.  HMSContainner is too small to hold Q1, union a box at Q1 region such that it is large 
-    enough to hold Q1.      
-    
+6.  Fixed the helium coolant tube in Hall-B coil geometry to make it pointing vertical up.
+    In the past it is pointing vertical down. This does not affect physics at all.
+   
+7.  HMSContainner is too small to hold Q1, union a box at Q1 region such that it is large
+    enough to hold Q1.     
+   
 8.  Modified HRSUIExecutive and G4MC. Now vis.mac will be executed if QT is not available
-    and "-i -x 1" option is used.
+    when "-i -x 1" option is used.
+   
+9.  Modified G2P chicane configuration. In the past both chicane magnets have to be
+    placed together. Now we can configure to place only one.   
     
-9.  Modified G2P chicane configuration. In the past both chicane magnets have to be 
-    placed togather. Now we can config to place only one.    
-    
-10. Made a quick and dirty change in G2PDetectorConstruction.  If SetupChicaneVD==4, will setup
-    a 15 cm thick local dump which is made of lead, located at 2.5m downstream of the FZ dipole.
-    This is only for simulation of Hall C beam line with vertical Chicane. Might change it later.
-
 ---------------------------------------------------------------------------
 V1.05
 1. Added RTPC Geometry. Do not add reconstruction part yet. Added RTPC target field maps.
    I still use BField_Helm to read and interpolate this map, since it is also a RZ field.
-2. Updated SBS geometry, spliting it into a seperate file. Added mag block and uniform field.
-3. Renamed QElXS as XSModel. Added the following models: P.Bosted, wiser, Larry's C12 
-   elastic codes (fortran, very slow). Split the old elastic model from HRSGlobal and 
-   put them into this project. 
+2. Updated SBS geometry, splitting it into a separate file. Added mag block and uniform field.
+3. Renamed QElXS as XSModel. Added the following models: P.Bosted, wiser, Larry's C12
+   elastic codes (fortran, very slow). Split the old elastic model from HRSGlobal and
+   put them into this project.
 4. Modified the vcproj files. From now on if the project include fortran codes,
    the fortran lib will be compiled as $(ProjectName)For.lib under vc_proj dir.
    And also the obj files will be put into obj.$(ProjectName).
 5. Removed DaughterEdep in the hit class since it is useless.
 6. Added HRSDCHit and HRSDCSD to take care DC and SC detectors.
 7. Added SDName table into the config tree. Removed the SDID enum in the source code.
-   From now on the SDID table is from the Geant4 system. 
+   From now on the SDID table is from the Geant4 system.
    Might do this in future: add some functions such that one can use his own SDID table.
-   ( add option -DetectorMap detmap.ini, user must provide this map file.) Will read this 
-   map file and store all items into a map. If user spell the SDName wrong or missing 
-   some SDName, just print out warning message). 
+   ( add option -DetectorMap detmap.ini, user must provide this map file.) Will read this
+   map file and store all items into a map. If user spell the SDName wrong or missing
+   some SDName, just print out warning message).
 8. Updated RTPC geometry such that one can change its length and size. Added both DVCS
    solenoid block and UVA Gorden Cates's soleniod block. Added SetupSolenoid in Detector_RTPC.ini
    to tell which one will be built.
 9. Added personal QtGui interface. One can now launch it with command option: "-x 2".
-   The original "-x" now have to be followed by one interger (1 or 2) to tell whether to 
+   The original "-x" now have to be followed by one interger (1 or 2) to tell whether to
    use the default G4QtUI(-x 1) or this one (-x 2).
 10.Added PARIS DWave function in HRSPrimaryGeneratorAction.cc. Updated the FastProtonEngine
    such that it will throw Ps follows in the DWave function.   
@@ -108,44 +131,44 @@ V1.05
    map is not the final one yet. Its location information is not clear to me neither. The uniform
    field added in item 2 is no longer used. HRSRootTree was also modified to add more tree leaves
    about SBS, HMS and RTPC in the config tree.
-12.Updated some help description in HRSUsage.ini. 
-13.Updated HRSSteppingAction for this purpose: if a track reach a physics volumn 
-   whoes name contains 'vortualBoundaryPhys' or 'absorberPhys', kill this track.    
-14.Updated all virtualBoundary physical volumn name. For instance, HRS virtualBoundary is 
-   renamed to virtualBoundaryPhys_LHRS and virtualBoundaryPhys_RHRS. In HRSRootTree, this 
-   virtualBoundary name will tell which reconstruction routine to be called. 
-15.Updated HRSRootTree.cc. Modified HRS recostruction such that it read charge and mass from
+12.Updated some help description in HRSUsage.ini.
+13.Updated HRSSteppingAction for this purpose: if a track reach a physics volume
+   whose name contains 'vortualBoundaryPhys' or 'absorberPhys', kill this track.    
+14.Updated all virtualBoundary physical volume name. For instance, HRS virtualBoundary is
+   renamed to virtualBoundaryPhys_LHRS and virtualBoundaryPhys_RHRS. In HRSRootTree, this
+   virtualBoundary name will tell which reconstruction routine to be called.
+15.Updated HRSRootTree.cc. Modified HRS reconstruction such that it read charge and mass from
    particle definition. Before it is hard coded with electron.
 16.Updated PrimaryGeneratorAction: replaced engine "H20UserFit" by "Compton" Engine. Added 2
-   variables into the root output tree: Ei and Helicity, where Ei is the incident energy of the 
+   variables into the root output tree: Ei and Helicity, where Ei is the incident energy of the
    incoming photon (the Bremsstruhlung photon).  
    In this engine, Ei follows the distribution of Bremsstruhlung radiation, which is from PDG
-   booklet (2012 version) equation 27.27. Two Geant4 commands have been added to control the 
+   booklet (2012 version) equation 27.27. Two Geant4 commands have been added to control the
    energy range of these radiated photon:
    /mydet/ComptonEngine/PhotonEFracMin 0.01
    /mydet/ComptonEngine/PhotonEFracMax 0.999
    default values is 0.01 and 0.999.
-   Note that 	   
+   Note that        
 17.Built engine "TowBody" for two-body reactions. This engine will set the momentum of current
    particle according to that one it will be coupled to using these rules:
-   Px_this = -Px_coupleTo 
-   Py_this = -Py_coupleTo 
-   Pz_this = beamEnergy - Pz_coupleTo 
+   Px_this = -Px_coupleTo
+   Py_this = -Py_coupleTo
+   Pz_this = beamEnergy - Pz_coupleTo
    Added the following Geant4 commands:
-	/mydet/particle2/coupleToPrimary  <int> 
-	/mydet/particle3/coupleToPrimary  <int> 
-	/mydet/particle4/coupleToPrimary  <int> 
-	/mydet/particle5/coupleToPrimary  <int> 
-	/mydet/particle6/coupleToPrimary  <int> 
-	/mydet/particle7/coupleToPrimary  <int> 
-	/mydet/HMSMomentum  <double> [unit] 
-	To use this engine, one have to use two commands: one to set the engine, the other to set the target
-	parimary to which current parimary will couple. For example:
-	/mydet/particle4/engine TwoBody
-	/mydet/particle4/coupleToPrimary 1
+    /mydet/particle2/coupleToPrimary  <int>
+    /mydet/particle3/coupleToPrimary  <int>
+    /mydet/particle4/coupleToPrimary  <int>
+    /mydet/particle5/coupleToPrimary  <int>
+    /mydet/particle6/coupleToPrimary  <int>
+    /mydet/particle7/coupleToPrimary  <int>
+    /mydet/HMSMomentum  <double> [unit]
+    To use this engine, one have to use two commands: one to set the engine, the other to set the target
+    primary to which current primary will couple. For example:
+    /mydet/particle4/engine TwoBody
+    /mydet/particle4/coupleToPrimary 1
    By default the first primary will be coupled to.
-18.Added radiator into HRSDetectorConstruct. The following block has been added into Detector.ini 
-   to config position and radiation length for this radiator.
+18.Added radiator into HRSDetectorConstruct. The following block has been added into Detector.ini
+   to configure position and radiation length for this radiator.
    ###########################################################
    # The radiator                                                                                           
    SetupRadiator=1;                                                                                         
@@ -159,47 +182,47 @@ V1.05
    #the distance of center of radiator to the pivot, negative means upstream                                
    Radiator2Pivot=-1000.0;  
     ###########################################################
-19.Updated Drift_Sieve2Tg.cc to use variant step length but keep 1 um accuracy. This will improve 
-   the speed by a factor of 2000 comparing to running with a fixed step length of 1 um. 
+19.Updated Drift_Sieve2Tg.cc to use variant step length but keep 1 um accuracy. This will improve
+   the speed by a factor of 2000 comparing to running with a fixed step length of 1 um.
  
 20.Add N14 elastic XS and RCS XS into XSModel
 21. Update TrackClass definition:
 #    Flag to identify a good track. For all HRS track. the conditions are:
 #    (A) hit virtual boundary;
-#    (B) pow(Thetavb_tr-0.0)/0.060,2.0)+pow(Phivb_tr-0.0)/0.035,2.0)<1.0 
+#    (B) pow(Thetavb_tr-0.0)/0.060,2.0)+pow(Phivb_tr-0.0)/0.035,2.0)<1.0
 #    (C) dPOverP0 Cut: (P0-Pvb)/P0<0.05
 #    (D) pow(Thetavb_tr-0.0)/0.050,2.0)+pow(Phivb_tr-0.0)/0.028,2.0)<1.0 && (P0-Pvb)/P0<0.04
 #    -1 garbage: can not hit the virtual boundary
-#    0 barely normal: A satisfied 
+#    0 barely normal: A satisfied
 #    1 normal: A, B satisfied
 #    2 good: A, B, C satisfied
 #    3 gold: A, B, C, D satisfied
-#    will plus 4 if it can be transported to the focus plane 
+#    will plus 4 if it can be transported to the focus plane
 
-22. Fixed a bug in the bremsstrahlung distribution which is needed in Compton engine. In order to
+22. Fixed a bug in the Bremsstrahlung distribution which is needed in Compton engine. In order to
     fixed this bug, I have added this routine in class HRSRand:
-	//generate a non-uniform x using the constrain(distribution) of f(x,npar,par)
-	//this function f should be in this form double f(double,double *)
-	double VNReject(double xlow, double xhigh, double ylow,double yhigh,double *par,func2 f);
+    //generate a non-uniform x using the constrain(distribution) of f(x,npar,par)
+    //this function f should be in this form double f(double,double *)
+    double VNReject(double xlow, double xhigh, double ylow,double yhigh,double *par,func2 f);
  
 23. Added brem. photon polarization into the tree and in HRSPrimaryEventGenerator, assuming 90% electron
-    polarization. Use this fomular: Pol_e * (4*y-y*y)/(4-4*y+3*y*y), where y is the energy fraction of 
+    polarization. Use this formula: Pol_e * (4*y-y*y)/(4-4*y+3*y*y), where y is the energy fraction of
     photon to electron.
 24. Add LAC geometry: class LACDetectorConstruction added, class HRSDetectorConstruction and HRSRootTree
-    and HRSEventAction were modified for this purpose. 
+    and HRSEventAction were modified for this purpose.
 24. Fixed a bug in HRSStdHit, this bug cause accumulate energy into a wrong hit.
 25. Added HRSCalorimeterHit and HRSCalorimeterSD to take care of EC hit.
 26. Updated CREX geometry according to http://ace.phys.virginia.edu/HAPPEX/2866
     user: happex
     psw: strangeFF
-27. Modified RTPC geometry class such that user can also change the presure|density for the drift
+27. Modified RTPC geometry class such that user can also change the pressure|density for the drift
     gas. And also allow to change target material from configuration file.
     This is driven by TDIS simulation.
-28. In the PrimaryEventGenerator, The random generator throw event randomly in theta and phi angle, 
-    This is not quite right. I changed it to randomize in costheta and phi. 
+28. In the PrimaryEventGenerator, The random generator throw event randomly in theta and phi angle,
+    This is not quite right. I changed it to randomize in costheta and phi.
     But the random generator in TCS remains. I plan to change it later.  
-29. To study the radiator, I need to make the target sensitive. It is better to 
-    EC type SD. But in order to study the heat deposite as a function of z, I use
+29. To study the radiator, I need to make the target sensitive. It is better to
+    EC type SD. But in order to study the heat deposited as a function of z, I use
     DC type SD.
 
 ---------------------------------------------------------------------------
@@ -207,50 +230,50 @@ V1.04
 1. Reorganized HRSTransport package. makefile changed. VCproject file changed.
 2. Updated Drift_Sieve2Tg namespace. Replace the normal RK4 by NostormRK4 which is 40% faster.
 3. Updated HRSRecUseDB.
-4. Modify HRSRootTree to adapt the above changes. No bug at all.
-5. Modify GNUMakefile to support fortran code. Put fortran files in src.
+4. Modified HRSRootTree to adapt the above changes. No bug at all.
+5. Modified GNUMakefile to support fortran code. Put fortran files in src.
 
  
 ---------------------------------------------------------------------------
-V1.03 
+V1.03
 
 11/14/2012
-1. Added 400016 snake model for Left arm. Still waiting for right arms. 
+1. Added 400016 snake model for Left arm. Still waiting for right arms.
 
-2. Added CREX experiement geometry: CREXDetectorConstruction. HRSEventAction was updated to include
+2. Added CREX experiment geometry: CREXDetectorConstruction. HRSEventAction was updated to include
    hits from these new SD.
 
-3. Reorganized HRSDetectorConstruction. Separate G2P|GEP geometries into G2PDetectorConstruction. 
-   BigBiteDetecotorGeometry,and HRSEMFieldSetup had been updated. The geometry construction for HRSMC 
-   is now very flexible. One can setup some geometries from G2P, togather with some geometries from CREX.
+3. Reorganized HRSDetectorConstruction. Separate G2P|GEP geometries into G2PDetectorConstruction.
+   BigBiteDetecotorGeometry,and HRSEMFieldSetup had been updated. The geometry construction for HRSMC
+   is now very flexible. One can setup some geometries from G2P, together with some geometries from CREX.
    Geometries for each experiment are determined by its own configuration file, variables in Detector.ini
    can all be overwritten.
-   If there is another experiment need to be added, one just need to write one more class 
+   If there is another experiment need to be added, one just need to write one more class
    XXDetectorConstruction and its input file Detector_XX.ini. Then modify HRSDetectorConstruction slightly.
 
-11/25/2012   
-4. Added Chao's HRSRecUseDB module.    
+11/25/2012  
+4. Added Chao's HRSRecUseDB module.   
 
 5. Updated the sieve position with the survey result.
 
-6. Updated HRSRootTree, if 'USE_MINI_TREE' is defined, do not fill Step*, TrackBdL*, R, A0, B0 leaves into the 
-   ntuple.    
+6. Updated HRSRootTree, if 'USE_MINI_TREE' is defined, do not fill Step*, TrackBdL*, R, A0, B0 leaves into the
+   ntuple.   
 
 12/18/2012
 7. Got some drawing from Josh about the target cell for C12. It turns out that Josh placed an extra
    cylinder to hold the C12 foils and put it in a different location.  I modified G2PDetectorConstruction
-   to adopt this feature. To simlify the Detector_G2P.ini, I removed the following variables:     
+   to adopt this feature. To simplify the Detector_G2P.ini, I removed the following variables:    
      SetupTargetWall
      TargetR
      TargetCapThick
      TargetWallThick
    These 4 variables are hard coded. They are too complicate to configure.
-   
-   From now on, user only need to choose TargetType (material) and specify SetupG2PTarget  
+  
+   From now on, user only need to choose TargetType (material) and specify SetupG2PTarget 
    to tell which cell to be set up, and also give the target thickness with TargetL
-   
+  
    Based on survey A1453, I updated the sieve position and the local dump position.
-            
+           
       
       
 ---------------------------------------------------------------------------
@@ -258,10 +281,10 @@ V1.02 10/08/2012
 
 1. Updated HRSTransport lib. Rename most of the files such that one can tell the purpose
    of each file from its name. Min's 5.69 degrees model for septum with shims was removed
-   since it is not used and it was fitted from a wront Bx septum field. I keep the model that
-   Min created at Feb 23 2012 for 2 cm raster 484816+shim with wrong Bx. This one will be trigged
-   if SnakeModel==19. Meanwhile, John provided a new SNAKE model for septum484816+shim 
-   with 3cm raster. This model has better resolution in Ytg. TransportThruHRS had been updated 
+   since it is not used and it was fitted from a wrong Bx septum field. I keep the model that
+   Min created at Feb 23 2012 for 2 cm raster 484816+shim with wrong Bx. This one will be triggered
+   if SnakeModel==19. Meanwhile, John provided a new SNAKE model for septum484816+shim
+   with 3cm raster. This model has better resolution in Ytg. TransportThruHRS had been updated
    as the following:
 
 bool HRSRootTree::TransportThruHRS(int i, int SnakeModel);
@@ -269,16 +292,16 @@ bool HRSRootTree::TransportThruHRS(int i, int SnakeModel);
 //will be use, SnakeModel==10-19 is for g2p, 20 for E97110 GDH experiment
 //Here is a list of SnakeModel candidates:
 //SnakeModel=10: g2p septum No shim, 5.65 deg, by John, 2 cm raster, Wrong Bx septum field
-//SnakeModel=11: g2p septum 484816+shim, 5.65 deg, 3cm raster, by Min 
-//SnakeModel=12: g2p septum 403216+shim, 5.65 deg, SNAKE Model not ready yet 
-//SnakeModel=13: g2p septum 400016+shim, 5.65 deg, SNAKE Model not ready yet 
+//SnakeModel=11: g2p septum 484816+shim, 5.65 deg, 3cm raster, by Min
+//SnakeModel=12: g2p septum 403216+shim, 5.65 deg, SNAKE Model not ready yet
+//SnakeModel=13: g2p septum 400016+shim, 5.65 deg, SNAKE Model not ready yet
 //SnakeModel=19: g2p septum 484816+shim, 5.65 deg, by Min, 2 cm raster, Wrong Bx septum field
 //SnakeModel=20: GDH exp with large X0 version
 //SnakeModel=all other values: Standard HRS seting, no septum field, no target field
    
    HRSUasge.ini was also updated for this.
 
-2. Added a warning message into Drift_Sieve2Tg:Drift() to print the warning when use input 
+2. Added a warning message into Drift_Sieve2Tg:Drift() to print the warning when use input
    some wrong arguments. In some case the zlimit or target plane are conflict so that the Drift()
    routine does not move the particle. In this case the tracklength will stay 0. I forced the routine
    to print some warning message when tracklength less than 1.0E-8 meter.
@@ -286,73 +309,73 @@ bool HRSRootTree::TransportThruHRS(int i, int SnakeModel);
 3. Added one overload routine for Transform:X_HCS2TCS() to take care of the situation that the end
    plane is not sitting on the origin.
 
-4. Fix a overlapping problem for 12.5 degrees situation. The HRS containner was overlapped  
+4. Fix a overlapping problem for 12.5 degrees situation. The HRS container was overlapped  
    with HRSVB, now I moved the HRSVB upstream. It is 1.45m away from the hall center now.
-   This bug does not affect g2p since g2p runs in 5.65 degrees. 
+   This bug does not affect g2p since g2p runs in 5.65 degrees.
    Some long lines in file HRSDetectorConstuction.cpp was chuncated to 2 lines, some comments
    were added to describe the code.
    
 5. This is not an update, just write it down to let user know how to speed up:
    Since ContructG2PHRS() will be called only if SetupLHRS or SetupRHRS none zero. HRSContainner
-   will be set up only if SetupLHRS>=2 or SetupRHRS>=2. In order to speep up, please do not set up
-   HRSContainer. for example, SetupLHRS=1 and SetupRHRS=1 will allows to set up sieve, septum and 
+   will be set up only if SetupLHRS>=2 or SetupRHRS>=2. In order to speed up, please do not set up
+   HRSContainer. for example, SetupLHRS=1 and SetupRHRS=1 will allows to set up sieve, septum and
    HRSVB without setting up HRSContainer, which allows to shrink the hall size and results in fast
    speed.
    
 6. Fixed a bug that when reset the septum momentum, the current ratio was set to a number that is
-   1000 times of itself. It was due to missing the unit. 
+   1000 times of itself. It was due to missing the unit.
 
-7. Fixed a bug for the overlapping of Bigbite and HAND. HAND container was using a fixed distance 
-   to the target, if Bigbite was moved away from the target, there will be some overlapping. I just 
+7. Fixed a bug for the overlapping of Bigbite and HAND. HAND container was using a fixed distance
+   to the target, if Bigbite was moved away from the target, there will be some overlapping. I just
    changed the position of HAND is relative to the Bigbite.
    
 ---------------------------------------------------------------------------
 V1.01 09/18/2012
-1) Added BigBite and hall A neutron detector geometries. 
-   By Jixie: For some reason, this update has some memory overfloat issue which 
+1) Added BigBite and hall A neutron detector geometries.
+   By Jixie: For some reason, this update has some memory over-float issue which
    I did not find out yet. This program works fine in Linux, but not in windows.
    Will post when this issue solved.
-2) Reorgnized HRSDetectorConstruction. Split Material and VisAttribute into saperateclasses.
+2) Reorgnized HRSDetectorConstruction. Split Material and VisAttribute into separate classes.
 3) Added HRS QQDQ Geometries.Waiting for fields.
-4) Split Transport thrught HRS into HRSTransport.cc as the following:
+4) Split Transport through HRS into HRSTransport.cc as the following:
 
 //transport particles through HRS, use iExperiment to identify which HRS packages
 //will be use, iExperiment==[10,20) is for g2p, 20 for E97110 GDH iExperiment
 //Here is a list of experiment candidates:
 //experiment=10: g2p septum without shim, 5.65 deg, Created by John, use this for g2p test run
-//experiment=11: g2p septum 484816+shim, 5.65 deg, Created by Min, 
-//experiment=12: g2p septum 403216+shim, 5.65 deg, SNAKE Model not ready yet 
-//experiment=13: g2p septum 400016+shim, 5.65 deg, SNAKE Model not ready yet 
+//experiment=11: g2p septum 484816+shim, 5.65 deg, Created by Min,
+//experiment=12: g2p septum 403216+shim, 5.65 deg, SNAKE Model not ready yet
+//experiment=13: g2p septum 400016+shim, 5.65 deg, SNAKE Model not ready yet
 //experiment=19: g2p septum 403216+shim, 5.65 deg, Min's version for normal septum without shim
 //experiment=20: GDH exp with large X0 version
-//experiment=all other values: Standard HRS seting, no septum field, no target field
+//experiment=all other values: Standard HRS setting, no septum field, no target field
 //will add more HRS packages later
 
-bool SNAKEThruHRS(int pIsLeftArm, double pEndPlaneAngle, double pX0_tg_m, 
-				  double pHRSMomentum, int iFieldRotation, int iExperiment,
-				  double* pV5_tg, double* pV5_fp)
-				  
-	Updated HRSRootTree.cc for this purpose.		
+bool SNAKEThruHRS(int pIsLeftArm, double pEndPlaneAngle, double pX0_tg_m,
+                  double pHRSMomentum, int iFieldRotation, int iExperiment,
+                  double* pV5_tg, double* pV5_fp)
+                 
+    Updated HRSRootTree.cc for this purpose.       
 5) Changed one typo in class HRSDetectorConstruct from 'Incert' to 'Insert'
-6) Updated DriftSieve2Tg::Drift() to take z across zlimit as the trigger to stop drifting   
+6) Updated DriftSieve2Tg::Drift() to take z across zlimit as the trigger to stop drifting  
 
-//This routine is used to drift particle in the field, will stop once z across zlimit 
-//or track_length>tracklengthlimit or backward across the target plane, which comes earlier 
+//This routine is used to drift particle in the field, will stop once z across zlimit
+//or track_length>tracklengthlimit or backward across the target plane, which comes earlier
 //definition of backward and forward: If Pz<0 go backward, otherwise forward
 int Drift(TVector3& VX, TVector3& VP, double angle_rad, double m_gev, double q,
-		  double zlimit, double tracklengthlimit, double steplength, double ztarget);
-		  
+          double zlimit, double tracklengthlimit, double steplength, double ztarget);
+         
 7) Debugged HRSRootTree::TransportThruHRS(), made necessary changes.
-   HRSRootTree::TransportThruHRS() has been rewritten. 
-   Here is the 'plane' it goes thrught and the key word of the variables names:
+   HRSRootTree::TransportThruHRS() has been rewritten.
+   Here is the 'plane' it goes through and the key word of the variables names:
    vertex  -> target-> sieve(vb) -> target     -> focal -> target     -> sieve       -> target    -> vertex
    $0,$0_tr-> $tg_tr-> $vb,$vb_tr->$_proj2tg_tr-> $fp_tr-> $_rec2tg_tr-> $_proj2sl_tr-> $tg_rec_tr-> $_rec,$_rec_tr
-   	
+      
    This routine will do the following:
 
-   Section 1: 
-   A) Convert vertex, vb variable from HTC to TCS, 
-   B) Project vertex plane to target plane	
+   Section 1:
+   A) Convert vertex, vb variable from HTC to TCS,
+   B) Project vertex plane to target plane   
    C) Determine TrackClass, stop if it less than SkimLevel
    Section 2:
    A) Project Sieve plane (or VB plane) (_vb_tr) to target plane (_proj2tg_tr)
@@ -360,123 +383,123 @@ int Drift(TVector3& VX, TVector3& VP, double angle_rad, double m_gev, double q,
       reconstruct them to target plane (_rec2tg_tr)
    C) Stop if fail to call SNAKE model
    Section 3:
-   If the reconstrction is good, set the following tree variables:
-	  $fp_tr -> $_rec2tg_tr -> $_proj2sl_tr -> $tg_rec_tr -> $_rec,$_rec_tr
+   If the reconstruction is good, set the following tree variables:
+      $fp_tr -> $_rec2tg_tr -> $_proj2sl_tr -> $tg_rec_tr -> $_rec,$_rec_tr
    A) Stored $fp_tr and $_rec2tg_tr
    B) If target field is off, set $tg_rec_tr=$rec2tg_tr, then calculate vertexZ, then
       project from target plane to vertex plane
    C) If target field is on, do the following:
-      I)  Project $rec2tg_tr to sieve plane: $_proj2sl_tr 
-      II) Call Drift() or SNAKE_Sl2Tg() to get them back to target plane: $tg_rec_tr 
-	  III)Calculate vertexZ, call Drift() move them from target plane to vertex plane: $_rec,$rec_tr 
- 		  
-8) Added The following leaves into the track tree.  
+      I)  Project $rec2tg_tr to sieve plane: $_proj2sl_tr
+      II) Call Drift() or SNAKE_Sl2Tg() to get them back to target plane: $tg_rec_tr
+      III)Calculate vertexZ, call Drift() move them from target plane to vertex plane: $_rec,$rec_tr
+          
+8) Added The following leaves into the track tree. 
 
-	//the image of X0_tr,Y0_tr on target plane
-	double  Xtg_tr;		
-	double  Ytg_tr;
-	
-	//reconstructed variables at target plane
-	double  Xtg_rec_tr;
-	double  Ytg_rec_tr;
-	double	Thetatg_rec_tr;
-	double  Phitg_rec_tr;
-	
-	//project from sieve plane to target plane for calling snake forward 
-	double  X_proj2tg_tr;
-	double  Y_proj2tg_tr;
-	
-	//to store snake backward result
-	double  X_rec2tg_tr;
-	double  Y_rec2tg_tr;
-	double	Theta_rec2tg_tr;
-	double  Phi_rec2tg_tr;
-	double  P_rec2tg;
+    //the image of X0_tr,Y0_tr on target plane
+    double  Xtg_tr;       
+    double  Ytg_tr;
+   
+    //reconstructed variables at target plane
+    double  Xtg_rec_tr;
+    double  Ytg_rec_tr;
+    double    Thetatg_rec_tr;
+    double  Phitg_rec_tr;
+   
+    //project from sieve plane to target plane for calling snake forward
+    double  X_proj2tg_tr;
+    double  Y_proj2tg_tr;
+   
+    //to store snake backward result
+    double  X_rec2tg_tr;
+    double  Y_rec2tg_tr;
+    double    Theta_rec2tg_tr;
+    double  Phi_rec2tg_tr;
+    double  P_rec2tg;
 
-	//project snake result to sieve plane
-	double  X_proj2sl_tr;
-	double  Y_proj2sl_tr; 		  
+    //project snake result to sieve plane
+    double  X_proj2sl_tr;
+    double  Y_proj2sl_tr;          
 
-9)	Split HCS and TCS transform routines into HRSTransform_TCSNHCS
+9)    Split HCS and TCS transform routines into HRSTransform_TCSNHCS
 
 10) Updated HRSUsage.ini to add these 2 options:
 
   -targetfield or -TargetField <TargetFieldIni(BField_Helm.ini)> [TargetFieldMap(g2p_targetfield.dat)]:
-	 description: Specify the target field configuration file and its map file. One can put the full path 
-	 or relative path of them here. This field map will be read by class BField_Helm, which takes only RZ 
-	 map in format of (z, r, Bz, Br, Btot) (cm and tesla) and must have both z and azimuthial symmetry. 
-	 In HRSMC, both SANE and Hall B target field map are available. The SANE map is g2p_targetfield_SANE.dat
-	 For G2p|Gep experiment, that target field could have 0, 6 and 90 degrees rotation and 
-	 with differenet field value. One should prepare a configuration file for each setting.
+     description: Specify the target field configuration file and its map file. One can put the full path
+     or relative path of them here. This field map will be read by class BField_Helm, which takes only RZ
+     map in format of (z, r, Bz, Br, Btot) (cm and tesla) and must have both z and azimuthal symmetry.
+     In HRSMC, both SANE and Hall B target field map are available. The SANE map is g2p_targetfield_SANE.dat
+     For G2p|Gep experiment, that target field could have 0, 6 and 90 degrees rotation and
+     with differenet field value. One should prepare a configuration file for each setting.
 
 
   -septumfield or -SeptumField <SeptumFieldIni(BField_Septum.ini)> [SeptumFieldMap(g2p_septumfield.dat)]:
-	 description: Specify the septum field configuration file and its map file. One can put the full path 
-	 or relative path of them here. This field map will be read by class BField_Septum, which takes only 
-	 TOSCA map in format of (x, y, z, Bx, By, Bz) and must have Z symmetry. In HRSMC, there 
-	 will be 4 versions of septum field: 
-	 1) normal septum 484816, g2p_septumfield.dat: used in commissioning run in December 2011
-	 2) normal septum 484816 + shim, g2p_septumfield_484816_950A.dat: used between March 2nd and March 17th 
-	 3) septum 403116 + shim, g2p_septumfield_403216_950A.dat: used between March 18th and April 9th 
-	 4) septum 400016 + shim, g2p_septumfield_400016_950A.dat; used after April 10th 
+     description: Specify the septum field configuration file and its map file. One can put the full path
+     or relative path of them here. This field map will be read by class BField_Septum, which takes only
+     TOSCA map in format of (x, y, z, Bx, By, Bz) and must have Z symmetry. In HRSMC, there
+     will be 4 versions of septum field:
+     1) normal septum 484816, g2p_septumfield.dat: used in commissioning run in December 2011
+     2) normal septum 484816 + shim, g2p_septumfield_484816_950A.dat: used between March 2nd and March 17th
+     3) septum 403116 + shim, g2p_septumfield_403216_950A.dat: used between March 18th and April 9th
+     4) septum 400016 + shim, g2p_septumfield_400016_950A.dat; used after April 10th
 
-   Field classes BField_Helm, BField_Septum and HRSEMField have been updated to match the above modification. 
-   With these options, it is much easy to switch fields.  	
-	
-11) Add one option to tell where the recostruction will stop and also the BPM resolutions:
+   Field classes BField_Helm, BField_Septum and HRSEMField have been updated to match the above modification.
+   With these options, it is much easy to switch fields.     
+   
+11) Add one option to tell where the reconstruction will stop and also the BPM resolutions:
 
   -recon or -Reconstruction <WhereToStopRecon(1)> [SnakeModel(11)] [BPMYRes(1.0)] [BPMXRes(0.5)]:
-	 description: Specify where to stop reconstruction and the BPM resolution in lab X and Lab Y. 
-	 WhereToStopRecon equal to 0 means stop reconstruction at target plane, 1 means at vertex plane and 
-	 2 means at exact thrown vertex z. 
-	 SnakeModel is used to identify which SNAKE packages will be use, SnakeModel between 10 and 19 are 
-	 for g2p|gep, 20 for E97110 GDH experiment...  Here is a list of SnakeModel candidates: 
-	 SnakeModel=10: g2p septum without shim, 5.65 deg, Created by John, use this for g2p test run 
-	 SnakeModel=11: g2p septum 484816+shim, 5.65 deg, Created by Min Huang 
-	 SnakeModel=12: g2p septum 403216+shim, 5.65 deg 
-	 SnakeModel=13: g2p septum 400016+shim, 5.65 deg 
-	 SnakeModel=19: g2p septum 484816, no shim, 5.65 deg, Min's version for normal septum without shim 
-	 SnakeModel=20: GDH exp with large X0 version 
-	 SnakeModel=other_values: Standard HRS setting, no septum field, no target field 
-	 BPMXRes is the Lab X resolution of the BPM, and BPMYRes is for Lab Y, which is beam energy and 
-	 target field dependence. The Y resolution contributed from 2.5T target field, where beam goes to
-	 the Hall a dump, are 0.7, 0.9 and 1.4 mm for 2.254, 1.706 and 1.159 GeV Beam, respectively.
-	 Assuming the N15 BPM system itself has about 0.5 mm uncertainty, the combined BPM Y resolution 
-	 will be 0.9, 1.0 and 1.5 mm for 2.254, 1.706 and 1.159 GeV Beam. 
+     description: Specify where to stop reconstruction and the BPM resolution in lab X and Lab Y.
+     WhereToStopRecon equal to 0 means stop reconstruction at target plane, 1 means at vertex plane and
+     2 means at exact thrown vertex z.
+     SnakeModel is used to identify which SNAKE packages will be use, SnakeModel between 10 and 19 are
+     for g2p|gep, 20 for E97110 GDH experiment...  Here is a list of SnakeModel candidates:
+     SnakeModel=10: g2p septum without shim, 5.65 deg, Created by John, use this for g2p test run
+     SnakeModel=11: g2p septum 484816+shim, 5.65 deg, Created by Min Huang
+     SnakeModel=12: g2p septum 403216+shim, 5.65 deg
+     SnakeModel=13: g2p septum 400016+shim, 5.65 deg
+     SnakeModel=19: g2p septum 484816, no shim, 5.65 deg, Min's version for normal septum without shim
+     SnakeModel=20: GDH exp with large X0 version
+     SnakeModel=other_values: Standard HRS setting, no septum field, no target field
+     BPMXRes is the Lab X resolution of the BPM, and BPMYRes is for Lab Y, which is beam energy and
+     target field dependence. The Y resolution contributed from 2.5T target field, where beam goes to
+     the Hall a dump, are 0.7, 0.9 and 1.4 mm for 2.254, 1.706 and 1.159 GeV Beam, respectively.
+     Assuming the N15 BPM system itself has about 0.5 mm uncertainty, the combined BPM Y resolution
+     will be 0.9, 1.0 and 1.5 mm for 2.254, 1.706 and 1.159 GeV Beam.
 
 
-	 class HRSRootTree has been modified. These 3 variales will be wriiten to the config tree.
-	 
+     class HRSRootTree has been modified. These 3 variables will be written to the config tree.
+     
 12) Fixed one bug in DriftSieve2Tg::Drift() which causes stop at target plane fail. This namespace has been
-    updated to support both septum field and target field. 
- 	 
+    updated to support both septum field and target field.
+      
 13) Updated the 484816+shim septum map. The old one have a wrong size for Bx in the right arm. Updated some
     ini file for septum field.
-	
-14) Added BdL engine into HRSPrimaryGeneratorAction. This engine will throw position vector X then 
-    integrate BdL from X along the central ray up to 805 mm away from the target center. Based on the 
-    interated BdL, it will calculate MeanTheta_tr and MeanPhi_tr. Then throw theta_tr within 
-    MeanTheta_tr +/- 80 mrad and throw phi_tr in MeanPhi_tr +/- 50 mrad. This engine is trigged by  
+   
+14) Added BdL engine into HRSPrimaryGeneratorAction. This engine will throw position vector X then
+    integrate BdL from X along the central ray up to 805 mm away from the target center. Based on the
+    interated BdL, it will calculate MeanTheta_tr and MeanPhi_tr. Then throw theta_tr within
+    MeanTheta_tr +/- 80 mrad and throw phi_tr in MeanPhi_tr +/- 50 mrad. This engine is trigged by 
     key word 'BdL' in option '-g' or '-engine'.
 
 15) Added codes into HRSRootTree::TransportThruHRS() to calculate Xtg_BPM_tr_eff, the effective BPM vertical
-	position. This variable will be used in SNAKE backward models. To achieve this value, I have to call SNAKE
-	backward model twice.  
-		Xtg_BPM_tr_eff=f(P0) --> Call SNAKE backward to get P_rec2tg 
-		-->  Xtg_BPM_tr_eff=f(P_rec2tg) -->  Call SNAKE backward to do reconstruction  	
-      	
-16) Updated the definition of Xtg_tr,Ytg_tr, newly added Theatg_tr,Phitg_tr. In the past they are the linear 
-	projection from vertex plane to target plane. Now they are the TRUE interaction point at target plane.
-	(They are achieved from Drifting vertex point on to the target plane.)  Drift() routine was updated  
-	such that it can stop at target plane when going forward.
-	
-17) Added Energy loss correction to the end of routine HRSRootTree::TransportThruHRS(). Only 3 situations are 
-	ready: 1) C12 No Helium  2) C12 with Helium  3) NH3 with Helium
-	Need to work on this part to add more fits for other situations
-	
-18) Updated HRSDetectorConstruction to remove overlapping. The variable 'TargetR' in Detector.ini are now 
-	restricted by the target cell size on the incert.
-	  	
+    position. This variable will be used in SNAKE backward models. To achieve this value, I have to call SNAKE
+    backward model twice. 
+        Xtg_BPM_tr_eff=f(P0) --> Call SNAKE backward to get P_rec2tg
+        -->  Xtg_BPM_tr_eff=f(P_rec2tg) -->  Call SNAKE backward to do reconstruction     
+         
+16) Updated the definition of Xtg_tr,Ytg_tr, newly added Thetatg_tr,Phitg_tr. In the past they are the linear
+    projection from vertex plane to target plane. Now they are the TRUE interaction point at target plane.
+    (They are achieved from Drifting vertex point on to the target plane.)  Drift() routine was updated 
+    such that it can stop at target plane when going forward.
+   
+17) Added Energy loss correction to the end of routine HRSRootTree::TransportThruHRS(). Only 3 situations are
+    ready: 1) C12 No Helium  2) C12 with Helium  3) NH3 with Helium
+    Need to work on this part to add more fits for other situations
+   
+18) Updated HRSDetectorConstruction to remove overlapping. The variable 'TargetR' in Detector.ini are now
+    restricted by the target cell size on the insert.
+          
 ---------------------------------------------------------------------------
 V1.00 04/18/2012
 1. Updated HRS transport with Min's C version of "NO target field, with symmetric septum
@@ -1195,7 +1218,7 @@ HRSQusiElasNucleon, BonusProton, RootHisto and RootNtuple. The command line to u
 are similar to this:
 /mydet/particle#/engine "HRSElasEl"
 /mydet/particle#/detectorAngle 6 deg
-/mydet/beamEnergy 1.1GeV
+/mydet/beamEnergy 1.1 GeV
 /mydet/targetMass 0.9838 GeV
 /mydet/targetAtomicNumber 1
 3. Verified the beam dump position and put the beam dump into the geometry. Currently

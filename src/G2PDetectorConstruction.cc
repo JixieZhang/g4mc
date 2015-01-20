@@ -5046,8 +5046,11 @@ G4VPhysicalVolume* G2PDetectorConstruction::ConstructG2PChicane(G4LogicalVolume*
 			SDman->AddNewDetector(FZB1SD);
 			FZDumpLogical->SetSensitiveDetector(FZB1SD);
 			FZDumpLogical->SetVisAttributes(PurpleVisAtt); 
-
-			new G4PVPlacement(0,G4ThreeVector(0,-40*cm,250*cm+pFZB2PosZ),
+			
+			double pVDY_pos = -40.0*cm;
+			double pVDZ_pos = 250*cm+pFZB2PosZ;
+			pVDZ_pos =  mPivotZOffset - 80.0*cm;
+			new G4PVPlacement(0,G4ThreeVector(0,pVDY_pos,pVDZ_pos),
 				FZDumpLogical,"FZDumpPhys",motherLogical,0,0,0);
 		}
 		else

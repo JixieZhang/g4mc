@@ -7,6 +7,7 @@ namespace  ElasModel
 	//		Theta: scattering angle for outgoing particle in radian;
 	//		Mtg_GeV: target mass if it is given
 	//		iUseLarry: in case for C12, use larry's model
+	//If z==N==0, Moller XS will be return
 	double GetXS(int Z, int N, double Ei, double Theta, double Mtg_GeV=0.0, int iUseLarry=0);
 
 	//John Arrington's Form factor
@@ -21,6 +22,7 @@ namespace  ElasModel
 	double XS_C12(double Ei, double theta);
 	//wrapper for L. Cardman's elas C12 XS
 	double Carbon(double Ei, double theta);
+	double XS_Moller(double Ei_gev, double Theta_lab_rad);
 	double GetXS_All(double Ei, double theta, int iZ, double Mtg_GeV);
 }
 

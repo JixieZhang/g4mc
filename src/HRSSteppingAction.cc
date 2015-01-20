@@ -440,6 +440,7 @@ void HRSSteppingAction::FillRootArray(const G4Step* theStep)
 		RootTrack->Phivb=v3p.phi()/rad;
 		RootTrack->VBName=strPhysVolName.substr(foundVB);
 		//kill this track whenever it hit the virtual boundary
+		//G4cout<<"Trackid="<<trackid<<", Step="<<RootTrack->StepNum<<",  Hit "<<strPhysVolName<<", kill this track...\n";
 		theTrack->SetTrackStatus(fStopAndKill);
 		PrintHeadFlag=true;
 	}

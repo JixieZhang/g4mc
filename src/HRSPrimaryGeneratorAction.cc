@@ -384,8 +384,8 @@ void HRSPrimaryGeneratorAction::GetMomentum(int i)
 	if(useMom3V[i] && pPtot>=keV) return;
 
 	//comparing string is very slow ...... need to improve this
-	if(primaryEngine[i]=="Uniform")			 {/*do thing, jump over this if block;*/;}
-	else if(primaryEngine[i]=="HRSElasEl")           {HRSElasElectronEngine(i);return;}
+	if(primaryEngine[i]=="Uniform")			 {/*do nothing, jump over this block;*/;}
+	else if(primaryEngine[i]=="HRSElasEl")      {HRSElasElectronEngine(i);return;}
 	else if(primaryEngine[i]=="HRSElasNucleus") {HRSElasNucleusEngine(i); return;}
 	else if(primaryEngine[i]=="HRSQuasiElasEl") {HRSQuasiElasElectronEngine(i); return;}
 	else if(primaryEngine[i]=="HRSQuasiElasNucleon") {HRSQuasiElasNucleonEngine(i); return;}
@@ -1124,7 +1124,6 @@ void HRSPrimaryGeneratorAction::HRSElasElectronEngine(int index)
 		double pPtot=sqrt(pEprime*pEprime-pMass*pMass);
 		momentum3V[index].setRThetaPhi(pPtot,pTheta,pPhi);
 	}
-
 }
 
 //This is the routine based on Jixie's calculation
@@ -1278,10 +1277,10 @@ void   HRSPrimaryGeneratorAction::TwoBodyEngine(int index)
 	else
 	{
 		if(index==0)
-			cout<<"***Error: There is no exist primary pariticle that particle 1 can couple yet.\n"
+			cout<<"***Error: There is no exist primary pariticles that particle 1 can couple to.\n"
 			<<"You have to specified another engine for particle 1\n";
 		else
-			cout<<"***Error: do not know which primary particle to couple. Please given the ordinal \n"
+			cout<<"***Error: Do not know which primary particle to couple. Please given the ordinal \n"
 			<<"          number using command  /mydet/particle"<<index+1<<"/coupleToPrimary "<<endl;
 	}
 }

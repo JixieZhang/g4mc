@@ -2891,6 +2891,7 @@ void HRSRootTree::DoRootTree()
 			}
 
 			//calculate elas and inelas XS, to save time, only do it for particle 0
+			//mCalculateXS= 1 for elas, 2 for inelas, 3 for both
 			//if this track is not electron, need to find out the theta of the coupled electron
 			if(j==0 || j<3)
 			{
