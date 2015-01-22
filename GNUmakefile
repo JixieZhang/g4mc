@@ -33,6 +33,10 @@ ifeq ($(G4SYSTEM),Darwin-g++)
 EXTRALIBS += -lgfortran
 #EXTRALIBS += -L/sw/lib -lgfortran
 endif
+ifeq ($(G4SYSTEM),Darwin-clang) 
+#make sure you have created a soft link of libgfortran.a in /usr/lib
+EXTRALIBS += -lgfortran
+endif
 
 #add root package
 ROOTCFLAGS   := $(shell root-config --cflags)
