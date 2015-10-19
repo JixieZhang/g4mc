@@ -1652,8 +1652,19 @@ G4VPhysicalVolume* G2PDetectorConstruction::ConstructG2PSeptumNSieve(G4LogicalVo
 	gConfig->GetParameter("Septum_CurrentRatioR",pSeptumCurrentRatioR);
 	int pUseSeptumField=(pSeptum_UseUniformB==0 && 
 		(fabs(pSeptumCurrentRatioL)>1.0E-08 || fabs(pSeptumCurrentRatioR)>1.0E-08) )?1:0;
+        double pSeptum_UniformB_x=0.0, pSeptum_UniformB_y=0.0, pSeptum_UniformB_z=0.0;
+	gConfig->GetParameter("Septum_UniformB_x",pSeptum_UniformB_x);
+	gConfig->GetParameter("Septum_UniformB_y",pSeptum_UniformB_y);
+	gConfig->GetParameter("Septum_UniformB_z",pSeptum_UniformB_z);
+        if(pSeptum_UseUniformB==1 && fabs(pSeptum_UniformB_x) + 
+		fabs(pSeptum_UniformB_x) + fabs(pSeptum_UniformB_x)>1.0E-08 )
+	  pUseSeptumField=1;
+
 	//set up the septum only if there is an angle difference	
 	bool mSetupSeptumBlock=((mLHRSAngle-mLSeptumAngle)/deg>0.5)?true:false;
+
+	//cout<<" pSeptum_UseUniformB="<<pSeptum_UseUniformB<<" pSeptumCurrentRatioL="
+	//    <<pSeptumCurrentRatioL<<" pUseSeptumField="<<pUseSeptumField<<"\n";
 
 	/////////////////////////////////////////////////
 	//From Hall A NIM Paper, the standard sieve slit
@@ -2022,7 +2033,6 @@ G4VPhysicalVolume* G2PDetectorConstruction::ConstructG2PSeptumNSieve(G4LogicalVo
 		//Place both left and right VB for HRS, which is pHRSContainerRin-6.0*cm away from the 
 		//hall center(1.40m). This aperture is a round disk of 30 cm diameter
 		//The real Q1 vacumn entrance to hall center is 1.312m, 
-
 		G4VSolid* HRSVBSolid = new G4Tubs("HRSVBTub",0.0,15*cm,
 			mHRSVBThick/2.0,0.0,360.0*deg);
 		G4LogicalVolume* HRSVBLogical = new G4LogicalVolume(HRSVBSolid,
@@ -2523,7 +2533,14 @@ G4VPhysicalVolume* G2PDetectorConstruction::ConstructG2PHRS(G4LogicalVolume* mot
 	gConfig->GetParameter("Septum_CurrentRatioL",pSeptumCurrentRatioL);
 	gConfig->GetParameter("Septum_CurrentRatioR",pSeptumCurrentRatioR);
 	int pUseSeptumField=(pSeptum_UseUniformB==0 && 
-		(fabs(pSeptumCurrentRatioL)>1.0E-08 || fabs(pSeptumCurrentRatioR)>1.0E-08) )?1:0;
+		(fabs(pSeptumCurrentRatioL)>1.0E-08 || fabs(pSeptumCurrentRatioR)>1.0E-08) )?1:0; 
+        double pSeptum_UniformB_x=0.0, pSeptum_UniformB_y=0.0, pSeptum_UniformB_z=0.0;
+	gConfig->GetParameter("Septum_UniformB_x",pSeptum_UniformB_x);
+	gConfig->GetParameter("Septum_UniformB_y",pSeptum_UniformB_y);
+	gConfig->GetParameter("Septum_UniformB_z",pSeptum_UniformB_z);
+	if(pSeptum_UseUniformB==1 && fabs(pSeptum_UniformB_x) + 
+		fabs(pSeptum_UniformB_x) + fabs(pSeptum_UniformB_x)>1.0E-08 )
+	  pUseSeptumField=1;
 	//set up the septum only if there is a angle difference	
 	bool mSetupSeptumBlock=((mLHRSAngle-mLSeptumAngle)/deg>0.5)?true:false;
 

@@ -51,6 +51,7 @@ private:
 	G4Material* silicon;
 	G4Material* stainlesssteel;
 	G4Material* beryllium;
+	G4Material* tungsten;
 
 	G4Material* H2TgGas;
 	G4Material* D2TgGas;
@@ -91,6 +92,7 @@ private:
 	G4double mSolenoidPosX,mSolenoidPosY,mSolenoidPosZ;
 
 	G4int mSetupEntranceNExitCap,mSetupEndPlateNCover, mSetupCableNChip;
+	G4int mSetupWire;
 
 	G4double mLGEMV,mRGEMV,mLCathodeV,mRCathodeV;
 };

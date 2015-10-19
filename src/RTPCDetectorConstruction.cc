@@ -149,6 +149,7 @@ void RTPCDetectorConstruction::GetConfig()
 	gConfig->GetParameter("SetupEntranceNExitCap",mSetupEntranceNExitCap);
 	gConfig->GetParameter("SetupEndPlateNCover",mSetupEndPlateNCover);
 	gConfig->GetParameter("SetupCableNChip",mSetupCableNChip);
+	gConfig->GetParameter("SetupWire",mSetupWire);
 
 	//sanity check for the mBedPlateHighEdge, which determine the 
 	//maximum radius of the whole RTPC
@@ -379,6 +380,11 @@ void RTPCDetectorConstruction::ConstructMaterials()
 	density = 1.85*g/cm3;
 	beryllium = new G4Material(name="Beryllium", z=4., a, density);
 
+	//Tungsten
+	a = 183.84*g/mole;
+	density = 19.25*g/cm3;
+	tungsten = new G4Material(name="Tungsten", z=74., a, density);
+
 }
 
 
@@ -406,8 +412,17 @@ G4VPhysicalVolume* RTPCDetectorConstruction::Construct()
 	G4VSensitiveDetector* SDMylar2 = new HRSStdSD(SDname="RTPCMylar2");
 	SDMan->AddNewDetector(SDMylar2);
 
+	G4VSensitiveDetector* SDWC = new HRSDCSD(SDname="RTPCWC");
+	SDMan->AddNewDetector(SDWC);
+
+	G4VSensitiveDetector* SDMylar3 = new HRSStdSD(SDname="RTPCMylar3");
+	SDMan->AddNewDetector(SDMylar3);
+
 	G4VSensitiveDetector* SDDC = new HRSDCSD(SDname="RTPCDC");
 	SDMan->AddNewDetector(SDDC);
+
+	G4VSensitiveDetector* SDWire = new HRSStdSD(SDname="RTPCWire");
+	SDMan->AddNewDetector(SDWire);
 
 	G4VSensitiveDetector* SDGEM1 = new HRSStdSD(SDname="RTPCGEM1");
 	SDMan->AddNewDetector(SDGEM1);
@@ -691,31 +706,36 @@ G4VPhysicalVolume* RTPCDetectorConstruction::Construct()
 	///////////////////// 
 	//InnerGap support 
 	///////////////////// 
-	//the support structure if a thin ultem or Carbon stripe 
+	//the support structure is a thin ultem or Carbon fiber rod 
 	//with 4(width)x2(high) mm dimention
-	//to support layer 1
-	x_min=R20+m1stMylarThick+2.0*m1stAlThick;
-	x_max=x_min+2*mm;
-	xx_h=(x_max-x_min)/2.0;
-	yy_h=mInnerGapSpThick/2.0;
-	zz_h=Z_Half;
-	G4VSolid* innerGapSpSolid = new G4Box("innerGapSpBox",xx_h,yy_h,zz_h);
-	G4LogicalVolume* innerGapSpLogical
-		= new G4LogicalVolume(innerGapSpSolid,ultem,"innerGapSpLogical",0,0,0);
-	//place it into InnerGap drift region
-	new G4PVPlacement(RotZ90deg,G4ThreeVector(0,-x_min-xx_h,0.),
-		innerGapSpLogical, "innerGapSpPhysL1",innerGapLogical,0,0);
-	
-	
-	//to support layer 2
-	x_min=R30-2*mm;
-	x_max=R30;
-	xx_h=(x_max-x_min)/2.0;
-	new G4PVPlacement(RotZ90deg,G4ThreeVector(0,-x_min-xx_h,0.),
-		innerGapSpLogical, "innerGapSpPhysL2",innerGapLogical,0,0);
+	//we might not need this carbon fiber according to EG6 experience
 
-	innerGapSpLogical->SetVisAttributes(YellowVisAtt); //ultem yellow
+	bool bBuildCarbonFiber=false;
+	if(bBuildCarbonFiber)
+	{
+		//to support layer 1
+		x_min=R20+m1stMylarThick+2.0*m1stAlThick;
+		x_max=x_min+2*mm;
+		xx_h=(x_max-x_min)/2.0;
+		yy_h=mInnerGapSpThick/2.0;
+		zz_h=Z_Half;
+		G4VSolid* innerGapSpSolid = new G4Box("innerGapSpBox",xx_h,yy_h,zz_h);
+		G4LogicalVolume* innerGapSpLogical
+			= new G4LogicalVolume(innerGapSpSolid,ultem,"innerGapSpLogical",0,0,0);
+		//place it into InnerGap drift region
+		new G4PVPlacement(RotZ90deg,G4ThreeVector(0,-x_min-xx_h,0.),
+			innerGapSpLogical, "innerGapSpPhysL1",innerGapLogical,0,0);
+		
+		
+		//to support layer 2
+		x_min=R30-2*mm;
+		x_max=R30;
+		xx_h=(x_max-x_min)/2.0;
+		new G4PVPlacement(RotZ90deg,G4ThreeVector(0,-x_min-xx_h,0.),
+			innerGapSpLogical, "innerGapSpPhysL2",innerGapLogical,0,0);
 
+		innerGapSpLogical->SetVisAttributes(YellowVisAtt); //ultem yellow
+	}
 
 	///////////////////// 
 	//2nd mylar foil
@@ -753,8 +773,110 @@ G4VPhysicalVolume* RTPCDetectorConstruction::Construct()
 
 	secondMylarLogical->SetSensitiveDetector(SDMylar2);
 	secondAlFoil1Logical->SetVisAttributes(WhiteVisAtt);  //white
-	secondMylarLogical->SetVisAttributes(GrayVisAtt);//grey
+	secondMylarLogical->SetVisAttributes(GrayVisAtt);	  //grey
 	secondAlFoil2Logical->SetVisAttributes(WhiteVisAtt);  //white
+
+	/////////////////////
+	//drift  wire
+	/////////////////////
+	//Eric and Howard came up with an idea to setup wire inside RTPC to get timing 
+	//information, I just add 67 sensor wires at s=32mm, and also add alumiized-mylar
+	//as the cathode at s=34mm
+	//*****WireChamber cylider cathode foil
+	//0.006mm Mylar and 0.000035mm Al on both sides at s=34mm
+	
+	double R32=32*mm;
+	double R34=34*mm;
+	if(mSetupWire)
+	{
+		////////////////////////////
+		//The wire camber
+		////////////////////////////
+
+		//place the tube to hold wire chamber
+		G4Tubs* RTPCSWireChamberSolid = new G4Tubs("RTPCSWireChamberTub",
+			R30+m2ndAlThick+m2ndMylarThick,R34,mRTPCLength/2,0.0,360.0*deg);
+
+		G4LogicalVolume *RTPCWireChamberLogical = new G4LogicalVolume(RTPCSWireChamberSolid, 
+			vaccum, "RTPCWireChamberLogical", 0, 0, 0);
+		RTPCWireChamberLogical->SetVisAttributes(HallVisAtt);
+		new G4PVPlacement(RotZ90deg,G4ThreeVector(),RTPCWireChamberLogical,
+			"RTPCWireChamberPhys",RTPCContainerLogical,0,0);
+
+
+		//place the tube to hold wire chamber
+		G4Tubs* RTPCSWireCellSolid = new G4Tubs("RTPCSWireCellTub",
+			R30+m2ndAlThick+m2ndMylarThick,R34,mRTPCLength/2,360.0*deg/67/2,360.0*deg/67);
+
+		G4LogicalVolume *RTPCWireCellLogical = new G4LogicalVolume(RTPCSWireCellSolid, 
+			bonusGas, "RTPCWireCellLogical", 0, 0, 0);
+		RTPCWireCellLogical->SetVisAttributes(HallVisAtt);
+		//LightBlueVisAtt
+		RTPCWireCellLogical->SetSensitiveDetector(SDWC);
+
+		// Placement of the 67 wires with replication
+		new G4PVReplica("RTPCWireCellPhys",RTPCWireCellLogical,RTPCWireChamberLogical,
+			kPhi,67,360*deg/67,0);
+
+		////////////////////////////
+		//The sensor wires
+		////////////////////////////
+		//67 sensor wires located at s=32
+		G4Tubs* RTPCSensorWireSolid = new G4Tubs("RTPCSensorWireTub",
+			0,0.02*mm,mRTPCLength/2,0.0,360.0*deg);
+
+		G4LogicalVolume *RTPCSensorWireLogical = new G4LogicalVolume(RTPCSensorWireSolid, 
+			tungsten, "RTPCSensorWireLogical", 0, 0, 0);
+		RTPCSensorWireLogical->SetVisAttributes(SteelVisAtt);
+		RTPCSensorWireLogical->SetSensitiveDetector(SDWire);
+		new G4PVPlacement(RotZ90deg,G4ThreeVector(R32,0,0),RTPCSensorWireLogical,
+			"RTPCSensorWirePhys",RTPCWireCellLogical,0,0);
+
+
+		////////////////////////////
+		//The cathode foil
+		////////////////////////////
+		r_min=R34;	//34
+		r_max=R34+m1stAlThick;	//34+0.000035
+
+		phi_min=0*deg;
+		phi_max=360*deg;
+
+		r_min=R34;	//34
+		r_max=R34+m2ndAlThick;	//34+0.006 mm;
+		G4VSolid* thirdAlFoil1Solid
+			= new G4Tubs("thirdAlFoil1Tubs",r_min,r_max,Z_Half,phi_min,phi_max);
+		G4LogicalVolume* thirdAlFoil1Logical
+			= new G4LogicalVolume(thirdAlFoil1Solid,aluminum,"thirdAlFoil1Logical",0,0,0);
+		new G4PVPlacement(RotZ90deg,G4ThreeVector(),thirdAlFoil1Logical,
+			"thirdAlFoil1Phys",RTPCContainerLogical,0,0);
+
+		r_min=R34+m2ndAlThick;	//34+0.006
+		r_max=R34+m2ndAlThick+m2ndMylarThick; //29.9974+0.006+0.000035
+		G4VSolid* thirdMylarSolid
+			= new G4Tubs("thirdMylarTubs",r_min,r_max,Z_Half,phi_min,phi_max);
+		G4LogicalVolume* thirdMylarLogical
+			= new G4LogicalVolume(thirdMylarSolid,mylar,"thirdMylarLogical",0,0,0);
+		new G4PVPlacement(RotZ90deg,G4ThreeVector(),thirdMylarLogical,
+			"thirdMylarPhys",RTPCContainerLogical,0,0);
+
+		r_min=R34+m2ndAlThick+m2ndMylarThick;
+		r_max=R34+2.*m2ndAlThick+m2ndMylarThick;
+		G4VSolid* thirdAlFoil2Solid
+			= new G4Tubs("thirdAlFoil2Tubs",r_min,r_max,Z_Half,phi_min,phi_max);
+		G4LogicalVolume* thirdAlFoil2Logical
+			= new G4LogicalVolume(thirdAlFoil2Solid,aluminum,"thirdAlFoil2Logical",0,0,0);
+		new G4PVPlacement(RotZ90deg,G4ThreeVector(),thirdAlFoil2Logical,
+			"thirdAlFoil2Phys",RTPCContainerLogical,0,0);
+
+		thirdMylarLogical->SetSensitiveDetector(SDMylar3);
+		thirdAlFoil1Logical->SetVisAttributes(WhiteVisAtt);  //white
+		thirdMylarLogical->SetVisAttributes(GrayVisAtt);	 //grey
+		thirdAlFoil2Logical->SetVisAttributes(WhiteVisAtt);  //white
+
+		//Now I have to set R34 to R30 so I do not need to change the rest code
+		R30 = R34;
+	}
 
 
 	/////////////////////

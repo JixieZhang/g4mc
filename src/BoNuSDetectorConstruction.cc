@@ -809,6 +809,7 @@ G4VPhysicalVolume* BoNuSDetectorConstruction::Construct()
 	secondAlFoil2Logical->SetVisAttributes(WhiteVisAtt);  //white
 
 
+	
 	//////////////////////////
 	//main Drift Region
 	//////////////////////////

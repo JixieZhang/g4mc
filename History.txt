@@ -32,6 +32,14 @@ waste a lot of CPU cycles to propagate some unwanted particles. Need to find out
 a way to optimize the speed.
 
 ---------------------------------------------------------------------------
+v1.08
+20150921
+1. Just for RTPC12 design
+A) Removed the carbon fiber
+B) Added anohter layer of aluminum-mylar-aluminum layer to be the cathode of GEM, at R=34 mm
+C) Added sensor wires at R=32, 3 mm space between wires, in total 67 wires, 20 um each
+
+---------------------------------------------------------------------------
 V1.07
 20141027
 1. Added LDRD detector geometry class and its associated ini file Detector_LDRD.ini.
