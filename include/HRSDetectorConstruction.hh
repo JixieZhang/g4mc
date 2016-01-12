@@ -66,9 +66,9 @@ private:
 	double mScatChamberXOffset,mScatChamberYOffset,mScatChamberZOffset;
 	double mTargetXOffset,mTargetYOffset,mTargetZOffset;
 
-	int	   mSetupVirtualDetector;
+	int    mSetupVirtualDetector;
 	double mVirtualDetectorWidth,mVirtualDetectorHeight,mVirtualDetectorThick;
-	double mVDRotYAngle,mVDRotXAngle;
+        double mVDXOffset,mVDYOffset,mVDZOffset,mVDRotYAngle,mVDRotXAngle;
 	double mPivot2VDFace;
 	string mVDPhysVolName;
 

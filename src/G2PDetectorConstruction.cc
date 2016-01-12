@@ -535,6 +535,7 @@ G4VPhysicalVolume* G2PDetectorConstruction::ConstructG2PScatChamber(G4LogicalVol
 	//these are for the subtraction part, not the scatter chamber itself
 	double pSCExitWindowH=15.0*inch;
 	double pSCEntranceWindowH=6.44*inch;
+	double pSCEntranceWindowH_GEP=6.44*inch;
 	double pSCEntranceWindowVoffset=-1.766*inch;
 	double pSCWindowRin=mShieldLN2Rin-1.0*cm;
 	double pSCWindowRout=mScatChamberRout+1.0*cm;
@@ -583,9 +584,13 @@ G4VPhysicalVolume* G2PDetectorConstruction::ConstructG2PScatChamber(G4LogicalVol
 	//the transverse entrance. The size of this entrance window is identical to the GEP entrace
 	//in this program, I dig this small window from the scattering chamber
 	//But I still dig the big window in LN2 shieding since Al did not patch it
-	startphi=356.25*deg;deltaphi=7.5*deg;
+	int pSetupHMS;
+	gConfig->GetParameter("SetupHMS",pSetupHMS);    //in case this is for SANE or HALL-C WACS
+	if(pSetupHMS)  {startphi=342.0*deg;deltaphi=36*deg;pSCEntranceWindowH=pSCExitWindowH;}
+	else {startphi=356.25*deg;deltaphi=7.5*deg;}	
 	G4VSolid* SCEntranceWindowTranSolid = new G4Tubs("SCEntranceWindowTranTubs",
 		pSCWindowRin,pSCWindowRout,pSCEntranceWindowH/2.0,startphi,deltaphi);
+
 	//////////////////////////////////////////////////////////////////////////
 
 	//circle, located at phi=180 degree, EntranceWindowLong subtracted part
@@ -613,7 +618,7 @@ G4VPhysicalVolume* G2PDetectorConstruction::ConstructG2PScatChamber(G4LogicalVol
 	//rectangle EntranceWindowGEP 
 	startphi=66.25*deg;deltaphi=7.5*deg;
 	G4VSolid* SCEntranceWindowGEPSolid = new G4Tubs("SCEntranceWindowGEPTubs",
-		pSCWindowRin,pSCWindowRout,pSCEntranceWindowH/2.0,startphi,deltaphi);
+		pSCWindowRin,pSCWindowRout,pSCEntranceWindowH_GEP/2.0,startphi,deltaphi);
 
 	//////////////////////////////////////////////////////////////////////
 	//build the boolean geometry
@@ -631,9 +636,13 @@ G4VPhysicalVolume* G2PDetectorConstruction::ConstructG2PScatChamber(G4LogicalVol
 		"SCSubtractExitTNLNS",SCSubtractExitTNLSolid,SCExitWindowLeftSideSolid);
 
 	// subtract the transverse entrance 
+	// G2p entrance window has a vertical offset but SANE and WACS in Hall C will not  
+	G4ThreeVector pV3EntranceWindowTran(0,0,pSCEntranceWindowVoffset);
+	if(pSetupHMS) pV3EntranceWindowTran.set(0,0,0);
+
 	G4SubtractionSolid* SCSubtractExitNEntranceTSolid=new G4SubtractionSolid(
 		"SCSubtractExitNEntranceT",SCSubtractExitTNLNSSolid,SCEntranceWindowTranSolid,
-		0,G4ThreeVector(0,0,pSCEntranceWindowVoffset));
+		0,pV3EntranceWindowTran);
 
 	// subtract the logitudinal entrance, which is a circle 
 	//need to rotate about X (in container Coor, in Hall Coor it is Y) by 90 degrees then 
@@ -712,7 +721,8 @@ G4VPhysicalVolume* G2PDetectorConstruction::ConstructG2PScatChamber(G4LogicalVol
 	double pSCEntranceWindowCoverRout=mScatChamberRout+0.007*inch;
 
 	//EntranceWindowTranCover, G2P window
-	startphi=356.25*deg;deltaphi=7.5*deg;
+	if(pSetupHMS)  {startphi=342.0*deg;deltaphi=36*deg;}  //in case this is for SANE or HALL-C WACS
+	else {startphi=356.25*deg;deltaphi=7.5*deg;}	//G2P
 	G4VSolid* SCEntranceWindowTranCoverSolid = new G4Tubs("SCEntranceWindowTranCoverTubs",
 		pSCEntranceWindowCoverRin,pSCEntranceWindowCoverRout,
 		pSCEntranceWindowCoverH/2.0,startphi,deltaphi);
@@ -722,7 +732,9 @@ G4VPhysicalVolume* G2PDetectorConstruction::ConstructG2PScatChamber(G4LogicalVol
 		"SCEntranceWindowTranCoverLogical",0,0,0);
 	SCEntranceWindowTranCoverLogical->SetVisAttributes(LightYellowVisAtt); 
 
-	new G4PVPlacement(0,G4ThreeVector(0,0,pSCEntranceWindowVoffset),
+	G4ThreeVector pV3EntranceWindowTranCover(0,0,pSCEntranceWindowVoffset);
+	if(pSetupHMS) pV3EntranceWindowTranCover.set(0,0,0);
+	new G4PVPlacement(0,pV3EntranceWindowTranCover,
 		SCEntranceWindowTranCoverLogical,"SCEntranceWindowTranCoverPhys",
 		scatChamberContainerLogical,false,0);
 
@@ -4391,6 +4403,7 @@ G4VPhysicalVolume* G2PDetectorConstruction::ConstructG2PChicane(G4LogicalVolume*
 	G4String SDname;
 	G4VSensitiveDetector* FZB1SD=new HRSStdSD(SDname="FZB1VD");
 	G4VSensitiveDetector* FZB2SD=new HRSStdSD(SDname="FZB2VD");
+	G4VSensitiveDetector* FZDumpSD=new HRSStdSD(SDname="FZDump");
 	G4SDManager* SDman = G4SDManager::GetSDMpointer();
 
 
@@ -4846,7 +4859,7 @@ G4VPhysicalVolume* G2PDetectorConstruction::ConstructG2PChicane(G4LogicalVolume*
 	//the end disk (flange)
 	////////////////////////////////////
 	double pFZBVacuumFlangeR=6.0*inch;
-	double pFZBVacuumFlangeZ=1.0*inch;  //TODO: verify this thickness, it is very important
+	double pFZBVacuumFlangeZ=0.1*inch;  //TODO: verify this thickness, it is very important
 	G4VSolid* FZBVacuumFlangeSolid = new G4Tubs("FZBVacuumFlangeTubs",0,
 		pFZBVacuumFlangeR,pFZBVacuumFlangeZ/2,0*deg,360*deg);
 
@@ -4969,7 +4982,7 @@ G4VPhysicalVolume* G2PDetectorConstruction::ConstructG2PChicane(G4LogicalVolume*
 	//FZB copper coils
 	/////////////////////////////////////
 	//this part is hard to build,  I simplified it as a big box subtract the siliconsteel block
-	//made of copperx
+	//made of copper
 
 	//the whole box
 	//each group of coil is 0.925" wide, place 2 of them with 1mm gap in between
@@ -4986,7 +4999,7 @@ G4VPhysicalVolume* G2PDetectorConstruction::ConstructG2PChicane(G4LogicalVolume*
 	G4VSolid* FZBCoilSmallRecSolid = new G4Box("FZBCoilSmallRecBox",
 		pFZBCoilSmallRecX/2.0,pFZBCoilSmallRecY/2.0,pFZBCoilSmallRecZ/2.0);
 
-	//coil = whole - small rectangle
+	//coil = whole - small_rectangle
 	G4SubtractionSolid* FZBCoilSolid=new G4SubtractionSolid("FZBCoilSolid",
 		FZBCoilWholeSolid,FZBCoilSmallRecSolid);
 
@@ -5053,20 +5066,28 @@ G4VPhysicalVolume* G2PDetectorConstruction::ConstructG2PChicane(G4LogicalVolume*
 		//setup a local dump
 		if(mSetupChicaneVD==4)
 		{
-			double pFZDumpWidth=50.0*cm;
-			double pFZDumpHeight=50.0*cm;
+			double pFZDumpWidth=20.0*cm;
+			double pFZDumpHeight=60.0*cm;
 			double pFZDumpThick=15.0*cm;
-			G4VSolid* FZDumpSolid = new G4Box("FZDumpBox",
+			double pVDY_pos = -20.0*cm;
+			double pVDZ_pos = mPivotZOffset - 80.0*cm;
+
+			G4VSolid* FZDumpBox = new G4Box("FZDumpBox",
 				pFZDumpWidth/2.0, pFZDumpHeight/2.0, pFZDumpThick/2.0);
+
+			//drill a 3mm diameter hole throught it
+			G4VSolid* FZDumpCollimatorTub = new G4Tubs("FZDumpCollimatorTub",
+				0,3*mm,pFZDumpThick/2+1*mm,0*deg,360.0*deg);
+			///FZDumpBox  subtract the CollimatorTub
+			G4SubtractionSolid* FZDumpSolid = new G4SubtractionSolid("FZDumpSolid",
+			      FZDumpBox, FZDumpCollimatorTub, 0, G4ThreeVector(0,-pVDY_pos,0));
+
 			G4LogicalVolume* FZDumpLogical = new G4LogicalVolume(FZDumpSolid, 
-				mMaterialManager->lead,"FZDumpLogical",0,0,0);
-			SDman->AddNewDetector(FZB1SD);
-			FZDumpLogical->SetSensitiveDetector(FZB1SD);
+				mMaterialManager->tungsten,"FZDumpLogical",0,0,0);
+			SDman->AddNewDetector(FZDumpSD);
+			FZDumpLogical->SetSensitiveDetector(FZDumpSD);
 			FZDumpLogical->SetVisAttributes(PurpleVisAtt); 
 			
-			double pVDY_pos = -40.0*cm;
-			double pVDZ_pos = 250*cm+pFZB2PosZ;
-			pVDZ_pos =  mPivotZOffset - 80.0*cm;
 			new G4PVPlacement(0,G4ThreeVector(0,pVDY_pos,pVDZ_pos),
 				FZDumpLogical,"FZDumpPhys",motherLogical,0,0,0);
 		}

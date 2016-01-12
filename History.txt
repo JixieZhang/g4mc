@@ -39,6 +39,11 @@ A) Removed the carbon fiber
 B) Added anohter layer of aluminum-mylar-aluminum layer to be the cathode of GEM, at R=34 mm
 C) Added sensor wires at R=32, 3 mm space between wires, in total 67 wires, 20 um each
 
+
+2.In G2PDetectorConstruction.cc, the target chamber transverse entrance window will 
+have different size in SANE and WASC. In g2p, the opening is patched and a smaller
+entrance window with vertical offset is digged.  I changed the source code such that
+if HMS is setup, will use normal transverse entrance window.    
 ---------------------------------------------------------------------------
 V1.07
 20141027

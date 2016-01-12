@@ -208,6 +208,12 @@ void HRSDetectorConstruction::GetConfig()
 	mVDRotXAngle*=deg;
 	gConfig->GetParameter("Pivot2VDFace",mPivot2VDFace);
 	mPivot2VDFace*=mm;
+	gConfig->GetParameter("VDXOffset",mVDXOffset);
+	mVDXOffset*=mm;
+	gConfig->GetParameter("VDYOffset",mVDYOffset);
+	mVDYOffset*=mm;
+	gConfig->GetParameter("VDZOffset",mVDZOffset);
+	mVDZOffset*=mm;
 
 	mVDPhysVolName=gConfig->GetParameter("VDPhysVolName");
 
@@ -644,14 +650,6 @@ G4VPhysicalVolume* HRSDetectorConstruction::Construct()
 	//bool mSetupVirtualDetector=true;  //will be read from Detector.ini
 	if(mSetupVirtualDetector)
 	{	
-		//double mVirtualDetectorWidth=260.0*mm;
-		//double mVirtualDetectorHeight=400.0*mm;
-		//double mVirtualDetectorThick=5.0*mm;
-		//double mVDRotYAngle=-15.0*deg;
-		//double mVDRotXAngle=-8.0*deg;
-		//double mPivot2VDFace=635.0*mm;
-		//string mVDPhysVolName="virtualBoundaryPhys";
-
 		G4VSolid* virtualDetectorSolid = new G4Box("virtualDetectorBox",mVirtualDetectorWidth/2.0,
 			mVirtualDetectorHeight/2.0,mVirtualDetectorThick/2.0);
 		G4LogicalVolume* virtualDetectorLogical = new G4LogicalVolume(virtualDetectorSolid,
@@ -661,20 +659,26 @@ G4VPhysicalVolume* HRSDetectorConstruction::Construct()
 		virtualDetectorLogical->SetSensitiveDetector(virtualDetectorSD);
 
 		G4RotationMatrix *pRotVD=new G4RotationMatrix();
-		pRotVD->rotateY(-mVDRotYAngle); 
-		pRotVD->rotateX(-mVDRotXAngle); 
-		G4ThreeVector pV3VDPos(0.0,0.0,mPivot2VDFace+mVirtualDetectorThick/2.);
-		pV3VDPos.transform(pRotVD->inverse());
-
+		pRotVD->rotateY(-mVDRotYAngle);  //anti-clockwise in top view
+		pRotVD->rotateX(-mVDRotXAngle);  //anti-clockwise in top view
+		G4ThreeVector pV3VDPos(0.0,0.0,mPivot2VDFace+mVirtualDetectorThick/2.);	
+		pV3VDPos.rotateY(mVDRotYAngle);
+		pV3VDPos.rotateX(mVDRotXAngle);
+		G4ThreeVector pV3VDPosOffset(mVDXOffset+mPivotXOffset,
+					     mVDYOffset+mPivotYOffset,
+					     mVDZOffset+mPivotZOffset);
+		pV3VDPos += pV3VDPosOffset;
+		G4cout<<"Debug: pV3VDPos="<<pV3VDPos<<endl;
+		
 		//place a VD then the VB
-		new G4PVPlacement(pRotVD,G4ThreeVector(pV3VDPos.x()+mPivotXOffset,
-			pV3VDPos.y()+mPivotYOffset,pV3VDPos.z()+mPivotZOffset),
+		new G4PVPlacement(pRotVD,pV3VDPos,
 			virtualDetectorLogical,"virtualDetectorPhys",magneticLogical,0,0);
-
-		pV3VDPos.set(0.0,0.0,mPivot2VDFace+1.5*mVirtualDetectorThick);
-		pV3VDPos.transform(pRotVD->inverse());
-		new G4PVPlacement(pRotVD,G4ThreeVector(pV3VDPos.x()+mPivotXOffset,
-			pV3VDPos.y()+mPivotYOffset,pV3VDPos.z()+mPivotZOffset),
+ 
+		pV3VDPos.set(0.0,0.0,mPivot2VDFace+mVirtualDetectorThick);
+		pV3VDPos.rotateY(mVDRotYAngle);
+		pV3VDPos.rotateX(mVDRotXAngle);
+		pV3VDPos += pV3VDPosOffset;
+		new G4PVPlacement(pRotVD,pV3VDPos,
 			virtualDetectorLogical,mVDPhysVolName,magneticLogical,0,0);
 	}
 
