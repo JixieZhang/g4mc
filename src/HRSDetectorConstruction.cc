@@ -52,6 +52,7 @@
 #include "BoNuSDetectorConstruction.hh"
 #include "RTPCDetectorConstruction.hh"
 #include "CREXDetectorConstruction.hh"
+#include "WACSDetectorConstruction.hh"
 #include "HMSDetectorConstruction.hh"
 #include "LACDetectorConstruction.hh"
 #include "LERDDetectorConstruction.hh"
@@ -243,8 +244,13 @@ void HRSDetectorConstruction::GetConfig()
 
 	gConfig->GetParameter("SetupSuperBigBite",mSetupSuperBigBite);
 
+	mSetupWACSGeometry=0;
+	gConfig->GetParameter("SetupWACSGeometry",mSetupWACSGeometry);
+	
+	mSetupHMS=0;
 	gConfig->GetParameter("SetupHMS",mSetupHMS);
-
+	
+	mSetupLAC=0;
 	gConfig->GetParameter("SetupLAC",mSetupLAC);
 
 	G4cout<<"\n****Load detector config parameters done!***"<<G4endl;
@@ -557,6 +563,17 @@ G4VPhysicalVolume* HRSDetectorConstruction::Construct()
 		//update the parameters
 		this->GetConfig(); 
 	}
+	/////////////////////////
+	// WACS
+	/////////////////////////
+	if(mSetupWACSGeometry)  
+	{
+		WACSDetectorConstruction* theWACS = new WACSDetectorConstruction(magneticLogical); 
+		theWACS->Construct();
+		//update the parameters
+		this->GetConfig(); 
+	}
+
 
 	/////////////////////////
 	// HMS 

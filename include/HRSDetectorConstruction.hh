@@ -78,6 +78,7 @@ private:
 	int    mSetupRTPCGeometry;
 	int    mSetupBigBite;
 	int    mSetupSuperBigBite;
+	int    mSetupWACSGeometry;
 	int    mSetupHMS;
 	int    mSetupLAC;
 
