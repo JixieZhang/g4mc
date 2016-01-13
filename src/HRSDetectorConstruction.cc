@@ -1170,7 +1170,7 @@ G4VPhysicalVolume* HRSDetectorConstruction::ConstructRadiator(G4LogicalVolume* m
 
 
 	double pRadPos_X=mPivotXOffset, pRadPos_Y=mPivotYOffset;
-	double pRadPos_Z=mPivotYOffset + mRadiator2Pivot;
+	double pRadPos_Z=mPivotZOffset + mRadiator2Pivot;
 	theRadiatorPhys = new G4PVPlacement(0,
 		G4ThreeVector(pRadPos_X,pRadPos_Y,pRadPos_Z),
 		radiatorLogical,"radiatorPhys",motherLogical,0,0);

@@ -1565,49 +1565,15 @@ G4VPhysicalVolume* WACSDetectorConstruction::ConstructWACSChicane(G4LogicalVolum
 	pFZBStepLimit*=mm;
 	G4UserLimits* uFZBStepLimits = new G4UserLimits(pFZBStepLimit);
 
-
-	////////////////////////////
-	//The field containner
-	////////////////////////////
-	double pFZBX=17.66*inch, pFZBY=15.37*2*inch, pFZBZ=76.34*inch;
-
-	//stainless steel rectangle pipe, thickness 0.188", there is one flange attached to each end 
-	double pFZBVacuumXout=1.65*inch;
-	double pFZBVacuumYout=10.0*inch;
-	double pFZBVacuumZ=pFZBZ+13.17*inch;   //it is 89.51*inch; I want the variable pFZBZ can be configured
-	double pFZBVacuumXin=pFZBVacuumXout-2*0.188*inch;
-	double pFZBVacuumYin=pFZBVacuumYout-2*0.188*inch;
-
-	//the field container is only the area in between the mid side plates, 1.66" x 11.5" x 76.34"
-
-	double pFZBFieldContainerX=pFZBVacuumXout;
-	double pFZBFieldContainerY=11.5*inch;
-	double pFZBFieldContainerZ=pFZBZ;
-	G4VSolid* FZBFieldContainerSolid = new G4Box("FZBFieldContainerBox",
-		pFZBFieldContainerX/2.0,pFZBFieldContainerY/2.0,pFZBFieldContainerZ/2.0);
-
-	G4LogicalVolume* FZB2FieldContainerLogical = new G4LogicalVolume(FZBFieldContainerSolid,
-		mMaterialManager->vacuum,"FZB2FieldContainerLogical",FZB2FieldManager,0,uFZBStepLimits);
-	FZB2FieldContainerLogical->SetVisAttributes(HallVisAtt);  
-
-	if(mSetupChicane!=0)
-	{
-		FZB2FieldContainerPhys = new G4PVPlacement(pRotFZB2,pFZB2Pos3V,
-			FZB2FieldContainerLogical,"FZB2FieldContainerPhys",motherLogical,0,0,0);
-	}
-
 	/////////////////////////
 	// FZB magnet Container
 	/////////////////////////
 
-	//in order to avoid overlapping, I have to dig the field containner out from this container
+	double pFZBX=17.66*inch, pFZBY=15.37*2*inch, pFZBZ=76.34*inch;
+
 	double pFZBContainerX=pFZBX+2*cm, pFZBContainerY=pFZBY+2*cm, pFZBContainerZ=pFZBZ+15*inch;
-
-	G4VSolid* FZBContainerWholeSolid = new G4Box("FZBContainerWholeBox",
+	G4VSolid* FZBContainerSolid = new G4Box("FZBContainerWholeBox",
 		pFZBContainerX/2.0,pFZBContainerY/2.0,pFZBContainerZ/2.0);
-
-	G4SubtractionSolid *FZBContainerSolid = new G4SubtractionSolid(
-		"FZBContainerSolid",FZBContainerWholeSolid,FZBFieldContainerSolid);
 
 	G4LogicalVolume* FZBContainerLogical = new G4LogicalVolume(FZBContainerSolid,
 		mMaterialManager->vacuum,"FZBContainerLogical",0,0,0);
@@ -1623,92 +1589,47 @@ G4VPhysicalVolume* WACSDetectorConstruction::ConstructWACSChicane(G4LogicalVolum
 	//FZB vacuum pipe and flanges
 	/////////////////////////////////////
 
-	////stainless steel rectangle pipe, thickness 0.188", there is one flange attached to each end	
-	//I have to chop the pipe into 3 pieces, the middle part will be placed in the field container
-	//two ends will be placed in the FZB containner
-
-	//has been declared above
-	//double pFZBVacuumXout=1.65*inch;
-	//double pFZBVacuumYout=10.0*inch;
-	//double pFZBVacuumZ=89.51*inch;
-	//double pFZBVacuumXin=pFZBVacuumXout-2*0.188*inch;
-	//double pFZBVacuumYin=pFZBVacuumYout-2*0.188*inch;
+	//stainless steel rectangle pipe, thickness 0.188", there is one flange attached to each end 
+	double pFZBVacuumXout=1.65*inch;
+	double pFZBVacuumYout=10.0*inch;
+	double pFZBVacuumZ=pFZBZ+13.17*inch;   //it is 89.51*inch; I want the variable pFZBZ can be configured
+	double pFZBVacuumXin=pFZBVacuumXout-2*0.188*inch;
+	double pFZBVacuumYin=pFZBVacuumYout-2*0.188*inch;
 
 	//the outer box
 	G4VSolid* FZBVacuumOutSolid = new G4Box("FZBVacuumOutBox",
 		pFZBVacuumXout/2.0,pFZBVacuumYout/2.0,pFZBVacuumZ/2.0);
 
-	//the out box, only the mid part that inside the field containner
-	G4VSolid* FZBVacuumOutMidSolid = new G4Box("FZBVacuumOutMidBox",
-		pFZBVacuumXout/2.0,pFZBVacuumYout/2.0,pFZBZ/2.0);
-
 	//the inner box
 	G4VSolid* FZBVacuumInSolid = new G4Box("FZBVacuumInBox",
 		pFZBVacuumXin/2.0,pFZBVacuumYin/2.0,pFZBVacuumZ/2.0+1.0*mm);
-
 
 	//the whole vacuum pipe = outer - inner
 	G4SubtractionSolid *FZBVacuumPipeSolid = new G4SubtractionSolid("FZBVacuumPipeSolid",
 		FZBVacuumOutSolid,FZBVacuumInSolid);
 
-	//the mid part of the vacuum pipe = outer - inner
-	G4SubtractionSolid *FZBVacuumPipeMidSolid = new G4SubtractionSolid("FZBVacuumPipeMidSolid",
-		FZBVacuumOutMidSolid,FZBVacuumInSolid);
+	//place the 2 ends part of the vacuum pipe into the FZ containner
+	G4LogicalVolume* FZBVacuumPipeLogical = new G4LogicalVolume(FZBVacuumPipeSolid,
+		mMaterialManager->stainlesssteel,"FZBVacuumPipeLogical",0,0,0);
+	FZBVacuumPipeLogical->SetVisAttributes(SilverVisAtt);  
 
-	//the 2 end of the vacuum pipe = whole pipe - mid
-	G4SubtractionSolid *FZBVacuumPipe2EndsSolid = new G4SubtractionSolid("FZBVacuumPipe2EndsSolid",
-		FZBVacuumPipeSolid,FZBVacuumOutMidSolid);
+	new G4PVPlacement(0,G4ThreeVector(),FZBVacuumPipeLogical,
+		"FZBVacuumPipePhys",FZBContainerLogical,false,0,0);
 
 
 	////////////////////////////////////
 	//the end disk (flange)
 	////////////////////////////////////
 	double pFZBVacuumFlangeR=6.0*inch;
-	double pFZBVacuumFlangeZ=0.1*inch;  //TODO: verify this thickness, it is very important
+	double pFZBVacuumFlangeZ=0.6*inch;  //TODO: verify this thickness, not important ...
 	G4VSolid* FZBVacuumFlangeSolid = new G4Tubs("FZBVacuumFlangeTubs",0,
 		pFZBVacuumFlangeR,pFZBVacuumFlangeZ/2,0*deg,360*deg);
 
 	//this flange will be subtracted by a rectange as large as the the vacuum pipe, 
-	//then the vacuum pipe will be unioned with 2 flanges to make the total length to 90 inch 
+	//then the vacuum pipe will be attached with 2 flanges to make the total length to 90 inch 
 	G4SubtractionSolid *FZBVacuumFlangeSubRecSolid = new G4SubtractionSolid(
 		"FZBVacuumFlangeSubRecSolid",FZBVacuumFlangeSolid,FZBVacuumOutSolid);
 
-
-	//-------------------------------------------------------------------------------------
-	////Note: Polyhedron not available for FZBVacuumPipeUnionFlangeUpNDownSolid.
-	////This means it cannot be visualized on most systems.
-	////Therefore I can not union the 2 ends with their flanges
-	////In order to see the flange and vacuum pipe, I have to place them piece by piece
-	//
-	////pipe union 2 flanges
-	////double pFZBVacuumFlangePosZ=90*inch/2-pFZBVacuumFlangeZ/2;
-	//double pFZBVacuumFlangePosZ=(pFZBZ+13.56*inch)/2-pFZBVacuumFlangeZ/2;
-	//G4UnionSolid *FZBVacuumPipeUnionFlangeUpSolid = new G4UnionSolid(
-	//	"FZBVacuumPipeUnionFlangeUpSolid",FZBVacuumPipe2EndsSolid,FZBVacuumFlangeSubRecSolid,
-	//	0,G4ThreeVector(0,0,-pFZBVacuumFlangePosZ));
-	//G4UnionSolid *FZBVacuumPipeUnionFlangeUpNDownSolid = new G4UnionSolid(
-	//	"FZBVacuumPipeUnionFlangeUpNDownSolid",FZBVacuumPipeUnionFlangeUpSolid,FZBVacuumFlangeSubRecSolid,
-	//	0,G4ThreeVector(0,0,pFZBVacuumFlangePosZ));
-	//
-	//G4LogicalVolume* FZBVacuumLogical = new G4LogicalVolume(FZBVacuumPipeUnionFlangeUpNDownSolid,
-	//	mMaterialManager->stainlesssteel,"FZBVacuumLogical",0,0,0);
-	//FZBVacuumLogical->SetVisAttributes(PurpleVisAtt);  
-	//
-	////place this vacuum assembly into the magnet
-	//new G4PVPlacement(0,G4ThreeVector(),
-	//	FZBVacuumLogical,"FZBVacuumPhys",FZBContainerLogical,false,0,0);
-	//Note: Polyhedron not available for FZBVacuumPipeUnionFlangeUpNDownSolid.
-	//This means it cannot be visualized on most systems.
-	//In order to see the flange and vacuum pipe, I have to place them piece by piece
-	//-------------------------------------------------------------------------------------
-
-	//place the 2 ends part of the vacuum pipe into the FZ containner
-	G4LogicalVolume* FZBVacuumPipe2EndsLogical = new G4LogicalVolume(FZBVacuumPipe2EndsSolid,
-		mMaterialManager->stainlesssteel,"FZBVacuumPipe2EndsLogical",0,0,0);
-	FZBVacuumPipe2EndsLogical->SetVisAttributes(SilverVisAtt);  
-
-	new G4PVPlacement(0,G4ThreeVector(),FZBVacuumPipe2EndsLogical,
-		"FZBVacuumPipe2EndsPhys",FZBContainerLogical,false,0,0);
 
 
 	//place 2 flanges, one at each end into the magnet container
@@ -1718,29 +1639,48 @@ G4VPhysicalVolume* WACSDetectorConstruction::ConstructWACSChicane(G4LogicalVolum
 
 	//double pFZBVacuumFlangePosZ=90*inch/2-pFZBVacuumFlangeZ/2;
 	double pFZBVacuumFlangePosZ=(pFZBZ+13.56*inch)/2-pFZBVacuumFlangeZ/2;
-
 	new G4PVPlacement(0,G4ThreeVector(0,0,pFZBVacuumFlangePosZ),
 		FZBVacuumFlangeLogical,"FZBVacuumFlangeDownPhys",FZBContainerLogical,true,0,0);
 	new G4PVPlacement(0,G4ThreeVector(0,0,-pFZBVacuumFlangePosZ),
 		FZBVacuumFlangeLogical,"FZBVacuumFlangeUpPhys",FZBContainerLogical,true,1,0);
 
 
-	///////////////////////////////////////////////////////////////
-	//place the mid part of the vacuum pipe into the field containner
-	G4LogicalVolume* FZBVacuumPipeMidLogical = new G4LogicalVolume(FZBVacuumPipeMidSolid,
-		mMaterialManager->stainlesssteel,"FZBVacuumPipeLogical",0,0,0);
-	FZBVacuumPipeMidLogical->SetVisAttributes(SilverVisAtt);  
+	////////////////////////////
+	//The field containner
+	////////////////////////////
+
+	////stainless steel rectangle pipe, thickness 0.188", there is one flange attached to each end	
+	//has been declared above
+	//double pFZBVacuumXout=1.65*inch;
+	//double pFZBVacuumYout=10.0*inch;
+	//double pFZBVacuumZ=pFZBZ+13.17*inch;   //it is 89.51*inch; I want the variable pFZBZ can be configured
+	//double pFZBVacuumXin=pFZBVacuumXout-2*0.188*inch;
+	//double pFZBVacuumYin=pFZBVacuumYout-2*0.188*inch;
+
+	//in real life, the field container is the area in between the mid side plates, 1.66" x 11.5" x 76.34"
+	//there will be a stainless steel rectangle pipe, thickness 0.188", with a flange disk attached to each end
+	//In order to make life easy,  I use the inner volumn of this stainless steel rectangle pipe to be field containner
+	//I will put this field containner inside FZ containner, so I do not have subtract this volumn from FZ containner
+
+	double pFZBFieldContainerX=pFZBVacuumXin;
+	double pFZBFieldContainerY=pFZBVacuumYin;
+	double pFZBFieldContainerZ=pFZBZ;
+	G4VSolid* FZBFieldContainerSolid = new G4Box("FZBFieldContainerBox",
+		pFZBFieldContainerX/2.0,pFZBFieldContainerY/2.0,pFZBFieldContainerZ/2.0);
+
+	G4LogicalVolume* FZB2FieldContainerLogical = new G4LogicalVolume(FZBFieldContainerSolid,
+		mMaterialManager->vacuum,"FZB2FieldContainerLogical",FZB2FieldManager,0,uFZBStepLimits);
+	FZB2FieldContainerLogical->SetVisAttributes(HallVisAtt);  
 
 	if(mSetupChicane!=0)
 	{
-	  new G4PVPlacement(0,G4ThreeVector(),FZBVacuumPipeMidLogical,
-			    "FZB2VacuumPipeMidPhys",FZB2FieldContainerLogical,false,0,0);
+	  FZB2FieldContainerPhys = new G4PVPlacement(0,G4ThreeVector(0,0,0),
+			FZB2FieldContainerLogical,"FZB2FieldContainerPhys",FZBContainerLogical,0,0,0);
 	}
 
 
-
 	/////////////////////////////////////
-	//FZB block, the silicon steel part
+	//FZB iron yoke, the silicon steel part
 	/////////////////////////////////////
 	//The FZ magnet = whole - center plate + 2 middle side plates
 
@@ -1861,40 +1801,40 @@ G4VPhysicalVolume* WACSDetectorConstruction::ConstructWACSChicane(G4LogicalVolum
 
 	/////////////////////////////////////
 	//setup a local dump
-		if(mSetupBeamDump)
-		{
-		  //double pFZDumpWidth=20.0*cm;
-		  //double pFZDumpHeight=60.0*cm;
-		  //double pFZDumpThick=15.0*cm;
-		  //double pBDY_pos = -20.0*cm;
-		  //double pBDZ_pos = mPivotZOffset - 80.0*cm;
-
-			double pFZDumpWidth=mBeamDumpWidth;
-			double pFZDumpHeight=mBeamDumpHeight;
-			double pFZDumpThick=mBeamDumpThick;
-			double pBDY_pos = mPivot2BeamDumpY;
-			double pBDZ_pos = mPivotZOffset + mPivot2BeamDumpZ;
-
-
-			G4VSolid* FZDumpBox = new G4Box("FZDumpBox",
-				pFZDumpWidth/2.0, pFZDumpHeight/2.0, pFZDumpThick/2.0);
-
-			//drill a 3mm diameter hole throught it
-			G4VSolid* FZDumpCollimatorTub = new G4Tubs("FZDumpCollimatorTub",
-				0,3*mm,pFZDumpThick/2+1*mm,0*deg,360.0*deg);
-			///FZDumpBox  subtract the CollimatorTub
-			G4SubtractionSolid* FZDumpSolid = new G4SubtractionSolid("FZDumpSolid",
-			      FZDumpBox, FZDumpCollimatorTub, 0, G4ThreeVector(0,-pBDY_pos,0));
-
-			G4LogicalVolume* FZDumpLogical = new G4LogicalVolume(FZDumpSolid, 
-				mMaterialManager->tungsten,"FZDumpLogical",0,0,0);
-			SDman->AddNewDetector(FZDumpSD);
-			FZDumpLogical->SetSensitiveDetector(FZDumpSD);
-			FZDumpLogical->SetVisAttributes(PurpleVisAtt); 
-			
-			new G4PVPlacement(0,G4ThreeVector(0,pBDY_pos,pBDZ_pos),
-				FZDumpLogical,"FZDumpPhys",motherLogical,0,0,0);
-		}
+	if(mSetupBeamDump)
+	  {
+	    //double pFZDumpWidth=20.0*cm;
+	    //double pFZDumpHeight=60.0*cm;
+	    //double pFZDumpThick=15.0*cm;
+	    //double pBDY_pos = -20.0*cm;
+	    //double pBDZ_pos = mPivotZOffset - 80.0*cm;
+	    
+	    double pFZDumpWidth=mBeamDumpWidth;
+	    double pFZDumpHeight=mBeamDumpHeight;
+	    double pFZDumpThick=mBeamDumpThick;
+	    double pBDY_pos = mPivot2BeamDumpY;
+	    double pBDZ_pos = mPivotZOffset + mPivot2BeamDumpZ;
+	    
+	    
+	    G4VSolid* FZDumpBox = new G4Box("FZDumpBox",
+					    pFZDumpWidth/2.0, pFZDumpHeight/2.0, pFZDumpThick/2.0);
+	    
+	    //drill a 3mm diameter hole throught it
+	    G4VSolid* FZDumpCollimatorTub = new G4Tubs("FZDumpCollimatorTub",
+						       0,3*mm,pFZDumpThick/2+1*mm,0*deg,360.0*deg);
+	    ///FZDumpBox  subtract the CollimatorTub
+	    G4SubtractionSolid* FZDumpSolid = new G4SubtractionSolid("FZDumpSolid",
+								     FZDumpBox, FZDumpCollimatorTub, 0, G4ThreeVector(0,-pBDY_pos,0));
+	    
+	    G4LogicalVolume* FZDumpLogical = new G4LogicalVolume(FZDumpSolid, 
+								 mMaterialManager->tungsten,"FZDumpLogical",0,0,0);
+	    SDman->AddNewDetector(FZDumpSD);
+	    FZDumpLogical->SetSensitiveDetector(FZDumpSD);
+	    FZDumpLogical->SetVisAttributes(PurpleVisAtt); 
+	    
+	    new G4PVPlacement(0,G4ThreeVector(0,pBDY_pos,pBDZ_pos),
+			      FZDumpLogical,"FZDumpPhys",motherLogical,0,0,0);
+	  }
 
 	//virtual detector
 	/////////////////////////////////////

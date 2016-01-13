@@ -32,6 +32,16 @@ waste a lot of CPU cycles to propagate some unwanted particles. Need to find out
 a way to optimize the speed.
 
 ---------------------------------------------------------------------------
+v1.09
+20160112
+1. Just for WACS
+A) Cloned G2P target and FZB2 from G2PDetectorConstruction into WACSDetectorConstruction.
+   Modified HRSDetectorConstruction to take these changes. Added configuration file 
+   "Detector_WACS.ini"
+
+B) Changed FZ magnet vacummn pine geometry in G2PDetectorConstruction
+
+---------------------------------------------------------------------------
 v1.08
 20150921
 1. Just for RTPC12 design
