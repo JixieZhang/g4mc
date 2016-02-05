@@ -88,15 +88,17 @@ void HRSSteppingAction::UserSteppingAction(const G4Step* theStep)
 	//control stuff
 	G4Track * theTrack = theStep->GetTrack();
 
-	//max step num 1024, if more than this number, do not pass to root tree
+	//max step num 1024, if more than this number, do not pass to root tree, 
 	if(theTrack->GetCurrentStepNumber()<MaxStepPerTrack)
 	{
 		if(CreateRootNt) FillRootArray(theStep);
 	}
 	else
 	{
-		theTrack->SetTrackStatus(fStopAndKill);
-		PrintHeadFlag=true;
+	  //but do not kill this track because I need to score all deposited energy 
+	  //It is fine to kill this track here, because most track will not have 1024 steps
+	  //theTrack->SetTrackStatus(fStopAndKill);
+	  //PrintHeadFlag=true;
 		return;
 	}  
 	
@@ -244,7 +246,7 @@ void HRSSteppingAction::PrintHead(const G4Step* theStep,ostream& pOut)
 		<< std::setw( 8) << "Y(mm)"      << " "
 		<< std::setw( 8) << "Z(mm)"      << " "
 		<< std::setw( 9) << "Ekin(MeV)"  << " "		
-		<< std::setw( 8) << "dE(KeV)"    << " "		//shift to left by 1
+		<< std::setw( 8) << "dE(MeV)"    << " "		//shift to left by 1
 		<< std::setw( 9) << "Mom(MeV)"   << " " 
 		<< std::setw( 7) << "Theta(deg)" << " " 
 		<< std::setw( 6) << "Phi(deg)"   << " "		//shift to left by 1
@@ -314,7 +316,7 @@ void HRSSteppingAction::PrintStep(const G4Step* theStep,ostream& pOut)
 
 	pOut.precision(3); 
 	pOut<< std::setw(9) << theTrack->GetKineticEnergy()/MeV<< " "
-		<< std::setw(9) << theStep->GetTotalEnergyDeposit()/keV<< " "
+		<< std::setw(9) << theStep->GetTotalEnergyDeposit()/MeV<< " "
 		<< std::setw(9) << theTrack->GetMomentum().mag()/MeV<< " ";
 
 	pOut.precision(2); 
@@ -422,7 +424,7 @@ void HRSSteppingAction::FillRootArray(const G4Step* theStep)
 	G4double yy=theTrack->GetPosition().y()/mm;
 	G4double zz=theTrack->GetPosition().z()/mm;
 	G4double ekin=theTrack->GetKineticEnergy()/GeV;
-	G4double de=theStep->GetTotalEnergyDeposit()/keV;
+	G4double de=theStep->GetTotalEnergyDeposit()/MeV;
 	G4double dl=theStep->GetStepLength()/mm;
 	G4double tl=theTrack->GetTrackLength()/mm;
 	G4ThreeVector v3p=theTrack->GetMomentum();

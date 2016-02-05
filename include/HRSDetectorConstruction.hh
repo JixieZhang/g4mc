@@ -67,7 +67,8 @@ private:
 	double mTargetXOffset,mTargetYOffset,mTargetZOffset;
 
 	int    mSetupVirtualDetector;
-	double mVirtualDetectorWidth,mVirtualDetectorHeight,mVirtualDetectorThick;
+        double mVirtualDetectorWidth,mVirtualDetectorHeight;
+	double mVirtualDetector1Thick,mVirtualDetector2Thick;
         double mVDXOffset,mVDYOffset,mVDZOffset,mVDRotYAngle,mVDRotXAngle;
 	double mPivot2VDFace;
 	string mVDPhysVolName;

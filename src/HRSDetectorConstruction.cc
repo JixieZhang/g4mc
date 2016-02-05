@@ -201,8 +201,10 @@ void HRSDetectorConstruction::GetConfig()
 	mVirtualDetectorWidth*=mm;
 	gConfig->GetParameter("VirtualDetectorHeight",mVirtualDetectorHeight);
 	mVirtualDetectorHeight*=mm;
-	gConfig->GetParameter("VirtualDetectorThick",mVirtualDetectorThick);
-	mVirtualDetectorThick*=mm;
+	gConfig->GetParameter("VirtualDetector1Thick",mVirtualDetector1Thick);
+	mVirtualDetector1Thick*=mm;
+	gConfig->GetParameter("VirtualDetector2Thick",mVirtualDetector2Thick);
+	mVirtualDetector2Thick*=mm;
 	gConfig->GetParameter("VDRotYAngle",mVDRotYAngle);
 	mVDRotYAngle*=deg;
 	gConfig->GetParameter("VDRotXAngle",mVDRotXAngle);
@@ -305,7 +307,8 @@ G4VPhysicalVolume* HRSDetectorConstruction::Construct()
 
 	// All G4VSensitiveDetector will be managed (deleted) by SDManager
 	//therefore no need to delete it at the end of this subroutine
-	G4VSensitiveDetector* virtualDetectorSD=new HRSStdSD(SDname="virtualDetector");
+	G4VSensitiveDetector* virtualDetector1SD=new HRSStdSD(SDname="virtualDetector1");
+	G4VSensitiveDetector* virtualDetector2SD=new HRSStdSD(SDname="virtualDetector2");
 	G4VSensitiveDetector* virtualBoundarySD=new HRSStdSD(SDname="virtualBoundary");
 
 	// sensitive detectors   
@@ -667,36 +670,64 @@ G4VPhysicalVolume* HRSDetectorConstruction::Construct()
 	//bool mSetupVirtualDetector=true;  //will be read from Detector.ini
 	if(mSetupVirtualDetector)
 	{	
-		G4VSolid* virtualDetectorSolid = new G4Box("virtualDetectorBox",mVirtualDetectorWidth/2.0,
-			mVirtualDetectorHeight/2.0,mVirtualDetectorThick/2.0);
-		G4LogicalVolume* virtualDetectorLogical = new G4LogicalVolume(virtualDetectorSolid,
-			mMaterialManager->heliumGas,"virtualDetectorLogical",0,0,0);
-		virtualDetectorLogical->SetVisAttributes(LightYellowVisAtt);  
-		SDman->AddNewDetector(virtualDetectorSD);
-		virtualDetectorLogical->SetSensitiveDetector(virtualDetectorSD);
+		G4VSolid* virtualDetector1Solid = new G4Box("virtualDetector1Box",mVirtualDetectorWidth/2.0,
+			mVirtualDetectorHeight/2.0,mVirtualDetector1Thick/2.0);
+		G4LogicalVolume* virtualDetector1Logical = new G4LogicalVolume(virtualDetector1Solid,
+			mMaterialManager->scintillatorfiber,"virtualDetector1Logical",0,0,0);
+		virtualDetector1Logical->SetVisAttributes(LightYellowVisAtt);  
+		SDman->AddNewDetector(virtualDetector1SD);
+		virtualDetector1Logical->SetSensitiveDetector(virtualDetector1SD);
+
+		G4VSolid* virtualDetector2Solid = new G4Box("virtualDetector2Box",mVirtualDetectorWidth/2.0,
+			mVirtualDetectorHeight/2.0,mVirtualDetector2Thick/2.0);
+		G4LogicalVolume* virtualDetector2Logical = new G4LogicalVolume(virtualDetector2Solid,
+			mMaterialManager->scintillatorfiber,"virtualDetectorLogical",0,0,0);
+		virtualDetector2Logical->SetVisAttributes(LightBlueVisAtt);  
+		SDman->AddNewDetector(virtualDetector2SD);
+		virtualDetector2Logical->SetSensitiveDetector(virtualDetector2SD);
 
 		G4RotationMatrix *pRotVD=new G4RotationMatrix();
 		pRotVD->rotateY(-mVDRotYAngle);  //anti-clockwise in top view
 		pRotVD->rotateX(-mVDRotXAngle);  //anti-clockwise in top view
-		G4ThreeVector pV3VDPos(0.0,0.0,mPivot2VDFace+mVirtualDetectorThick/2.);	
-		pV3VDPos.rotateY(mVDRotYAngle);
-		pV3VDPos.rotateX(mVDRotXAngle);
+
+		G4ThreeVector pV3VD1Pos(0.0,0.0,mPivot2VDFace+mVirtualDetector1Thick/2.);	
+		pV3VD1Pos.rotateY(mVDRotYAngle);
+		pV3VD1Pos.rotateX(mVDRotXAngle);
 		G4ThreeVector pV3VDPosOffset(mVDXOffset+mPivotXOffset,
 					     mVDYOffset+mPivotYOffset,
 					     mVDZOffset+mPivotZOffset);
-		pV3VDPos += pV3VDPosOffset;
-		G4cout<<"Debug: pV3VDPos="<<pV3VDPos<<endl;
+		pV3VD1Pos += pV3VDPosOffset;
+		//G4cout<<"Debug: pV3VDPos="<<pV3VDPos<<endl;
 		
-		//place a VD then the VB
-		new G4PVPlacement(pRotVD,pV3VDPos,
-			virtualDetectorLogical,"virtualDetectorPhys",magneticLogical,0,0);
- 
-		pV3VDPos.set(0.0,0.0,mPivot2VDFace+mVirtualDetectorThick);
-		pV3VDPos.rotateY(mVDRotYAngle);
-		pV3VDPos.rotateX(mVDRotXAngle);
-		pV3VDPos += pV3VDPosOffset;
-		new G4PVPlacement(pRotVD,pV3VDPos,
-			virtualDetectorLogical,mVDPhysVolName,magneticLogical,0,0);
+		//place VD1 	
+		if(mSetupVirtualDetector==1 || mSetupVirtualDetector==3)
+		  {
+		new G4PVPlacement(pRotVD,pV3VD1Pos,
+			virtualDetector1Logical,"virtualDetector1Phys",magneticLogical,0,0);
+		  }
+
+		//place VD2 
+		G4ThreeVector pV3VD2Pos(0.0,0.0,
+					mPivot2VDFace+mVirtualDetector1Thick+1.0*mm+mVirtualDetector2Thick/2.);
+		pV3VD2Pos.rotateY(mVDRotYAngle);
+		pV3VD2Pos.rotateX(mVDRotXAngle);
+		pV3VD2Pos += pV3VDPosOffset;
+
+		if(mSetupVirtualDetector==2 || mSetupVirtualDetector==3)
+		  {
+		new G4PVPlacement(pRotVD,pV3VD2Pos,
+			virtualDetector2Logical,mVDPhysVolName,magneticLogical,0,0);
+		  }
+
+		//place the VB
+		pV3VD2Pos.set(0.0,0.0,
+			      mPivot2VDFace+mVirtualDetector1Thick+1.0*mm+mVirtualDetector2Thick*1.5+1.0*mm);
+		pV3VD2Pos.rotateY(mVDRotYAngle);
+		pV3VD2Pos.rotateX(mVDRotXAngle);
+		pV3VD2Pos += pV3VDPosOffset;
+		new G4PVPlacement(pRotVD,pV3VD2Pos,
+			virtualDetector2Logical,"virtualBoundaryPhys_VD",magneticLogical,0,0);
+
 	}
 
 

@@ -361,11 +361,17 @@ void HRSMaterial::ConstructMaterials()
 	CH2->AddElement(elH, nAtoms=2);
 	CH2->AddElement(elC, nAtoms=1);
 
-	//scintillator
+	//scintillator C474H521
 	density = 1.032*g/cm3;
 	scintillator = new G4Material(name="EJ204", density, nElem=2);
 	scintillator->AddElement(elH, nAtoms=521);
 	scintillator->AddElement(elC, nAtoms=474);
+
+	//scintillatorfiber C8H8
+	density = 1.04*g/cm3;
+	scintillatorfiber = new G4Material(name="ScintilatorFiber", density, nElem=2);
+	scintillatorfiber->AddElement(elH, nAtoms=8);
+	scintillatorfiber->AddElement(elC, nAtoms=8);
 
 	//pcbNchip Cu9Si5C460H506O138 epoxy + silicon + copper
 	//weight ratio 57.7:4:1

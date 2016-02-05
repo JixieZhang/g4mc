@@ -41,6 +41,24 @@ A) Cloned G2P target and FZB2 from G2PDetectorConstruction into WACSDetectorCons
 
 B) Changed FZ magnet vacummn pine geometry in G2PDetectorConstruction
 
+C) Changed primary track tree Step_Edep from keV to MeV.  All Edep in D tree were in MeV unit. 
+
+D) Change Virtual Detector to be 2 layers, which are made of scintilator fiber, 1 mm in
+   between these 2 layers. Changed Detector.ini to allow config thickness for both layers. 
+
+#The virtual detector, 1 for layer1 only, 2 for layer2 only, 3 for both 
+#I usually use it to find out the best position 
+#for a detector, which is made of scintilator. Two layers, 1mm in between
+#these 2 layers.  
+SetupVirtualDetector=3;
+#
+VirtualDetectorWidth=40.0;
+VirtualDetectorHeight=40.0;
+VirtualDetector1Thick=0.5;
+VirtualDetector2Thick=4.0;
+
+E)  Added material cintilatorfiber, C8H8, desity 1.04g/cm3
+
 ---------------------------------------------------------------------------
 v1.08
 20150921

@@ -1565,11 +1565,17 @@ G4VPhysicalVolume* WACSDetectorConstruction::ConstructWACSChicane(G4LogicalVolum
 	pFZBStepLimit*=mm;
 	G4UserLimits* uFZBStepLimits = new G4UserLimits(pFZBStepLimit);
 
+	///////////////////////////////////////////////////////////
+	//#mSetupChicane
+	//#setup the bender, 0 means none, 1 for FZB2, 2 for 1-m long Dipole, 3 for AV-magnet
+
 	/////////////////////////
 	// FZB magnet Container
 	/////////////////////////
 
 	double pFZBX=17.66*inch, pFZBY=15.37*2*inch, pFZBZ=76.34*inch;
+	//use half length dipole if (mSetupChicane==2
+	if(mSetupChicane==2)  pFZBZ=38.17*inch;
 
 	double pFZBContainerX=pFZBX+2*cm, pFZBContainerY=pFZBY+2*cm, pFZBContainerZ=pFZBZ+15*inch;
 	G4VSolid* FZBContainerSolid = new G4Box("FZBContainerWholeBox",
@@ -1613,9 +1619,11 @@ G4VPhysicalVolume* WACSDetectorConstruction::ConstructWACSChicane(G4LogicalVolum
 		mMaterialManager->stainlesssteel,"FZBVacuumPipeLogical",0,0,0);
 	FZBVacuumPipeLogical->SetVisAttributes(SilverVisAtt);  
 
+	//do not place the vacumn pipe for AV-magnet
+	if(mSetupChicane>0 && mSetupChicane!=3) {
 	new G4PVPlacement(0,G4ThreeVector(),FZBVacuumPipeLogical,
 		"FZBVacuumPipePhys",FZBContainerLogical,false,0,0);
-
+	}
 
 	////////////////////////////////////
 	//the end disk (flange)
@@ -1639,11 +1647,14 @@ G4VPhysicalVolume* WACSDetectorConstruction::ConstructWACSChicane(G4LogicalVolum
 
 	//double pFZBVacuumFlangePosZ=90*inch/2-pFZBVacuumFlangeZ/2;
 	double pFZBVacuumFlangePosZ=(pFZBZ+13.56*inch)/2-pFZBVacuumFlangeZ/2;
+
+	//do not place the vacumn pipe for AV-magnet
+	if(mSetupChicane>0 && mSetupChicane!=3) {
 	new G4PVPlacement(0,G4ThreeVector(0,0,pFZBVacuumFlangePosZ),
 		FZBVacuumFlangeLogical,"FZBVacuumFlangeDownPhys",FZBContainerLogical,true,0,0);
 	new G4PVPlacement(0,G4ThreeVector(0,0,-pFZBVacuumFlangePosZ),
 		FZBVacuumFlangeLogical,"FZBVacuumFlangeUpPhys",FZBContainerLogical,true,1,0);
-
+	}
 
 	////////////////////////////
 	//The field containner
@@ -1684,6 +1695,11 @@ G4VPhysicalVolume* WACSDetectorConstruction::ConstructWACSChicane(G4LogicalVolum
 	/////////////////////////////////////
 	//The FZ magnet = whole - center plate + 2 middle side plates
 
+	//The yoke of AV-magnet is cut to 1.3 m, but using original coils
+	//so I temperarily keep the original length, will set it back when this block finish
+	double oldFZBZ=pFZBZ;
+	if(mSetupChicane==3)  pFZBZ=1.3*m;
+
 	double pFZBSidePlateX=5.85*inch;
 	G4VSolid* FZBWholeSolid = new G4Box("FZBWholeBox",pFZBX/2.0,pFZBY/2.0,pFZBZ/2.0);
 
@@ -1717,9 +1733,11 @@ G4VPhysicalVolume* WACSDetectorConstruction::ConstructWACSChicane(G4LogicalVolum
 	FZBSteelLogical->SetVisAttributes(DarkBlueVisAtt);  
 
 	//place one copy of this silicon steel into each magnet
-	new G4PVPlacement(0,G4ThreeVector(),
+	new G4PVPlacement(0,G4ThreeVector(0,0,(oldFZBZ-pFZBZ)/2),
 		FZBSteelLogical,"FZBSteelPhys",FZBContainerLogical,false,0,0);
 
+	//now set the length back
+	if(mSetupChicane==3)  pFZBZ=oldFZBZ;
 	/////////////////////////////////////
 	//FZB copper coils
 	/////////////////////////////////////
@@ -1730,14 +1748,14 @@ G4VPhysicalVolume* WACSDetectorConstruction::ConstructWACSChicane(G4LogicalVolum
 	//each group of coil is 0.925" wide, place 2 of them with 1mm gap in between
 	double pFZBCoilX=2*0.925*inch+1*mm; 
 	double pFZBCoilY=pFZBY-2*5.98*inch; 
-	double pFZBCoilZ=(78.96+3.35*2)*inch;  
+	double pFZBCoilZ=pFZBZ+2.62*inch+3.35*2*inch;  	
 	G4VSolid* FZBCoilWholeSolid = new G4Box("FZBCoilWholeBox",
 		pFZBCoilX/2.0,pFZBCoilY/2.0,pFZBCoilZ/2.0);
 
 	//the small box need to be subtracted
 	double pFZBCoilSmallRecX=pFZBCoilX+1*mm;
 	double pFZBCoilSmallRecY=pFZBPlateMidSideY+1*mm;
-	double pFZBCoilSmallRecZ=78.96*inch;  
+	double pFZBCoilSmallRecZ=pFZBZ+2.62*inch;  
 	G4VSolid* FZBCoilSmallRecSolid = new G4Box("FZBCoilSmallRecBox",
 		pFZBCoilSmallRecX/2.0,pFZBCoilSmallRecY/2.0,pFZBCoilSmallRecZ/2.0);
 
@@ -1758,7 +1776,6 @@ G4VPhysicalVolume* WACSDetectorConstruction::ConstructWACSChicane(G4LogicalVolum
 		FZBCoilLogical,"FZBCoilLeftPhys",FZBContainerLogical,true,0,0);
 	new G4PVPlacement(0,G4ThreeVector(-pFZBCoilPosX,0,0),
 		FZBCoilLogical,"FZBCoilRightPhys",FZBContainerLogical,true,1,0);
-
 
 	/////////////////////////////////////
 	//FZB copper coil spacers

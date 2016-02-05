@@ -91,7 +91,7 @@ void HRSTrackingAction::PreUserTrackingAction(const G4Track* aTrack)
 		G4Track* theTrack = (G4Track*)aTrack;
 		theTrack->SetUserInformation(anInfo);
 		/*
-		//but we can also do it in this 2 ways
+		//but we can also do it in 2 ways
 		(1)fpTrackingManager->SetUserTrackInformation(anInfo); 
 		(2)fpTrackingManager->GetTrack()->SetUserInformation(anInfo);		
 		*/

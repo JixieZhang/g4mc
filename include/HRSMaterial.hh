@@ -66,22 +66,23 @@ public:
 	G4Material* lead;
 
 	/////////////////////////////////////////////////////////////
-	G4Material* ethane;			//C2H6
+	G4Material* ethane;		//C2H6
 	G4Material* EthaneHe;		//ethane and He4 gas mixture
 
-	G4Material* mylar;			//C10_H8
-	G4Material* kapton;			//C22_H10_N2_O5
-	G4Material* ultem;			//C37_H24_O6_N2
+	G4Material* mylar;		//C10_H8
+	G4Material* kapton;		//C22_H10_N2_O5
+	G4Material* ultem;		//C37_H24_O6_N2
 	G4Material* SiO2;
-	G4Material* epoxy;			//C11_H12_O3
-	G4Material* G10FR4;			//60% SiO2 and 40% epoxy
-	G4Material* CH2;			//H(CH2)nH
-	G4Material* scintillator;	//EJ-204 Plastic Scintillator	
-	G4Material* pcbNchip;
-	G4Material* cable;
+	G4Material* epoxy;	        //C11_H12_O3
+	G4Material* G10FR4;		//60% SiO2 and 40% epoxy
+	G4Material* CH2;		//H(CH2)nH
+	G4Material* scintillator;	//EJ-204 Plastic Scintillator,  C474H521
+	G4Material* scintillatorfiber;	//C8H8
+	G4Material* pcbNchip;           //pcbNchip Cu9Si5C460H506O138 epoxy + silicon + copper
+	G4Material* cable;              //cable Cu4C6H9Cl3
 
 	G4Material* solidNH3;
-	G4Material* NH3He;			//55% SolidNH3 + 45% LiquidHe
+	G4Material* NH3He;		//55% SolidNH3 + 45% LiquidHe
 	
 	G4Material* BeO;
 
