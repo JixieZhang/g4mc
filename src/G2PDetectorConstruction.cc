@@ -1461,7 +1461,7 @@ G4VPhysicalVolume* G2PDetectorConstruction::ConstructG2PTarget(G4LogicalVolume* 
 	//target entrance cap and exit cap
 	////////////////////////////////////////
 	//The end cap is 0.7 mil aluminum foil, told by Josh 
-	double pTargetCapThick=0.007*inch;
+	double pTargetCapThick=0.0007*inch;
 	if(pSetupEndCap) 
 	{
 		//double mTargetCapThick=0.0007*inch;
