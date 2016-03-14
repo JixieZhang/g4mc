@@ -59,6 +59,9 @@ VirtualDetector2Thick=4.0;
 
 E)  Added material cintilatorfiber, C8H8, desity 1.04g/cm3
 
+F) Added one more Chicane magnet option, if SetupChicane==4, will built C-Type
+   magnet.
+
 ---------------------------------------------------------------------------
 v1.08
 20150921
