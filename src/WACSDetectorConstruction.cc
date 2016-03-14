@@ -1567,7 +1567,8 @@ G4VPhysicalVolume* WACSDetectorConstruction::ConstructWACSChicane(G4LogicalVolum
 
 	///////////////////////////////////////////////////////////
 	//#mSetupChicane
-	//#setup the bender, 0 means none, 1 for FZB2, 2 for 1-m long Dipole, 3 for AV-magnet
+	//#setup the bender, 0 means none, 1 for FZB2, 2 for 1-m long Dipole, 3 for AV-magnet, 
+	//4: C-type magnet, no coil, just have iron and field containner  
 
 	/////////////////////////
 	// FZB magnet Container
@@ -1575,7 +1576,7 @@ G4VPhysicalVolume* WACSDetectorConstruction::ConstructWACSChicane(G4LogicalVolum
 
 	double pFZBX=17.66*inch, pFZBY=15.37*2*inch, pFZBZ=76.34*inch;
 	//use half length dipole if (mSetupChicane==2
-	if(mSetupChicane==2)  pFZBZ=38.17*inch;
+	if(mSetupChicane==2)  pFZBZ=39.37*inch;   //1.0 meter
 
 	double pFZBContainerX=pFZBX+2*cm, pFZBContainerY=pFZBY+2*cm, pFZBContainerZ=pFZBZ+15*inch;
 	G4VSolid* FZBContainerSolid = new G4Box("FZBContainerWholeBox",
@@ -1620,8 +1621,8 @@ G4VPhysicalVolume* WACSDetectorConstruction::ConstructWACSChicane(G4LogicalVolum
 	FZBVacuumPipeLogical->SetVisAttributes(SilverVisAtt);  
 
 	//do not place the vacumn pipe for AV-magnet
-	if(mSetupChicane>0 && mSetupChicane!=3) {
-	new G4PVPlacement(0,G4ThreeVector(),FZBVacuumPipeLogical,
+	if(mSetupChicane==1 || mSetupChicane==2) {
+	  new G4PVPlacement(0,G4ThreeVector(),FZBVacuumPipeLogical,
 		"FZBVacuumPipePhys",FZBContainerLogical,false,0,0);
 	}
 
@@ -1649,10 +1650,10 @@ G4VPhysicalVolume* WACSDetectorConstruction::ConstructWACSChicane(G4LogicalVolum
 	double pFZBVacuumFlangePosZ=(pFZBZ+13.56*inch)/2-pFZBVacuumFlangeZ/2;
 
 	//do not place the vacumn pipe for AV-magnet
-	if(mSetupChicane>0 && mSetupChicane!=3) {
-	new G4PVPlacement(0,G4ThreeVector(0,0,pFZBVacuumFlangePosZ),
+	if(mSetupChicane==1 || mSetupChicane==2) {
+	  new G4PVPlacement(0,G4ThreeVector(0,0,pFZBVacuumFlangePosZ),
 		FZBVacuumFlangeLogical,"FZBVacuumFlangeDownPhys",FZBContainerLogical,true,0,0);
-	new G4PVPlacement(0,G4ThreeVector(0,0,-pFZBVacuumFlangePosZ),
+	  new G4PVPlacement(0,G4ThreeVector(0,0,-pFZBVacuumFlangePosZ),
 		FZBVacuumFlangeLogical,"FZBVacuumFlangeUpPhys",FZBContainerLogical,true,1,0);
 	}
 
@@ -1701,11 +1702,12 @@ G4VPhysicalVolume* WACSDetectorConstruction::ConstructWACSChicane(G4LogicalVolum
 	if(mSetupChicane==3)  pFZBZ=1.3*m;
 
 	double pFZBSidePlateX=5.85*inch;
+	double pFZBUpDownPlateY=5.98*inch;
 	G4VSolid* FZBWholeSolid = new G4Box("FZBWholeBox",pFZBX/2.0,pFZBY/2.0,pFZBZ/2.0);
 
 	//the top and the bottom box, make it longer for subtraction
 	double pFZBSubPlateX=pFZBX-2*pFZBSidePlateX;
-	double pFZBSubPlateY=pFZBY-2*5.98*inch;
+	double pFZBSubPlateY=pFZBY-2*pFZBUpDownPlateY;
 	G4VSolid* FZBSubPlateSolid = new G4Box("FZBSubPlateBox",
 		pFZBSubPlateX/2.0,pFZBSubPlateY/2.0,pFZBZ/2.0+1*mm);
 
@@ -1718,6 +1720,15 @@ G4VPhysicalVolume* WACSDetectorConstruction::ConstructWACSChicane(G4LogicalVolum
 	//subtract the middle rectangle
 	G4SubtractionSolid* FZBSubRecSolid=new G4SubtractionSolid("FZBSubRecSolid",
 		FZBWholeSolid,FZBSubPlateSolid);
+	
+	//I was asked to built C-type magnet.....
+	//so I subtract the bottom part
+	if(mSetupChicane==4)
+	{	  
+	  G4SubtractionSolid* FZBCTypeSolid=new G4SubtractionSolid("FZBCTypeSolid",
+	      FZBSubRecSolid,FZBSubPlateSolid,0,G4ThreeVector(0,-pFZBUpDownPlateY,0));
+	  FZBSubRecSolid = FZBCTypeSolid;
+	}
 
 	//Union 2 middle side rectangles
 	double pFZBPlateMidSidePosX=pFZBVacuumXout/2+pFZBPlateMidSideX/2;
