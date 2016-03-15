@@ -61,8 +61,8 @@ private:
 
 	int    mSetupBeamDump;
 	double mBeamDumpWidth,mBeamDumpHeight,mBeamDumpThick;
-        double mPivot2BeamDumpZ, mPivot2BeamDumpY;
-	
+        double mPivot2BeamDumpX, mPivot2BeamDumpY, mPivot2BeamDumpZ;
+        double mCollimatorDiameter;
 
 	int    mSetupChicane,mSetupChicaneVD;
 

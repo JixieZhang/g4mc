@@ -119,11 +119,15 @@ void WACSDetectorConstruction::GetConfig()
 	mBeamDumpHeight*=mm;
 	gConfig->GetParameter("BeamDumpThick",mBeamDumpThick);
 	mBeamDumpThick*=mm;
-	gConfig->GetParameter("Pivot2BeamDumpZ",mPivot2BeamDumpZ);
-	mPivot2BeamDumpZ*=mm;
+	gConfig->GetParameter("Pivot2BeamDumpX",mPivot2BeamDumpX);
+	mPivot2BeamDumpX*=mm;
 	gConfig->GetParameter("Pivot2BeamDumpY",mPivot2BeamDumpY);
 	mPivot2BeamDumpY*=mm;
+	gConfig->GetParameter("Pivot2BeamDumpZ",mPivot2BeamDumpZ);
+	mPivot2BeamDumpZ*=mm;
 
+	gConfig->GetParameter("CollimatorDiameter",mCollimatorDiameter);
+	mCollimatorDiameter*=mm;
 
 	gConfig->GetParameter("SetupChicane",mSetupChicane);
 	gConfig->GetParameter("SetupChicaneVD",mSetupChicaneVD);
@@ -1551,7 +1555,20 @@ G4VPhysicalVolume* WACSDetectorConstruction::ConstructWACSChicane(G4LogicalVolum
 
 
 	G4RotationMatrix *pRotFZB2=new G4RotationMatrix();
-	pRotFZB2->rotateX(pFZB2TiltedAngle); 
+	pRotFZB2->rotateX(pFZB2TiltedAngle);
+
+	//added horizontal bending function 10<mSetupChicane<20, bending to the right
+	//in case we want to bend electron horizontally
+	//#10<SetupChicane<20 bending to the right
+	//#20<SetupChicane<30 bending to the left
+	if(mSetupChicane>10 && mSetupChicane<20) 
+	{
+	  pRotFZB2->rotateZ(90*deg); 
+	}
+	else if(mSetupChicane>20 && mSetupChicane<30) 
+	{
+	  pRotFZB2->rotateZ(270*deg); 
+	}
 
 	//built the field for the chicane 
 	HRSEMFieldSetup* mEMFieldSetup=HRSEMFieldSetup::GetHRSEMFieldSetup();
@@ -1570,13 +1587,15 @@ G4VPhysicalVolume* WACSDetectorConstruction::ConstructWACSChicane(G4LogicalVolum
 	//#setup the bender, 0 means none, 1 for FZB2, 2 for 1-m long Dipole, 3 for AV-magnet, 
 	//4: C-type magnet, no coil, just have iron and field containner  
 
+	int pMagnetType = mSetupChicane%10;
+
 	/////////////////////////
 	// FZB magnet Container
 	/////////////////////////
 
 	double pFZBX=17.66*inch, pFZBY=15.37*2*inch, pFZBZ=76.34*inch;
 	//use half length dipole if (mSetupChicane==2
-	if(mSetupChicane==2)  pFZBZ=39.37*inch;   //1.0 meter
+	if(pMagnetType==2)  pFZBZ=39.37*inch;   //1.0 meter
 
 	double pFZBContainerX=pFZBX+2*cm, pFZBContainerY=pFZBY+2*cm, pFZBContainerZ=pFZBZ+15*inch;
 	G4VSolid* FZBContainerSolid = new G4Box("FZBContainerWholeBox",
@@ -1621,7 +1640,7 @@ G4VPhysicalVolume* WACSDetectorConstruction::ConstructWACSChicane(G4LogicalVolum
 	FZBVacuumPipeLogical->SetVisAttributes(SilverVisAtt);  
 
 	//do not place the vacumn pipe for AV-magnet
-	if(mSetupChicane==1 || mSetupChicane==2) {
+	if(pMagnetType==1 || pMagnetType==2) {
 	  new G4PVPlacement(0,G4ThreeVector(),FZBVacuumPipeLogical,
 		"FZBVacuumPipePhys",FZBContainerLogical,false,0,0);
 	}
@@ -1650,7 +1669,7 @@ G4VPhysicalVolume* WACSDetectorConstruction::ConstructWACSChicane(G4LogicalVolum
 	double pFZBVacuumFlangePosZ=(pFZBZ+13.56*inch)/2-pFZBVacuumFlangeZ/2;
 
 	//do not place the vacumn pipe for AV-magnet
-	if(mSetupChicane==1 || mSetupChicane==2) {
+	if(pMagnetType==1 || pMagnetType==2) {
 	  new G4PVPlacement(0,G4ThreeVector(0,0,pFZBVacuumFlangePosZ),
 		FZBVacuumFlangeLogical,"FZBVacuumFlangeDownPhys",FZBContainerLogical,true,0,0);
 	  new G4PVPlacement(0,G4ThreeVector(0,0,-pFZBVacuumFlangePosZ),
@@ -1699,7 +1718,7 @@ G4VPhysicalVolume* WACSDetectorConstruction::ConstructWACSChicane(G4LogicalVolum
 	//The yoke of AV-magnet is cut to 1.3 m, but using original coils
 	//so I temperarily keep the original length, will set it back when this block finish
 	double oldFZBZ=pFZBZ;
-	if(mSetupChicane==3)  pFZBZ=1.3*m;
+	if(pMagnetType==3)  pFZBZ=1.3*m;
 
 	double pFZBSidePlateX=5.85*inch;
 	double pFZBUpDownPlateY=5.98*inch;
@@ -1723,7 +1742,7 @@ G4VPhysicalVolume* WACSDetectorConstruction::ConstructWACSChicane(G4LogicalVolum
 	
 	//I was asked to built C-type magnet.....
 	//so I subtract the bottom part
-	if(mSetupChicane==4)
+	if(pMagnetType==4)
 	{	  
 	  G4SubtractionSolid* FZBCTypeSolid=new G4SubtractionSolid("FZBCTypeSolid",
 	      FZBSubRecSolid,FZBSubPlateSolid,0,G4ThreeVector(0,-pFZBUpDownPlateY,0));
@@ -1748,7 +1767,7 @@ G4VPhysicalVolume* WACSDetectorConstruction::ConstructWACSChicane(G4LogicalVolum
 		FZBSteelLogical,"FZBSteelPhys",FZBContainerLogical,false,0,0);
 
 	//now set the length back
-	if(mSetupChicane==3)  pFZBZ=oldFZBZ;
+	if(pMagnetType==3)  pFZBZ=oldFZBZ;
 	/////////////////////////////////////
 	//FZB copper coils
 	/////////////////////////////////////
@@ -1834,12 +1853,14 @@ G4VPhysicalVolume* WACSDetectorConstruction::ConstructWACSChicane(G4LogicalVolum
 	    //double pFZDumpWidth=20.0*cm;
 	    //double pFZDumpHeight=60.0*cm;
 	    //double pFZDumpThick=15.0*cm;
+	    //double pBDY_pos = 0.0*cm;
 	    //double pBDY_pos = -20.0*cm;
 	    //double pBDZ_pos = mPivotZOffset - 80.0*cm;
 	    
 	    double pFZDumpWidth=mBeamDumpWidth;
 	    double pFZDumpHeight=mBeamDumpHeight;
 	    double pFZDumpThick=mBeamDumpThick;
+	    double pBDX_pos = mPivot2BeamDumpX;
 	    double pBDY_pos = mPivot2BeamDumpY;
 	    double pBDZ_pos = mPivotZOffset + mPivot2BeamDumpZ;
 	    
@@ -1849,19 +1870,19 @@ G4VPhysicalVolume* WACSDetectorConstruction::ConstructWACSChicane(G4LogicalVolum
 	    
 	    //drill a 3mm diameter hole throught it
 	    G4VSolid* FZDumpCollimatorTub = new G4Tubs("FZDumpCollimatorTub",
-						       0,3*mm,pFZDumpThick/2+1*mm,0*deg,360.0*deg);
+						       0,mCollimatorDiameter,pFZDumpThick/2+1*mm,0*deg,360.0*deg);
 	    ///FZDumpBox  subtract the CollimatorTub
 	    G4SubtractionSolid* FZDumpSolid = new G4SubtractionSolid("FZDumpSolid",
-								     FZDumpBox, FZDumpCollimatorTub, 0, G4ThreeVector(0,-pBDY_pos,0));
+	      FZDumpBox, FZDumpCollimatorTub, 0, G4ThreeVector(-pBDX_pos,-pBDY_pos,0));
 	    
 	    G4LogicalVolume* FZDumpLogical = new G4LogicalVolume(FZDumpSolid, 
-								 mMaterialManager->tungsten,"FZDumpLogical",0,0,0);
+	      mMaterialManager->tungsten,"FZDumpLogical",0,0,0);
 	    SDman->AddNewDetector(FZDumpSD);
 	    FZDumpLogical->SetSensitiveDetector(FZDumpSD);
-	    FZDumpLogical->SetVisAttributes(PurpleVisAtt); 
-	    
-	    new G4PVPlacement(0,G4ThreeVector(0,pBDY_pos,pBDZ_pos),
-			      FZDumpLogical,"FZDumpPhys",motherLogical,0,0,0);
+	    FZDumpLogical->SetVisAttributes(PurpleVisAtt);
+ 
+	      new G4PVPlacement(0,G4ThreeVector(pBDX_pos,pBDY_pos,pBDZ_pos),
+				FZDumpLogical,"FZDumpPhys",motherLogical,0,0,0);
 	  }
 
 	//virtual detector

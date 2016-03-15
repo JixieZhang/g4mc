@@ -57,10 +57,16 @@ VirtualDetectorHeight=40.0;
 VirtualDetector1Thick=0.5;
 VirtualDetector2Thick=4.0;
 
-E)  Added material cintilatorfiber, C8H8, desity 1.04g/cm3
+E) Added material cintilatorfiber, C8H8, desity 1.04g/cm3
 
 F) Added one more Chicane magnet option, if SetupChicane==4, will built C-Type
    magnet.
+G) modified chicane geometry, allow to bend electron beam horizontally left or right.   
+   Use SetupChicane%10 to identified magnet type
+   If 10<SetupChicane<20 bending to the right
+   If 20<SetupChicane<30 bending to the left
+H) To handle G), need to add parameters 'Pivot2BeamDumpX=-200' and 'CollimatorDiameter=2.0'
+   in Detector_WACS.ini 
 
 ---------------------------------------------------------------------------
 v1.08
