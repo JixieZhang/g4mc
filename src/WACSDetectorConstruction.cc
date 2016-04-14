@@ -248,82 +248,11 @@ G4VPhysicalVolume* WACSDetectorConstruction::ConstructWACSScatChamber(G4LogicalV
 	//By Jixie: I have verified that rotate by matrix A then by Matrix B should be written
 	//as Rotate=A*B, always put the first rotation at the left
 
-#ifdef G4DEBUG_GEOMETRY
-	if(G4DEBUG_GEOMETRY>=1)
-	{
-		G4RotationMatrix *pRotBField=new G4RotationMatrix();
-		BField_Helm *pHelmField=BField_Helm::GetInstance();
-		pRotBField=(G4RotationMatrix*)(pHelmField->GetRotation_L2F());
-
-		G4RotationMatrix* pRotX90deg = new G4RotationMatrix();
-		pRotX90deg->rotateX(90.*deg);
-		G4RotationMatrix *pRotScatChamber=new G4RotationMatrix();
-		*pRotScatChamber = (*pRotX90deg) * (*pRotBField) ; //rotate with the coil	
-
-		cout<<"\n pRotBField ==> EulerAngles: phi="<<pRotBField->getPhi()/deg
-			<<"  theta="<<pRotBField->getTheta()/deg
-			<<"  psi="<<pRotBField->getPsi()/deg<<endl;
-
-		cout<<"\n pRotScatChamber ==> EulerAngles: phi="<<pRotScatChamber->getPhi()/deg
-			<<"  theta="<<pRotScatChamber->getTheta()/deg
-			<<"  psi="<<pRotScatChamber->getPsi()/deg<<endl;
-	}
-#endif
-
 	// Magnetic field Rotation----------------------------------------------------------
 	BField_Helm *pHelmField=BField_Helm::GetInstance();
 	G4RotationMatrix *pRotBField=(G4RotationMatrix*)(pHelmField->GetRotation_L2F());
 	G4RotationMatrix *pRotScatInHall=new G4RotationMatrix();
 	*pRotScatInHall = (*pRotX90deg) * (*pRotBField) ; //rotate with the coil
-
-	/////////////////////////////////////////////////////////
-#ifdef G4DEBUG_GEOMETRY
-	//this part is used to compare with pRotScatInHall, this is the way I figure out
-	//how pRotScatInHall should be constructed
-
-	G4RotationMatrix *pRotX90Z270deg=new G4RotationMatrix();
-	pRotX90Z270deg->rotateX(90*deg);
-	pRotX90Z270deg->rotateZ(270*deg); 
-
-	G4RotationMatrix *pRotX90Z353deg=new G4RotationMatrix();
-	pRotX90Z353deg->rotateX(90*deg);
-	pRotX90Z353deg->rotateZ(353*deg); 
-
-	if(G4DEBUG_GEOMETRY>=1)
-	{
-		cout<<"\n pRotBField ==> EulerAngles: phi="<<pRotBField->getPhi()/deg
-			<<"  theta="<<pRotBField->getTheta()/deg
-			<<"  psi="<<pRotBField->getPsi()/deg<<endl;
-
-		cout<<"\n pRotX90deg ==> EulerAngles: phi="<<pRotX90deg->getPhi()/deg
-			<<"  theta="<<pRotX90deg->getTheta()/deg
-			<<"  psi="<<pRotX90deg->getPsi()/deg<<endl;
-
-		cout<<"\n pRotX90Z270deg ==> EulerAngles: phi="<<pRotX90Z270deg->getPhi()/deg
-			<<"  theta="<<pRotX90Z270deg->getTheta()/deg
-			<<"  psi="<<pRotX90Z270deg->getPsi()/deg<<endl;
-
-		cout<<"\n pRotX90Z353deg ==> EulerAngles: phi="<<pRotX90Z353deg->getPhi()/deg
-			<<"  theta="<<pRotX90Z353deg->getTheta()/deg
-			<<"  psi="<<pRotX90Z353deg->getPsi()/deg<<endl;
-
-		//The following is used to verify that rotate by matrix A then rotate by Matrix B should 
-		//be written as Rotate=A*B, always put the first rotation at the left
-		cout<<"\n (*pRotX90deg) * (*pRotBField) ==> EulerAngles: phi="<<pRotScatInHall->getPhi()/deg
-			<<"  theta="<<pRotScatInHall->getTheta()/deg
-			<<"  psi="<<pRotScatInHall->getPsi()/deg<<endl;
-		//to compare AB with BA	
-		G4RotationMatrix pRot_BA=(*pRotBField) * (*pRotX90deg);
-		cout<<"\n (*pRotBField) * (*pRotX90deg) ==> EulerAngles: phi="<<pRot_BA.getPhi()/deg
-			<<"  theta="<<pRot_BA.getTheta()/deg
-			<<"  psi="<<pRot_BA.getPsi()/deg<<endl;
-
-		cout<<"\n pRotScatInHall ==> EulerAngles: phi="<<pRotScatInHall->getPhi()/deg
-			<<"  theta="<<pRotScatInHall->getTheta()/deg
-			<<"  psi="<<pRotScatInHall->getPsi()/deg<<endl;
-	}
-#endif
-	/////////////////////////////////////////////////////////
 
 	/////////////////////////////////////////////////////////
 	//scattering chamber container
@@ -332,12 +261,15 @@ G4VPhysicalVolume* WACSDetectorConstruction::ConstructWACSScatChamber(G4LogicalV
 	//scattering chamber itself.
 	//The scattering chamber containner is made of helium gas, 
 	//will put vacuum inside using innerScatChamber
+	//Note that the top part is 17"+0.25" higher than the bottom part, 
+	//I build a large tube then subtract the bottom 17.25"
+
 	//double pScatChamberContainerR=(479.425+0.508+40+10.0)*mm, mScatChamberL=53.5*inch;
-	double pSCEntranceWindowLongFlangeL=40.0*mm;		//the thickness of the flange
+	double pSCEntranceWindowLongFlangeL=40.0*mm;	    //the thickness of the flange
 	double pScatChamberContainerRin=mShieldLHeRin;      //double mShieldLHeRin=38.1*mm
 	double pScatChamberContainerRout=mScatChamberRout+mScatChamberExitWindowThick+
 		pSCEntranceWindowLongFlangeL+10.0*mm;
-	double pScatChamberContainerL=mScatChamberL+(3.50+17.0+1.25)*inch*2+10.0*mm;
+	double pScatChamberContainerL=mScatChamberL+(3.00+17.0+1.25+0.25)*inch*2+10.0*mm;
 	G4VSolid* scatChamberContainerExtendedSolid = new G4Tubs("scatChamberContainerExtendedTubs",
 		pScatChamberContainerRin,pScatChamberContainerRout,
 		pScatChamberContainerL/2.0,0.,360.*deg);
@@ -345,7 +277,7 @@ G4VPhysicalVolume* WACSDetectorConstruction::ConstructWACSScatChamber(G4LogicalV
 		0,pScatChamberContainerRout+1*mm,17.25*inch/2.0,0.,360.*deg);
 	G4SubtractionSolid* scatChamberContainerSolid=new G4SubtractionSolid("scatChamberContainerSolid",
 		scatChamberContainerExtendedSolid,scatChamberContainerExtraSolid,
-		0,G4ThreeVector(0,0,-mScatChamberL/2-17.25*inch/2.0-4.5*inch-10.1*mm));
+		0,G4ThreeVector(0,0,-pScatChamberContainerL/2+17.25*inch/2.0-1*mm));
 
 	G4LogicalVolume* scatChamberContainerLogical = new G4LogicalVolume(scatChamberContainerSolid,
 		mMaterialManager->heliumGas,"scatChamberContainerLogical",0,0,0);
@@ -379,7 +311,7 @@ G4VPhysicalVolume* WACSDetectorConstruction::ConstructWACSScatChamber(G4LogicalV
 	/////////////////////////
 	//Build the scatter chamber,it contains 5 windows,  4 rectangles and 1 circle
 	//target chamber container || scattering chamber container
-	//double mScatChamberRin=17.875*inch,mScatChamberRout=18.875*inch,mScatChamberL=27.25*inch;
+	//double mScatChamberRin=17.875*inch,mScatChamberRout=18.875*inch,mScatChamberL=28*inch;
 
 	G4VSolid* scatChamberWholeSolid=0;
 	//If mSetupG2PScatChamber==1, setup the body only, 
@@ -388,39 +320,50 @@ G4VPhysicalVolume* WACSDetectorConstruction::ConstructWACSScatChamber(G4LogicalV
 	//The bottom flange is like the following
 	//                       II                         II
 	//                       II                         II
-	//                       II                         II     __start here: -mScatChamberL/2
-	//                      /II                         II\                                      0
-	//                     /III                         III\                 -mScatChamberL/2-1.0"
+	//                       II                         II     __start here: -mScatChamberL/2, r
+	//                      /II                         II\                                    0
+	//                     /III                         III\                 -mScatChamberL/2-0.75", r+0.75"
 	//                     IIII                         IIII                
 	//                     IIII                         IIII               
-	//                     IIII                         IIII                 -mScatChamberL/2-3.25"
+	//                     IIII                         IIII                 -mScatChamberL/2-3.00", r+0.75"
 	//                     IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII
-	//                     IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII     __end here: -mScatChamberL/2-4.5"
+	//                     IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII     __end here: -mScatChamberL/2-4.25", r+0.75"
 	//the top flange is similar in shape but upside down
 	if(mSetupG2PScatChamber==1)
 	{
 		scatChamberWholeSolid = new G4Tubs("scatChamberWholeTubs",
-			mScatChamberRin,mScatChamberRout,mScatChamberL/2.0,0.,360.*deg);
+			mScatChamberRin,mScatChamberRout,mScatChamberL/2.0+4.25*inch,0.,360.*deg);
 	}
 	else if(mSetupG2PScatChamber>=2)
 	{
 		startphi=0.*deg; deltaphi=360.*deg;
-		const int kNPlane_SC=11;
+		const int kNPlane_SC=10; //do not put 12 if you want to view the internal from the top
 		double rInner_SC[] = {0,0,mScatChamberRin,
 			mScatChamberRin,mScatChamberRin,mScatChamberRin,
 			mScatChamberRin,mScatChamberRin,mScatChamberRin,
-			0,0};
-		double rOuter_SC[] = {
-			mScatChamberRout+1.0*inch,mScatChamberRout+1.0*inch,mScatChamberRout+1.0*inch,
-			mScatChamberRout,mScatChamberRout,mScatChamberRout+1.0*inch,
-			mScatChamberRout+1.0*inch,mScatChamberRout,mScatChamberRout,
-			mScatChamberRout+1*inch,mScatChamberRout+1*inch
+			mScatChamberRin,0,0
 		};
+		double rOuter_SC[] = {
+			mScatChamberRout+0.75*inch,mScatChamberRout+.75*inch,mScatChamberRout+0.75*inch,
+			mScatChamberRout+0.75*inch,mScatChamberRout,mScatChamberRout,
+			mScatChamberRout+0.75*inch,mScatChamberRout+0.75*inch,mScatChamberRout,
+			mScatChamberRout,mScatChamberRout+0.75*inch,mScatChamberRout+0.75*inch
+		};
+		//note that the beam line to the bottom is 0.25 inch shorter than to the top
+		//That says, there is 0.125*inch vertical offset
+		double pBeamOffset=0.125*inch;
 		double zPlane_SC[] = {
-			-mScatChamberL/2-4.50*inch,-mScatChamberL/2-3.25*inch,-mScatChamberL/2-1.0*inch,
-			-mScatChamberL/2,mScatChamberL/2+0.25*inch,mScatChamberL/2+1.25*inch,
-			mScatChamberL/2+3.50*inch,mScatChamberL/2+3.50*inch,mScatChamberL/2+20.5*inch,
-			mScatChamberL/2+20.5*inch,mScatChamberL/2+21.75*inch
+			-mScatChamberL/2-4.25*inch+pBeamOffset,
+			-mScatChamberL/2-3.00*inch+pBeamOffset,
+			-mScatChamberL/2-3.00*inch+pBeamOffset,
+			-mScatChamberL/2-0.75*inch+pBeamOffset,
+			-mScatChamberL/2+pBeamOffset, mScatChamberL/2+pBeamOffset,
+			mScatChamberL/2+0.75*inch+pBeamOffset,
+			mScatChamberL/2+3.00*inch+pBeamOffset,
+			mScatChamberL/2+3.00*inch+pBeamOffset,
+			mScatChamberL/2+18.86*inch+pBeamOffset,
+			mScatChamberL/2+18.86*inch+pBeamOffset,
+			mScatChamberL/2+21.11*inch+pBeamOffset
 		};
 
 		G4Polycone* SCWholeSolid = new G4Polycone("SCPolycone",startphi,deltaphi,
@@ -1847,7 +1790,14 @@ G4VPhysicalVolume* WACSDetectorConstruction::ConstructWACSChicane(G4LogicalVolum
 
 
 	/////////////////////////////////////
-	//setup a local dump
+	//Setup a local dump: tungsten dump core surrounding by lead
+	//The dump core is 5cm cylinder, 15 cm thickness, or 1mm less than dump thickness
+	//which is thicker
+	//If the lead is very thick, dig tunnel in the lead so the core is exposed to the beam
+	//Always put dump core at the same x_pos, y_pos as the Lead dump, z_pos could have an offset 
+	//By default I will let the core upstream face is 10 cm to lead upstream face, if 
+	//the lead is not thick enough, just align the core downstream face up with lead 
+	//downstream face
 	if(mSetupBeamDump)
 	  {
 	    //double pFZDumpWidth=20.0*cm;
@@ -1864,25 +1814,68 @@ G4VPhysicalVolume* WACSDetectorConstruction::ConstructWACSChicane(G4LogicalVolum
 	    double pBDY_pos = mPivot2BeamDumpY;
 	    double pBDZ_pos = mPivotZOffset + mPivot2BeamDumpZ;
 	    
+				
+		double pFZDumpCoreRadius = 5*cm;	
+		double pFZDumpCoreThick = 15*cm;		
+	    if(pFZDumpThick<pFZDumpCoreThick) pFZDumpCoreThick=pFZDumpThick;
 	    
+	    //now calcualte the ralative z_offset between core and lead
+		double pFZDumpCoreUpFace2LeadUpFace = 10*cm;		
+	    if(pFZDumpThick-pFZDumpCoreThick<pFZDumpCoreUpFace2LeadUpFace) 
+			pFZDumpCoreUpFace2LeadUpFace=pFZDumpThick-pFZDumpCoreThick;
+				
+		//pFZDumpCoreZ2LeadZ: positive means core at the upstream of lead
+	    double pFZDumpCoreZ2LeadZ=pFZDumpThick/2-pFZDumpCoreUpFace2LeadUpFace-pFZDumpCoreThick/2;
+	    
+	    //define dump core tunnel dimention
+	    double pFZDumpTunnelLength=pFZDumpCoreUpFace2LeadUpFace+pFZDumpCoreThick;
+	    double pFZDumpTunnelZ2LeadZ=pFZDumpThick/2-pFZDumpTunnelLength/2;
+	    
+		      
+		/////////////////////////////////////////////////////////////////////      
+		//now build the lead part, build a large box, then subtract collimator, 
+		//subtract the tunnel, then place core inside it      
 	    G4VSolid* FZDumpBox = new G4Box("FZDumpBox",
-					    pFZDumpWidth/2.0, pFZDumpHeight/2.0, pFZDumpThick/2.0);
+		      pFZDumpWidth/2.0, pFZDumpHeight/2.0, pFZDumpThick/2.0);
 	    
 	    //drill a 3mm diameter hole throught it
 	    G4VSolid* FZDumpCollimatorTub = new G4Tubs("FZDumpCollimatorTub",
-						       0,mCollimatorDiameter,pFZDumpThick/2+1*mm,0*deg,360.0*deg);
-	    ///FZDumpBox  subtract the CollimatorTub
-	    G4SubtractionSolid* FZDumpSolid = new G4SubtractionSolid("FZDumpSolid",
+		      0,mCollimatorDiameter/2.,pFZDumpThick/2+1*mm,0*deg,360.0*deg);
+	    ///FZDumpBox subtract the CollimatorTub
+	    G4SubtractionSolid* FZDumpSubCollimator = new G4SubtractionSolid("FZDumpSubCollimator",
 	      FZDumpBox, FZDumpCollimatorTub, 0, G4ThreeVector(-pBDX_pos,-pBDY_pos,0));
 	    
+	    ///FZDumpBox subtract the TunnelTub
+	    G4VSolid* FZDumpTunnelTub = new G4Tubs("FZDumpTunnelTub",
+		      0,pFZDumpCoreRadius,pFZDumpTunnelLength/2+0.1*mm,0*deg,360.0*deg);
+	    G4SubtractionSolid* FZDumpSolid = new G4SubtractionSolid("FZDumpSolid",
+	      FZDumpSubCollimator, FZDumpTunnelTub, 0, G4ThreeVector(0,0,-pFZDumpTunnelZ2LeadZ));
+	      
 	    G4LogicalVolume* FZDumpLogical = new G4LogicalVolume(FZDumpSolid, 
-	      mMaterialManager->tungsten,"FZDumpLogical",0,0,0);
-	    SDman->AddNewDetector(FZDumpSD);
-	    FZDumpLogical->SetSensitiveDetector(FZDumpSD);
-	    FZDumpLogical->SetVisAttributes(PurpleVisAtt);
+	      mMaterialManager->lead,"FZDumpLogical",0,0,0);
+	    //SDman->AddNewDetector(FZDumpSD);
+	    //FZDumpLogical->SetSensitiveDetector(FZDumpSD);
+	    FZDumpLogical->SetVisAttributes(GrayVisAtt);
  
+		//only place the lead if mSetupBeamDump>=2
+		if(mSetupBeamDump>=2) {
 	      new G4PVPlacement(0,G4ThreeVector(pBDX_pos,pBDY_pos,pBDZ_pos),
 				FZDumpLogical,"FZDumpPhys",motherLogical,0,0,0);
+		}
+		
+		//////////////////////////////////////////////////////
+	    //now place the core
+	    G4VSolid* FZDumpCoreSolid = new G4Tubs("FZDumpCoreTub",
+		      0,pFZDumpCoreRadius,pFZDumpCoreThick/2,0*deg,360.0*deg);
+	    G4LogicalVolume* FZDumpCoreLogical = new G4LogicalVolume(FZDumpCoreSolid, 
+	      mMaterialManager->tungsten,"FZDumpCoreLogical",0,0,0);
+	    FZDumpCoreLogical->SetVisAttributes(PurpleVisAtt);
+	    //SDman->AddNewDetector(FZDumpSD);
+	    //FZDumpLogical->SetSensitiveDetector(FZDumpSD);
+	      
+	    new G4PVPlacement(0,G4ThreeVector(pBDX_pos,pBDY_pos,pBDZ_pos-pFZDumpCoreZ2LeadZ),
+				FZDumpCoreLogical,"FZDumpPhys",motherLogical,0,0,0);
+		      
 	  }
 
 	//virtual detector

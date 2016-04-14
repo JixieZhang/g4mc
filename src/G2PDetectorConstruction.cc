@@ -390,12 +390,15 @@ G4VPhysicalVolume* G2PDetectorConstruction::ConstructG2PScatChamber(G4LogicalVol
 	//scattering chamber itself.
 	//The scattering chamber containner is made of helium gas, 
 	//will put vacuum inside using innerScatChamber
+	//Note that the top part is 17"+0.25" higher than the bottom part, 
+	//I build a large tube then subtract the bottom 17.25"
+
 	//double pScatChamberContainerR=(479.425+0.508+40+10.0)*mm, mScatChamberL=53.5*inch;
 	double pSCEntranceWindowLongFlangeL=40.0*mm;		//the thickness of the flange
 	double pScatChamberContainerRin=mShieldLHeRin;      //double mShieldLHeRin=38.1*mm
 	double pScatChamberContainerRout=mScatChamberRout+mScatChamberExitWindowThick+
 		pSCEntranceWindowLongFlangeL+10.0*mm;
-	double pScatChamberContainerL=mScatChamberL+(3.50+17.0+1.25)*inch*2+10.0*mm;
+	double pScatChamberContainerL=mScatChamberL+(3.00+17.0+1.25+0.25)*inch*2+10.0*mm;
 	G4VSolid* scatChamberContainerExtendedSolid = new G4Tubs("scatChamberContainerExtendedTubs",
 		pScatChamberContainerRin,pScatChamberContainerRout,
 		pScatChamberContainerL/2.0,0.,360.*deg);
@@ -403,7 +406,7 @@ G4VPhysicalVolume* G2PDetectorConstruction::ConstructG2PScatChamber(G4LogicalVol
 		0,pScatChamberContainerRout+1*mm,17.25*inch/2.0,0.,360.*deg);
 	G4SubtractionSolid* scatChamberContainerSolid=new G4SubtractionSolid("scatChamberContainerSolid",
 		scatChamberContainerExtendedSolid,scatChamberContainerExtraSolid,
-		0,G4ThreeVector(0,0,-mScatChamberL/2-17.25*inch/2.0-4.5*inch-10.1*mm));
+		0,G4ThreeVector(0,0,-pScatChamberContainerL/2+17.25*inch/2.0-1*mm));
 
 	G4LogicalVolume* scatChamberContainerLogical = new G4LogicalVolume(scatChamberContainerSolid,
 		mMaterialManager->heliumGas,"scatChamberContainerLogical",0,0,0);
@@ -437,7 +440,7 @@ G4VPhysicalVolume* G2PDetectorConstruction::ConstructG2PScatChamber(G4LogicalVol
 	/////////////////////////
 	//Build the scatter chamber,it contains 5 windows,  4 rectangles and 1 circle
 	//target chamber container || scattering chamber container
-	//double mScatChamberRin=17.875*inch,mScatChamberRout=18.875*inch,mScatChamberL=27.25*inch;
+	//double mScatChamberRin=17.875*inch,mScatChamberRout=18.875*inch,mScatChamberL=28*inch;
 
 	G4VSolid* scatChamberWholeSolid=0;
 	//If mSetupG2PScatChamber==1, setup the body only, 
@@ -446,14 +449,14 @@ G4VPhysicalVolume* G2PDetectorConstruction::ConstructG2PScatChamber(G4LogicalVol
 	//The bottom flange is like the following
 	//                       II                         II
 	//                       II                         II
-	//                       II                         II     __start here: -mScatChamberL/2
-	//                      /II                         II\                                      0
-	//                     /III                         III\                 -mScatChamberL/2-1.0"
+	//                       II                         II     __start here: -mScatChamberL/2, r
+	//                      /II                         II\                                    0
+	//                     /III                         III\                 -mScatChamberL/2-0.75", r+0.75"
 	//                     IIII                         IIII                
 	//                     IIII                         IIII               
-	//                     IIII                         IIII                 -mScatChamberL/2-3.25"
+	//                     IIII                         IIII                 -mScatChamberL/2-3.00", r+0.75"
 	//                     IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII
-	//                     IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII     __end here: -mScatChamberL/2-4.5"
+	//                     IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII     __end here: -mScatChamberL/2-4.25", r+0.75"
 	//the top flange is similar in shape but upside down
 	if(mSetupG2PScatChamber==1)
 	{
@@ -463,22 +466,33 @@ G4VPhysicalVolume* G2PDetectorConstruction::ConstructG2PScatChamber(G4LogicalVol
 	else if(mSetupG2PScatChamber>=2)
 	{
 		startphi=0.*deg; deltaphi=360.*deg;
-		const int kNPlane_SC=11;
+		const int kNPlane_SC=10; //do not put 12 if you want to view the internal from the top
 		double rInner_SC[] = {0,0,mScatChamberRin,
 			mScatChamberRin,mScatChamberRin,mScatChamberRin,
 			mScatChamberRin,mScatChamberRin,mScatChamberRin,
-			0,0};
-		double rOuter_SC[] = {
-			mScatChamberRout+1.0*inch,mScatChamberRout+1.0*inch,mScatChamberRout+1.0*inch,
-			mScatChamberRout,mScatChamberRout,mScatChamberRout+1.0*inch,
-			mScatChamberRout+1.0*inch,mScatChamberRout,mScatChamberRout,
-			mScatChamberRout+1*inch,mScatChamberRout+1*inch
+			mScatChamberRin,0,0
 		};
+		double rOuter_SC[] = {
+			mScatChamberRout+0.75*inch,mScatChamberRout+.75*inch,mScatChamberRout+0.75*inch,
+			mScatChamberRout+0.75*inch,mScatChamberRout,mScatChamberRout,
+			mScatChamberRout+0.75*inch,mScatChamberRout+0.75*inch,mScatChamberRout,
+			mScatChamberRout,mScatChamberRout+0.75*inch,mScatChamberRout+0.75*inch
+		};
+		//note that the beam line to the bottom is 0.25 inch shorter than to the top
+		//That says, there is 0.125*inch vertical offset
+		double pBeamOffset=0.125*inch;
 		double zPlane_SC[] = {
-			-mScatChamberL/2-4.50*inch,-mScatChamberL/2-3.25*inch,-mScatChamberL/2-1.0*inch,
-			-mScatChamberL/2,mScatChamberL/2+0.25*inch,mScatChamberL/2+1.25*inch,
-			mScatChamberL/2+3.50*inch,mScatChamberL/2+3.50*inch,mScatChamberL/2+20.5*inch,
-			mScatChamberL/2+20.5*inch,mScatChamberL/2+21.75*inch
+			-mScatChamberL/2-4.25*inch+pBeamOffset,
+			-mScatChamberL/2-3.00*inch+pBeamOffset,
+			-mScatChamberL/2-3.00*inch+pBeamOffset,
+			-mScatChamberL/2-0.75*inch+pBeamOffset,
+			-mScatChamberL/2+pBeamOffset, mScatChamberL/2+pBeamOffset,
+			mScatChamberL/2+0.75*inch+pBeamOffset,
+			mScatChamberL/2+3.00*inch+pBeamOffset,
+			mScatChamberL/2+3.00*inch+pBeamOffset,
+			mScatChamberL/2+18.86*inch+pBeamOffset,
+			mScatChamberL/2+18.86*inch+pBeamOffset,
+			mScatChamberL/2+21.11*inch+pBeamOffset
 		};
 
 		G4Polycone* SCWholeSolid = new G4Polycone("SCPolycone",startphi,deltaphi,

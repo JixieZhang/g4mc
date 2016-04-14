@@ -623,15 +623,21 @@ G4VPhysicalVolume* HRSDetectorConstruction::Construct()
 		gConfig->GetArgument("VBHeight",pVBHeight); 
 		pVBRin*=mm,pVBRout*=mm,pVBHeight*=mm;
 
+		//opening angle is 60deg, or the corresponding chord is 0.8m, which is smaller 
+		double phiopen = 60*deg;
+		double phiopen2 = 2*asin(0.4*m/pVBRin);
+		if(phiopen2<phiopen) phiopen=phiopen2;
+		double phistart = -270*deg+phiopen/2.;
+		double phispan = 360*deg-phiopen;
 		G4VSolid* virtualBoundary0Solid = new G4Tubs("virtualBoundary0Tubs",
-			pVBRin,(pVBRin+pVBRout)/2,pVBHeight/2.0,-240*deg,300*deg);
+			pVBRin, pVBRout,pVBHeight/2.0,phistart,phispan);
 		G4VSolid* virtualBoundary1Solid = new G4Tubs("virtualBoundary1Tubs",
-			(pVBRin+pVBRout)/2,pVBRout,pVBHeight/2.0,-240*deg,300*deg);
+			pVBRout,pVBRout+1*mm,pVBHeight/2.0,phistart,phispan);
 
 		G4LogicalVolume* virtualBoundary0Logical = new G4LogicalVolume(virtualBoundary0Solid,
-			mMaterialManager->air,"virtualBoundary0Logical",0,0,0);
+			mMaterialManager->vacuum,"virtualBoundary0Logical",0,0,0);
 		G4LogicalVolume* virtualBoundary1Logical = new G4LogicalVolume(virtualBoundary1Solid,
-			mMaterialManager->air,"virtualBoundary1Logical",0,0,0);
+			mMaterialManager->vacuum,"virtualBoundary1Logical",0,0,0);
 
 		virtualBoundary0Logical->SetVisAttributes(LightYellowVisAtt);  
 		virtualBoundary1Logical->SetVisAttributes(LightYellowVisAtt); 

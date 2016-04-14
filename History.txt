@@ -68,6 +68,29 @@ G) modified chicane geometry, allow to bend electron beam horizontally left or r
 H) To handle G), need to add parameters 'Pivot2BeamDumpX=-200' and 'CollimatorDiameter=2.0'
    in Detector_WACS.ini 
 
+I) Change virtualBoundary material to vacucm.  Change the phi openning in the upstream of 
+   the virtual boundary to 60 deg or the corresponding chord of 0.8m, which is smaller.
+   I would like to use it to calculate radiation dose.
+
+J) In order to simulate radiation dose, I have to disable the local dump as a sensitive 
+   detector, otherwise the program will be too slow and output tree is too large.
+
+K) Modified g2p and wacs target chamber geometry to match the drawing. The vertical part
+   was not match to the drawing before.  Donal want to put the local dump at the downstream
+   of the target and on the floor, therefore the height of the chamber is criticle. 
+
+L) Modified the FZ dump for WACS. Now the dump is a cylinder dump core( 5cm radus and 15 cm 
+   thick) surrounded by lead shielding box. The size of the dump and position can be configured
+   in Detector_WACS.ini.    
+   If the lead shielding box is less than 15 cm, will force the core to be as thick as the lead 
+   box.
+   The core is placed in the same x_pos and y_pos as the lead shielding box, but allowing the 
+   z_pos to change within the box.  
+   The dump core upstream face will always be 10 cm behind the upstream face of the lead box.
+   If the lead box is less than 25 cm thick, then align the downstream face of the core to the 
+   downstream face of the lead box.  
+
+ 
 ---------------------------------------------------------------------------
 v1.08
 20150921
