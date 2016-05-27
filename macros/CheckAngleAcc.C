@@ -43,7 +43,7 @@ char* GetKeyWords(int &SetupHMS, double &Beam, double &ProtonAngle, double &Gamm
   gp->GetEntry(0);
   
   static char *key = new char [255];  
-  sprintf(key,"g%.0f_pr%.0f_E%.1f",GammaAngle/deg,ProtonAngle/deg,Beam);
+  sprintf(key,"g%.1f_pr%.1f_E%.1f",GammaAngle/deg,ProtonAngle/deg,Beam);
   cout<<"key="<<key<<endl;
   return key;
 }
@@ -97,17 +97,23 @@ void gpAngleAcc(double p0_gev=0.0)
   char xbin[200];
   //sprintf(xbin,"15,10,40");  //for photon arm at 25 deg
   //sprintf(xbin,"15,20,50");  //for photon arm at 35 deg
-  int nbin=15; double th_g_deg_min=10, th_g_deg_max=40;
-  th_g_deg_min = GammaAngle - 15;
-  th_g_deg_max = GammaAngle + 15;
+  int nbin=18; double th_g_deg_min=8, th_g_deg_max=44;
+  th_g_deg_min = GammaAngle - 18;
+  th_g_deg_max = GammaAngle + 18;
 
-  sprintf(xbin,"%d,%.0f,%.0f",nbin,th_g_deg_min,th_g_deg_max);    
+  sprintf(xbin,"%d,%.1f,%.1f",nbin,th_g_deg_min,th_g_deg_max);    
 
   char tpbin[200];
   double th_p_deg_min=10, th_p_deg_max=40;
   th_p_deg_min = ProtonAngle - 15;
   th_p_deg_max = ProtonAngle + 15;
-  sprintf(tpbin,"%d,%.0f,%.0f",nbin,th_p_deg_min,th_p_deg_max);   
+  if(GammaAngle>70) 
+    {
+      th_p_deg_min = ProtonAngle - 7.5;
+      th_p_deg_max = ProtonAngle + 7.5;
+    }
+  sprintf(tpbin,"%d,%.1f,%.1f",nbin,th_p_deg_min,th_p_deg_max);   
+
 
   char tgcmbin[200];
   double th_g_cm_deg_min=50, th_g_cm_deg_max=110;
@@ -123,12 +129,12 @@ void gpAngleAcc(double p0_gev=0.0)
 
   th_g_cm_deg_min = th_g_cm_deg - 20;
   th_g_cm_deg_max = th_g_cm_deg + 20;
-  sprintf(tgcmbin,"%d,%.0f,%.0f",10,th_g_cm_deg_min,th_g_cm_deg_max);  
+  sprintf(tgcmbin,"%d,%.1f,%.1f",10,th_g_cm_deg_min,th_g_cm_deg_max);  
   
 
   char weight[255];
-  if(p0_gev<0.1) sprintf(weight,"XS*P0_g*P0_g/3.142");
-  else sprintf(weight,"XS*P0_g*P0_g/3.142*(abs(P0_p-%.3f)/%.3f<0.1)",p0_gev,p0_gev);
+  if(p0_gev<0.1) sprintf(weight,"XS_g*P0_g*P0_g/3.142");
+  else sprintf(weight,"XS_g*P0_g*P0_g/3.142*(abs(P0_p-%.3f)/%.3f<0.1)",p0_gev,p0_gev);
 
   TCanvas *c2 = new TCanvas("c2","",800,600);
   
@@ -143,7 +149,7 @@ void gpAngleAcc(double p0_gev=0.0)
       th_g_cm_deg += int((new_th_g_cm_deg-th_g_cm_deg)/5.0)*5.0;
       th_g_cm_deg_min = th_g_cm_deg - 20;
       th_g_cm_deg_max = th_g_cm_deg + 20;
-      sprintf(tgcmbin,"%d,%.0f,%.0f",10,th_g_cm_deg_min,th_g_cm_deg_max);  
+      sprintf(tgcmbin,"%d,%.1f,%.1f",10,th_g_cm_deg_min,th_g_cm_deg_max);  
     }
   gp->Draw(Form("Theta0_cm_g*57.3:Theta0_g*57.3>>htcmlab(%s,%s)",xbin,tgcmbin),weight,"colz text");
   TH2F *htcmlab = (TH2F*) gROOT->FindObject("htcmlab");
@@ -157,7 +163,8 @@ void gpAngleAcc(double p0_gev=0.0)
   htptg->SetTitle(";#theta_{#gamma}^{lab} (deg);#theta_{p}^{lab} (deg)");
   c2->SaveAs("Graph/RCS_Theta_lab.png");
 
-  gp->Draw(Form("P0_g:Theta0_g*57.3>>hpgtg(%s,30,1,4)",xbin),weight,"colz text"); 
+  //gp->Draw(Form("P0_g:Theta0_g*57.3>>hpgtg(%s,40,0,2)",xbin),weight,"colz text");
+  gp->Draw(Form("P0_g:Theta0_g*57.3>>hpgtg(%s,40,0,4)",xbin),weight,"colz text"); 
   TH2F *hpgtg = (TH2F*) gROOT->FindObject("hpgtg");
   hpgtg->SetMinimum(0.5);
   hpgtg->SetTitle(";#theta_{#gamma}^{lab} (deg);P_{#gamma} (GeV/c)");
@@ -176,19 +183,22 @@ void gpAngleAcc(double p0_gev=0.0)
   c2->SaveAs("Graph/RCS_Pp_Thetag.png");
  
 
-  gp->Draw(Form("Ei:Theta0_g*57.3>>heitg(%s,40,1,5)",xbin),weight,"colz text"); 
+  gp->Draw(Form("Ei:Theta0_g*57.3>>heitg(%s,25,2,7)",xbin),weight,"colz text"); 
   TH2F *heitg = (TH2F*) gROOT->FindObject("heitg");
   heitg->SetMinimum(0.5);
   heitg->SetTitle(";#theta_{#gamma}^{lab} (deg);Incident Energy (GeV)");
   c2->SaveAs("Graph/RCS_Ei_Thetag.png");
 
-  gp->Draw(Form("t:Theta0_g*57.3>>httg(%s,10,-5.0,0)",xbin),weight,"colz text"); 
+  gp->Draw(Form("t:Theta0_g*57.3>>httg(%s,10,-10.0,0)",xbin),weight,"colz text"); 
+  //gp->Draw(Form("t:Theta0_g*57.3>>httg(%s,10,-10.0,-5.0)",xbin),weight,"colz text"); 
   TH2F *httg = (TH2F*) gROOT->FindObject("httg");
   httg->SetMinimum(0.5);
   httg->SetTitle(";#theta_{#gamma}^{lab} (deg);t (GeV^{2})");
   c2->SaveAs("Graph/RCS_t_Thetag.png");
 
   gp->Draw(Form("u:Theta0_g*57.3>>hutg(%s,10,-10.0,0.0)",xbin),weight,"colz text"); 
+  //gp->Draw(Form("u:Theta0_g*57.3>>hutg(%s,10,-2.0,0.0)",xbin),weight,"colz text"); 
+
   TH2F *hutg = (TH2F*) gROOT->FindObject("hutg");
   hutg->SetMinimum(0.5);
   hutg->SetTitle(";#theta_{#gamma}^{lab} (deg);u (GeV^{2})");
@@ -261,7 +271,7 @@ double GetConfigLeaf(const char *leaf="VDAngle")
   TTree *config = (TTree*) gROOT->FindObject("config");
   config->SetBranchAddress(leaf,&val);
   config->GetEntry(0);
-  //cout<< "In this run,  "<< leaf <<" = "<<val<<endl;
+  cout<< "In this run,  "<< leaf <<" = "<<val<<endl;
   return val;
 }
 
@@ -276,7 +286,7 @@ int GetConfigLeaf_Int(const char *leaf="VDAngle")
 }
 
 
-void CheckAngleAcc(double Eimin=4.0, double Eimax=6.5){
+void CheckAngleAcc(double Eimin=4.0, double Eimax=8.5){
   gROOT->Reset();
   double beam =  GetBeamEnergy();
   if(beam<1) 
@@ -287,6 +297,7 @@ void CheckAngleAcc(double Eimin=4.0, double Eimax=6.5){
 
   /////////////////////////////////////////////////////////////
   const double deg = atan(1.0)/45.;
+  double TargetRotation = GetConfigLeaf("HelmRotAngle1")/deg; // in deg;
   double PhotonAngle = GetConfigLeaf("VDAngle")/deg;
 
   //By Jixie: These 2 line will change the value of pSBS
@@ -294,6 +305,7 @@ void CheckAngleAcc(double Eimin=4.0, double Eimax=6.5){
   double ProtonAngle = 0;
   if(PhotonAngle>180.) ProtonAngle = GetConfigLeaf("SuperBigBiteAngle")/deg;
   else ProtonAngle = GetConfigLeaf("HMSAngle")/deg;
+
 
   int pSBS = (PhotonAngle>180.) ? 1 : 0;
   //cout<<" pSBS="<<pSBS<<endl;
@@ -318,7 +330,7 @@ void CheckAngleAcc(double Eimin=4.0, double Eimax=6.5){
   /////////////////////////////////////////////////////////////
   TTree *track0 = (TTree*) gROOT->FindObject("track0");
   track0->AddFriend("track1");
-  track0->AddFriend("track2");
+  //track0->AddFriend("track2");
 
 
   TCut EiCut = Form("(Ei>%.3f && Ei<%.3f)",Eimin,Eimax);
@@ -361,17 +373,16 @@ void CheckAngleAcc(double Eimin=4.0, double Eimax=6.5){
   gr2->SetMarkerColor(4);   gr2->SetMarkerStyle(2);
   
   
-  TPaveText *pt2 = new TPaveText(0.4,0.83,0.85,0.898,"brNDC");
+  TPaveText *pt2 = new TPaveText(0.24,0.83,0.85,0.898,"brNDC");
   pt2->SetFillStyle(4000);
   pt2->SetBorderSize(0);
   pt2->SetFillColor(0);
   if(pSBS)
-    pt2->AddText(Form("#color[2]{%s = %.0f^{o}}  #color[3]{%s = %.0f^{o}}",
-		      GammaDetector,PhotonAngle-360.,ProtonDetector,ProtonAngle));
+    pt2->AddText(Form("#color[2]{%s = %.1f^{o}}  #color[3]{%s = %.1f^{o}}  #color[4]{TargetRotation = %.1f^{o}}",
+		      GammaDetector,PhotonAngle-360.,ProtonDetector,ProtonAngle,TargetRotation));
   else
-    pt2->AddText(Form("#color[2]{%s = %.0f^{o}}  #color[3]{%s = %.0f^{o}}",
-		      GammaDetector,PhotonAngle,ProtonDetector,ProtonAngle-360.));
-
+    pt2->AddText(Form("#color[2]{%s = %.1f^{o}}  #color[3]{%s = %.1f^{o}  #color[4]{TargetRotation = %.1f^{o}}}",
+		      GammaDetector,PhotonAngle,ProtonDetector,ProtonAngle-360.,TargetRotation));
   /*
   hTP0->SetTitle("Thrown(black), #color[2]{#gamma detected (red)}, #color[3]{p detected (green)}, #color[4]{#gamma-p detected (blue)};#phi_{#gamma} (deg);#theta_{#gamma} (deg)");
   hTP0->Draw("");
@@ -379,7 +390,7 @@ void CheckAngleAcc(double Eimin=4.0, double Eimax=6.5){
   hTP3->Draw("same");
   hTP2->Draw("same");
   pt2->Draw("same");
-  c1->SaveAs(Form("Graph/gp_acc_g%.0f_pr%.0f_E%.1f_histo.png",PhotonAngle,ProtonAngle,beam));
+  c1->SaveAs(Form("Graph/gp_acc_g%.1f_pr%.1f_E%.1f_histo.png",PhotonAngle,ProtonAngle,beam));
   */
 
   gr0->SetTitle("Thrown(black), #color[2]{#gamma detected (red)}, #color[3]{p detected (green)}, #color[4]{#gamma-p detected (blue)};#phi_{#gamma} (deg);#theta_{#gamma} (deg)");
@@ -390,7 +401,7 @@ void CheckAngleAcc(double Eimin=4.0, double Eimax=6.5){
   pt2->Draw("same");
 
 
-  c1->SaveAs(Form("Graph/gp_acc_g%.0f_pr%.0f_E%.1f.png",PhotonAngle,ProtonAngle,beam));
+  c1->SaveAs(Form("Graph/gp_acc_g%.1f_pr%.1f_E%.1f.png",PhotonAngle,ProtonAngle,beam));
 
   
   TCanvas *c11 = new TCanvas("c11","",700,40,600,400);
@@ -410,19 +421,20 @@ void CheckAngleAcc(double Eimin=4.0, double Eimax=6.5){
   htg10->SetLineColor(3); htg10->SetLineWidth(2);
   htg11->SetLineColor(4); htg11->SetLineWidth(2);
   
-  TPaveText *pt1 = new TPaveText(0.4,0.83,0.85,0.898,"brNDC");
+  TPaveText *pt1 = new TPaveText(0.24,0.80,0.85,0.898,"brNDC");
   pt1->SetFillStyle(4000);
   pt1->SetBorderSize(0);
   pt1->SetFillColor(0);
   if(pSBS)
-    pt1->AddText(Form("#color[2]{%s = %.0f^{o}}  #color[3]{%s = %.0f^{o}}",
-		      GammaDetector,PhotonAngle-360.,ProtonDetector,ProtonAngle));
+    pt1->AddText(Form("#color[2]{%s = %.1f^{o}}  #color[3]{%s = %.1f^{o}}  #color[4]{TargetRotation = %.1f^{o}}",
+		      GammaDetector,PhotonAngle-360.,ProtonDetector,ProtonAngle,TargetRotation));
   else
-    pt1->AddText(Form("#color[2]{%s = %.0f^{o}}  #color[3]{%s = %.0f^{o}}",
-		      GammaDetector,PhotonAngle,ProtonDetector,ProtonAngle-360.));
+    pt1->AddText(Form("#color[2]{%s = %.1f^{o}}  #color[3]{%s = %.1f^{o}}  #color[4]{TargetRotation = %.1f^{o}}",
+		      GammaDetector,PhotonAngle,ProtonDetector,ProtonAngle-360.,TargetRotation));
+  pt1->AddText(Form("#color[4]{Integral = %.1f}",htg11->Integral()));
   pt1->Draw("same");
   gPad->SetLogy(1); 
-  c11->SaveAs(Form("Graph/thetag_acc_g%.0f_pr%.0f_E%.1f.png",PhotonAngle,ProtonAngle,beam));
+  c11->SaveAs(Form("Graph/thetag_acc_g%.1f_pr%.1f_E%.1f.png",PhotonAngle,ProtonAngle,beam));
 
   TCanvas *c12 = new TCanvas("c12","",700,500,600,400);
   c12->cd();
@@ -443,7 +455,7 @@ void CheckAngleAcc(double Eimin=4.0, double Eimax=6.5){
   pt1->Draw("same");
   gPad->SetLogy(1);
 
-  c12->SaveAs(Form("Graph/thetap_acc_g%.0f_pr%.0f_E%.1f.png",PhotonAngle,ProtonAngle,beam));
+  c12->SaveAs(Form("Graph/thetap_acc_g%.1f_pr%.1f_E%.1f.png",PhotonAngle,ProtonAngle,beam));
 
   /*
   TCanvas *c2 = new TCanvas("c2","",800,200,800,600);
@@ -589,7 +601,135 @@ void PhotonRes(){
   hTRange->SetTitle(Form("%s; #theta_{#gamma} (rad);",strTitle));
   FitGauss(hTRange);
 		    
-  c4->SaveAs(Form("Graph/%s_Res_%.0f.png",PhotonDetector,PhotonAngle));
+  c4->SaveAs(Form("Graph/%s_Res_%.1f.png",PhotonDetector,PhotonAngle));
   
 }
 
+
+void CheckAngleAcc_weight(double Eimin=4.0, double Eimax=8.5, double HMSP0=0){
+  gROOT->Reset();
+  double beam =  GetBeamEnergy();
+  if(beam<1) 
+    {
+      cout<<"\nWrong ntuple file! config tree not exist...I quit...\n";
+      return;
+    }
+
+  /////////////////////////////////////////////////////////////
+  const double deg = atan(1.0)/45.;
+  double TargetRotation = GetConfigLeaf("HelmRotAngle1")/deg; // in deg;
+  double PhotonAngle = GetConfigLeaf("VDAngle")/deg;
+
+  //By Jixie: These 2 line will change the value of pSBS
+  //There must be some bugs in root cint, I have to set pSBS value after these  2 lines
+  double ProtonAngle = 0;
+  if(PhotonAngle>180.) ProtonAngle = GetConfigLeaf("SuperBigBiteAngle")/deg;
+  else ProtonAngle = GetConfigLeaf("HMSAngle")/deg;
+
+
+  int pSBS = (PhotonAngle>180.) ? 1 : 0;
+  //cout<<" pSBS="<<pSBS<<endl;
+
+  const char* ProtonDetector = (pSBS==1)?"SBS":"HMS";
+  const char* GammaDetector = (pSBS==1)?"LAC":"NPS";
+  //cout<<" pSBS="<<pSBS<<endl;
+
+  //By Jixie: These 2 line will change the value of pSBS
+  //There must be some bugs in root cint, I have to set pSBS value after these  2 lines
+  //if(pSBS==1) ProtonAngle = GetConfigLeaf("SuperBigBiteAngle")/deg;
+  //else ProtonAngle = GetConfigLeaf("HMSAngle")/deg;
+  //cout<<" pSBS="<<pSBS<<endl;
+
+  char target[255];
+  if(pSBS==1) sprintf(target,"Theta0*57.3:fmod(Phi0*57.3+360.,360)");
+  else sprintf(target,"Theta0*57.3:Phi0*57.3");
+  
+  cout<<"GammaAngle="<<PhotonAngle<<"  "<<ProtonDetector<<"_Angle="<<ProtonAngle
+      <<" tgstr="<<target<<endl;
+
+  /////////////////////////////////////////////////////////////
+  TTree *track0 = (TTree*) gROOT->FindObject("track0");
+  track0->AddFriend("track1");
+  //track0->AddFriend("track2");
+
+
+  TCut NoCut = Form("1000*ElasXS*(Ei>%.3f && Ei<%.3f)",Eimin,Eimax);
+  TCut GammaCut = Form("1000*ElasXS*(Ei>%.3f && Ei<%.3f && Pvb>0.5)",Eimin,Eimax);
+  TCut PrCut = Form("1000*ElasXS*(Ei>%.3f && Ei<%.3f && track1.Pvb>0.5)",Eimin,Eimax);
+  TCut GammaPrCut = Form("1000*ElasXS*(Ei>%.3f && Ei<%.3f && Pvb>0.5 && track1.Pvb>0.5)",Eimin,Eimax);
+  if(HMSP0>0.5)
+    {
+      PrCut = Form("1000*ElasXS*(Ei>%.3f && Ei<%.3f && abs(track1.Pvb-%.3f)<%.3f)",Eimin,Eimax,HMSP0,HMSP0*0.09);
+      GammaPrCut = Form("1000*ElasXS*(Ei>%.3f && Ei<%.3f && Pvb>0.5 && abs(track1.Pvb-%.3f)<%.3f)",Eimin,Eimax,HMSP0,HMSP0*0.09);
+    }
+
+  TCanvas *c11 = new TCanvas("c11","",700,40,600,400);
+
+  c11->cd();  
+  track0->Draw("Theta0*57.3>>htg00",NoCut,"");
+  TH1F *htg00=(TH1F*) gROOT->FindObject("htg00");
+  htg00->SetTitle("Thrown(black), #color[2]{#gamma detected (red)}, #color[3]{p detected (green)}, #color[4]{#gamma-p detected (blue)};#theta_{#gamma} (deg)");
+  double ymax= htg00->GetMaximum()*1.25;
+  htg00->GetYaxis()->SetRangeUser(0,ymax);
+  htg00->SetLineColor(1); htg00->SetLineWidth(2);
+  htg00->Draw();
+
+  track0->Draw("Theta0*57.3>>htg10",PrCut,"same");
+  track0->Draw("Theta0*57.3>>htg01",GammaCut,"same");
+  track0->Draw("Theta0*57.3>>htg11",GammaPrCut,"same");
+  TH1F *htg01=(TH1F*) gROOT->FindObject("htg01");
+  TH1F *htg10=(TH1F*) gROOT->FindObject("htg10");
+  TH1F *htg11=(TH1F*) gROOT->FindObject("htg11");
+  htg01->SetLineColor(2); htg01->SetLineWidth(2);
+  htg10->SetLineColor(3); htg10->SetLineWidth(2);
+  htg11->SetLineColor(4); htg11->SetLineWidth(2);
+  
+  htg01->GetYaxis()->SetRangeUser(0,ymax);
+  htg01->SetTitle("#color[2]{#gamma detected (red)}, #color[4]{#gamma-p detected (blue)};#theta_{#gamma} (deg)");
+  htg01->Draw(); htg11->Draw("same");
+  
+  TPaveText *pt1 = new TPaveText(0.24,0.80,0.85,0.898,"brNDC");
+  pt1->SetFillStyle(4000);
+  pt1->SetBorderSize(0);
+  pt1->SetFillColor(0);
+  if(pSBS)
+    pt1->AddText(Form("#color[2]{%s = %.1f^{o}}  #color[3]{%s = %.1f^{o}}  #color[4]{TargetRotation = %.1f^{o}}",
+		      GammaDetector,PhotonAngle-360.,ProtonDetector,ProtonAngle,TargetRotation));
+  else
+    pt1->AddText(Form("#color[2]{%s = %.1f^{o}}  #color[3]{%s = %.1f^{o}}  #color[4]{TargetRotation = %.1f^{o}}",
+		      GammaDetector,PhotonAngle,ProtonDetector,ProtonAngle-360.,TargetRotation));
+  pt1->AddText(Form("#color[4]{Integral = %.1f}",htg11->Integral()));
+  pt1->Draw("same");
+  //gPad->SetLogy(1); 
+  c11->SaveAs(Form("Graph/thetag_acc_g%.1f_pr%.1f_E%.1f_weighted.png",PhotonAngle,ProtonAngle,beam));
+
+  TCanvas *c12 = new TCanvas("c12","",700,500,600,400);
+  c12->cd();
+  track0->Draw("track1.Theta0*57.3>>htp00",NoCut,"");
+  TH1F *htp00=(TH1F*) gROOT->FindObject("htp00");
+  htp00->SetTitle("Thrown(black), #color[2]{#gamma detected (red)}, #color[3]{p detected (green)}, #color[4]{#gamma-p detected (blue)};#theta_{p} (deg)");
+  double ymax2= htp00->GetMaximum()*1.25;
+  htp00->GetYaxis()->SetRangeUser(0,ymax2);
+  htp00->SetLineColor(1); htp00->SetLineWidth(2);
+  htp00->Draw();
+
+  track0->Draw("track1.Theta0*57.3>>htp10",PrCut,"same");
+  track0->Draw("track1.Theta0*57.3>>htp01",GammaCut,"same");
+  track0->Draw("track1.Theta0*57.3>>htp11",GammaPrCut,"same");
+  TH1F *htp01=(TH1F*) gROOT->FindObject("htp01");
+  TH1F *htp10=(TH1F*) gROOT->FindObject("htp10");
+  TH1F *htp11=(TH1F*) gROOT->FindObject("htp11");
+  htp01->SetLineColor(2); htp01->SetLineWidth(2);
+  htp10->SetLineColor(3); htp10->SetLineWidth(2);
+  htp11->SetLineColor(4); htp11->SetLineWidth(2);
+  
+  htp01->GetYaxis()->SetRangeUser(0,ymax2);
+  htp01->SetTitle("#color[2]{#gamma detected (red)}, #color[4]{#gamma-p detected (blue)};#theta_{p} (deg)");
+  htp01->Draw(); htp11->Draw("same");
+
+  pt1->Draw("same");
+  //gPad->SetLogy(1);
+
+  c12->SaveAs(Form("Graph/thetap_acc_g%.1f_pr%.1f_E%.1f_weighted.png",PhotonAngle,ProtonAngle,beam));
+
+}

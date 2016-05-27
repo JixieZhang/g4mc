@@ -24,7 +24,7 @@ F) Update FAST option to speed up the program for the following cases:
 3) Kill tracks if hit the coils or hit the scat chamber or the beam dump 
 4) Place "absorber" (or dark matter) in places where there is no acceptance such
 that all tracks go into them will be killed
-5) Do not setup some detectors if they are not needed for some specific cases --done, from configouration file
+5) Do not setup some detectors if they are not needed for some specific cases --done, from configuration file
 6) Turn off the hit processing and the reconstruction if possible --done 
 
 After place the HRS containner, the hall is much larger than before, it will
@@ -77,7 +77,7 @@ J) In order to simulate radiation dose, I have to disable the local dump as a se
 
 K) Modified g2p and wacs target chamber geometry to match the drawing. The vertical part
    was not match to the drawing before.  Donal want to put the local dump at the downstream
-   of the target and on the floor, therefore the height of the chamber is criticle. 
+   of the target and on the floor, therefore the height of the chamber is critical. 
 
 L) Modified the FZ dump for WACS. Now the dump is a cylinder dump core( 5cm radus and 15 cm 
    thick) surrounded by lead shielding box. The size of the dump and position can be configured

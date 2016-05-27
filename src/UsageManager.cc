@@ -579,11 +579,10 @@ void UsageManager::ReadIni(const char *inifile)
 			// if string=".root ", The following lines will print: 
 			//linux:   char b=  (int)b=32 char c=^M (int)c=13   change line \=\  (int)\=92
 			//windows: char b=t (int)b=116 char c=  (int)c=32   change line \=\  (int)\=92
-			// if "events. \", The following lines will print: 
+			// if string="events. \", The following lines will print: 
 			//linux:   char b=\ (int)b=92 char c=^M (int)c=13   change line \=\  (int)\=92
 			//windows: char b=  (int)b=32 char c=\ (int)c=92   change line \=\  (int)\=92
 
-			//conclusion:  The linux treat the last
 			if(Global_Debug_Level>=5)
 			{
 				cout<<"char b="<<b<<" (int)b="<<(int)b <<" char c="<<c<<" (int)c="<<(int)c 

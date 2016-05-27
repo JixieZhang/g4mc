@@ -419,11 +419,11 @@ void PlotThrown(const char* inkey="")
   char key[100];
   if(SetupHMS) 
     {
-      sprintf(key,"NPS_%.0fdeg_HMS_%.0f_deg%s",VDAngle*57.3,HMSAngle*57.3,inkey);
+      sprintf(key,"NPS%.1fdeg_HMS%.1fdeg%s",VDAngle*57.3,HMSAngle*57.3,inkey);
     }
   else
     {
-      sprintf(key,"LAC_%.0fdeg_SBS_%.0f_deg%s",VDAngle*57.3,SuperBigBiteAngle*57.3,inkey);
+      sprintf(key,"LAC%.1fdeg_SBS%.1fdeg%s",VDAngle*57.3,SuperBigBiteAngle*57.3,inkey);
     }
 
   TCanvas *c22 = new TCanvas("c22","",600,800);
@@ -466,6 +466,51 @@ void PlotThrown(const char* inkey="")
 }
 
 
+void GetTH1BoundaryValues(TH1 *h1,double &pXStart, double &pXEnd, double entriescut=-1)
+{
+  // Get the start bin and end bin 
+  int pNXBin=h1->GetNbinsX();
+  int pXBinStart=0, pXBinEnd=-1;
+
+  if(entriescut<=0) entriescut=0.1*h1->GetMaximum(); 
+  for(int i=1;i<=pNXBin;i++)
+    {
+      //continuous 4 bins none zero
+      if(pXBinStart<=0 && i+3<=pNXBin)
+	{
+	  if (h1->GetBinContent(i)>entriescut   && h1->GetBinContent(i+1)>0 &&
+	      h1->GetBinContent(i+2)>0 && h1->GetBinContent(i+3)>0 )
+	    pXBinStart=i;
+	}  
+
+      if(pXBinEnd<=0 && pNXBin-i-2>=1)
+	{
+	  if (h1->GetBinContent(pNXBin-i+1)>entriescut && h1->GetBinContent(pNXBin-i)>0 &&
+	      h1->GetBinContent(pNXBin-i-1)>0 && h1->GetBinContent(pNXBin-i-2)>0)
+	    pXBinEnd=pNXBin-i+1;
+	}
+      if(pXBinStart>0 && pXBinEnd>0) break;
+    }
+  if(pXBinEnd<=0) pXBinEnd=pNXBin;
+
+  pXStart=h1->GetBinLowEdge(pXBinStart);
+  pXEnd=h1->GetBinLowEdge(pXBinEnd)+h1->GetBinWidth(pXBinEnd);
+  cout<<h1->GetName()<<":  Xmin="<<pXStart<<"  Xmax="<<pXEnd
+      <<"  HalfWidth="<<(pXEnd-pXStart)/2<<endl;
+
+
+  double pYmax=h1->GetMaximum();	
+  TLine *L1=new TLine(pXStart,0,pXStart,pYmax);
+  L1->SetLineColor(8);
+  L1->SetLineWidth(2);
+  h1->GetListOfFunctions()->Add(L1); 
+  TLine *L2=new TLine(pXEnd,0,pXEnd,pYmax);
+  h1->GetListOfFunctions()->Add(L2); 
+  L2->SetLineColor(8);
+  L2->SetLineWidth(2);
+
+}
+
 
 void PlotPhoton(const char* inkey="")
 {
@@ -481,39 +526,71 @@ void PlotPhoton(const char* inkey="")
   char key[100];
   if(SetupHMS) 
     {
-      sprintf(key,"NPS_%.0fdeg_HMS_%.0f_deg%s",VDAngle*57.3,HMSAngle*57.3,inkey);
+      sprintf(key,"NPS%.1fdeg_HMS%.1fdeg%s",VDAngle*57.3,HMSAngle*57.3,inkey);
     }
   else
     {
-      sprintf(key,"LAC_%.0fdeg_SBS_%.0f_deg%s",VDAngle*57.3,SuperBigBiteAngle*57.3,inkey);
+      sprintf(key,"LAC%.1fdeg_SBS%.1fdeg%s",VDAngle*57.3,SuperBigBiteAngle*57.3,inkey);
     }
   char detector[100];
   if(SetupHMS) 
     {
-      sprintf(detector,"NPS(%.0f deg)",VDAngle*57.3);
+      sprintf(detector,"NPS(%.1f deg)",VDAngle*57.3);
     }
   else
     {
-      sprintf(detector,"LAC (%.0f deg)",VDAngle*57.3);
+      sprintf(detector,"LAC (%.1f deg)",VDAngle*57.3);
     }
 
-
   TCanvas *c22 = new TCanvas("c22","",600,800);
+  
+  TH1F *h1=0;
+  //determine the range for phi
+  track0->Draw("Phi0*57.3>>h1Pdeg_g","","");
+  h1 = (TH1F*) gROOT->FindObject("h1Pdeg_g");
+  double pPhiMin=-360, pPhiMax=360;
+  int    pPhiBin=100;
+  GetTH1BoundaryValues(h1,pPhiMin,pPhiMax,1);
+  pPhiMin=ceil(pPhiMin)-3.;
+  pPhiMax=ceil(pPhiMax)+2.;
+  pPhiBin=int((pPhiMax-pPhiMin)/2.);
+  
+  
+  //determine the range for theta
+  track0->Draw("Theta0*57.3>>h1Thdeg_g","","");
+  h1 = (TH1F*) gROOT->FindObject("h1Thdeg_g");
+  double pThMin=0, pThMax=180;
+  int    pThBin=90;
+  GetTH1BoundaryValues(h1,pThMin,pThMax,1);
+  pThMin=ceil(pThMin)-3.;
+  pThMax=ceil(pThMax)+2.;
+  pThBin=int(pThMax-pThMin);
+  
+  char strBin[255];
+  sprintf(strBin,"%d,%.0f,%.0f,%d,%.0f,%.0f",pThBin,pThMin,pThMax,pPhiBin,pPhiMin,pPhiMax);
+  
+  c22->Clear();
   c22->Divide(1,2);
   c22->cd(1);
   gPad->SetRightMargin(0.15);
-  track0->Draw("Phi0*57.3:Theta0*57.3>>hPTdeg_g(20,10,30,50,-50,50)","","colz");
+  //track0->Draw("Phi0*57.3:Theta0*57.3>>hPTdeg_g(20,10,30,50,-50,50)","","colz");
+  //track0->Draw("Phi0*57.3:Theta0*57.3>>hPTdeg_g(25,60,110,30,-30,30)","","colz");
+  //track0->Draw("Phi0*57.3:Theta0*57.3>>hPTdeg_g(45,10,55,70,-70,70)","","colz");
+  track0->Draw(Form("Phi0*57.3:Theta0*57.3>>hPTdeg_g(%s)",strBin),"","colz");
   h2A = (TH2F*) gROOT->FindObject("hPTdeg_g");
   h2A->SetTitle("Thrown RCS Photon; #theta_{#gamma} (deg);#phi_{#gamma} (deg)");
  
 
   c22->cd(2);
   gPad->SetRightMargin(0.15);
-  track0->Draw("Phi0*57.3:Theta0*57.3>>hPTdeg_g_det(20,10,30,50,-50,50)","Pvb>0.2","colz");
+  //track0->Draw("Phi0*57.3:Theta0*57.3>>hPTdeg_g_det(20,10,30,50,-50,50)","Pvb>0.2","colz");
+  //track0->Draw("Phi0*57.3:Theta0*57.3>>hPTdeg_g_det(25,60,110,30,-30,30)","Pvb>0.2","colz");
+  //track0->Draw("Phi0*57.3:Theta0*57.3>>hPTdeg_g_det(45,10,55,70,-70,70)","Pvb>0.2","colz");
+  track0->Draw(Form("Phi0*57.3:Theta0*57.3>>hPTdeg_g_det(%s)",strBin),"Pvb>0.2","colz");
   h2B = (TH2F*) gROOT->FindObject("hPTdeg_g_det");
   h2B->SetTitle("Detected RCS Photon; #theta_{#gamma} (deg);#phi_{#gamma} (deg)");
 
-  //c22->SaveAs(Form("Graph/PhotonAcc_raw_%s.png",key));
+  c22->SaveAs(Form("Graph/Photon_Angle_%s.png",key));
 
   //////////////////////////////////////////////////////////////////
 
@@ -545,20 +622,20 @@ void PlotElectron(const char* inkey="")
   char key[100];
   if(SetupHMS) 
     {
-      sprintf(key,"NPS_%.0fdeg_HMS_%.0f_deg%s",VDAngle*57.3,HMSAngle*57.3,inkey);
+      sprintf(key,"NPS%.1fdeg_HMS%.1fdeg%s",VDAngle*57.3,HMSAngle*57.3,inkey);
     }
   else
     {
-      sprintf(key,"LAC_%.0fdeg_SBS_%.0f_deg%s",VDAngle*57.3,SuperBigBiteAngle*57.3,inkey);
+      sprintf(key,"LAC%.1fdeg_SBS%.1fdeg%s",VDAngle*57.3,SuperBigBiteAngle*57.3,inkey);
     }
   char detector[100];
   if(SetupHMS) 
     {
-      sprintf(detector,"NPS(%.0f deg)",VDAngle*57.3);
+      sprintf(detector,"NPS(%.1f deg)",VDAngle*57.3);
     }
   else
     {
-      sprintf(detector,"LAC (%.0f deg)",VDAngle*57.3);
+      sprintf(detector,"LAC (%.1f deg)",VDAngle*57.3);
     }
 
 
@@ -609,38 +686,68 @@ void PlotProton(const char* inkey="")
   char key[100];
   if(SetupHMS) 
     {
-      sprintf(key,"NPS_%.0fdeg_HMS_%.0f_deg%s",VDAngle*57.3,HMSAngle*57.3,inkey);
+      sprintf(key,"NPS%.1fdeg_HMS%.1fdeg%s",VDAngle*57.3,HMSAngle*57.3,inkey);
     }
   else
     {
-      sprintf(key,"LAC_%.0fdeg_SBS_%.0f_deg%s",VDAngle*57.3,SuperBigBiteAngle*57.3,inkey);
+      sprintf(key,"LAC%.1fdeg_SBS%.1fdeg%s",VDAngle*57.3,SuperBigBiteAngle*57.3,inkey);
     }
   char detector[100];
   if(SetupHMS) 
     {
-      sprintf(detector,"HMS(%.0f deg)",HMSAngle*57.3);
+      sprintf(detector,"HMS(%.1f deg)",HMSAngle*57.3);
     }
   else
     {
-      sprintf(detector,"SBS(%.0f deg)",SuperBigBiteAngle*57.3);
+      sprintf(detector,"SBS(%.1f deg)",SuperBigBiteAngle*57.3);
     }
 
   TCanvas *c22 = new TCanvas("c22","",600,800);
+  
+  TH1F *h1=0;
+  //determine the range for phi
+  track1->Draw("fmod(Phi0*57.3+360,360.)>>h1Pdeg_p","","");
+  h1 = (TH1F*) gROOT->FindObject("h1Pdeg_p");
+  double pPhiMin=-360, pPhiMax=360;
+  int    pPhiBin=100;
+  GetTH1BoundaryValues(h1,pPhiMin,pPhiMax,1);
+  pPhiMin=ceil(pPhiMin)-3.;
+  pPhiMax=ceil(pPhiMax)+2.;
+  pPhiBin=int(pPhiMax-pPhiMin);
+  
+  
+  //determine the range for theta
+  track1->Draw("Theta0*57.3>>h1Thdeg_p");
+  h1 = (TH1F*) gROOT->FindObject("h1Thdeg_p");
+  double pThMin=0, pThMax=180;
+  int    pThBin=90;
+  GetTH1BoundaryValues(h1,pThMin,pThMax,1);
+  pThMin=ceil(pThMin)-3.;
+  pThMax=ceil(pThMax)+2.;
+  pThBin=int(pThMax-pThMin);
+  
+  char strBin[255];
+  sprintf(strBin,"%d,%.0f,%.0f,%d,%.0f,%.0f",pThBin,pThMin,pThMax,pPhiBin,pPhiMin,pPhiMax);
+  
+  
+  c22->Clear();
   c22->Divide(1,2);
   c22->cd(1);
   gPad->SetRightMargin(0.15);
-  track1->Draw("fmod(Phi0*57.3+360,360.):Theta0*57.3>>hPTdeg_p(20,20,40,40,160,200)","","colz");
+  //track1->Draw("fmod(Phi0*57.3+360,360.):Theta0*57.3>>hPTdeg_p(20,20,40,40,160,200)","","colz");
+  track1->Draw(Form("fmod(Phi0*57.3+360,360.):Theta0*57.3>>hPTdeg_p(%s)",strBin),"","colz");
   h2A = (TH2F*) gROOT->FindObject("hPTdeg_p");
   h2A->SetTitle("Thrown RCS Proton; #theta_{p} (deg);#phi_{p} (deg)");
  
 
   c22->cd(2);
   gPad->SetRightMargin(0.15);
-  track1->Draw("fmod(Phi0*57.3+360,360.):Theta0*57.3>>hPTdeg_p_det(20,20,40,40,160,200)","Pvb>0.2","colz");
+  //track1->Draw("fmod(Phi0*57.3+360,360.):Theta0*57.3>>hPTdeg_p_det(20,20,40,40,160,200)","Pvb>0.2","colz");
+  track1->Draw(Form("fmod(Phi0*57.3+360,360.):Theta0*57.3>>hPTdeg_p_det(%s)",strBin),"Pvb>0.2","colz");
   h2B = (TH2F*) gROOT->FindObject("hPTdeg_p_det");
   h2B->SetTitle("Detected RCS Proton; #theta_{p} (deg);#phi_{p} (deg)");
 
-  //c22->SaveAs(Form("Graph/ProtonAcc_raw_%s.png",key));
+  c22->SaveAs(Form("Graph/Proton_Angle_%s.png",key));
 
   //////////////////////////////////////////////////////////////////
 
@@ -660,7 +767,7 @@ void PlotProton(const char* inkey="")
 }
 
 
-void PlotRCS(const char* inkey="")
+void PlotRCS(const char* inkey="_P03.85",double P0_HMS=3.85)
 {
   system("mkdir -p Graph");
   //TTree *D = (TTree*)gDirectory->Get("D");
@@ -676,20 +783,20 @@ void PlotRCS(const char* inkey="")
   char key[100];
   if(SetupHMS) 
     {
-      sprintf(key,"NPS_%.0fdeg_HMS_%.0f_deg%s",VDAngle*57.3,HMSAngle*57.3,inkey);
+      sprintf(key,"NPS%.1fdeg_HMS%.1fdeg%s",VDAngle*57.3,HMSAngle*57.3,inkey);
     }
   else
     {
-      sprintf(key,"LAC_%.0fdeg_SBS_%.0f_deg%s",VDAngle*57.3,SuperBigBiteAngle*57.3,inkey);
+      sprintf(key,"LAC%.1fdeg_SBS%.1fdeg%s",VDAngle*57.3,SuperBigBiteAngle*57.3,inkey);
     }
   char detector[100];
   if(SetupHMS) 
     {
-      sprintf(detector,"HMS(%.0f deg)+NPS(%.0f deg)",HMSAngle*57.3,VDAngle*57.3);
+      sprintf(detector,"HMS(%.1f deg)+NPS(%.1f deg)",HMSAngle*57.3,VDAngle*57.3);
     }
   else
     {
-      sprintf(detector,"SBS(%.0f deg)+LAC(%.0f deg)",SuperBigBiteAngle*57.3,VDAngle*57.3);
+      sprintf(detector,"SBS(%.1f deg)+LAC(%.1f deg)",SuperBigBiteAngle*57.3,VDAngle*57.3);
     }
 
   TCanvas *c31 = new TCanvas("c31","",800,600);
@@ -698,10 +805,10 @@ void PlotRCS(const char* inkey="")
   //gPad->SetRightMargin(0.15);
   char theTg[255],theBin[255];
   char strTg[4][255];
-  const char *strCut[4]={"",
-			 "track1.Pvb>0",
-			 "track0.Pvb>0",
-			 "track1.Pvb>0 && track1.Pvb>0"
+  const char *strCut[4]={Form("abs(track1.P0-%.3f)<0.09*%.3f",P0_HMS,P0_HMS),
+			 Form("abs(track1.P0-%.3f)<0.09*%.3f",P0_HMS,P0_HMS),
+			 "track0.Pvb>0.2",
+			 Form("track0.Pvb>0.2 && abs(track1.P0-%.3f)<0.09*%.3f",P0_HMS,P0_HMS)
   };
   const char *strTitle[4]={
     "Thrown RCS photon; #theta_{#gamma} (deg);#phi_{#gamma} (deg)",
@@ -709,16 +816,34 @@ void PlotRCS(const char* inkey="")
     "Detected RCS photon; #theta_{#gamma} (deg);#phi_{#gamma} (deg)",
     "Both photon and proton detected; #theta_{#gamma} (deg);#phi_{#gamma} (deg)"
   };
-  if(SetupHMS) 
-    {
-      sprintf(theTg,"track0.Phi0*57.3:track0.Theta0*57.3");
-      sprintf(theBin,"(20,6,26,40,-40,40)");
-    }
-  else
-    {
-      sprintf(theTg,"fmod(track0.Phi0*57.3+360,360.):track0.Theta0*57.3");
-      sprintf(theBin,"(25,5,55,40,100,260)");
-    }
+  
+  if(SetupHMS)  sprintf(theTg,"track0.Phi0*57.3:track0.Theta0*57.3");
+  else sprintf(theTg,"fmod(track0.Phi0*57.3+360,360.):track0.Theta0*57.3"); 
+    
+  TH1F *h1=0;
+  //determine the range for phi
+  if(SetupHMS) track0->Draw("Phi0*57.3>>h1Pdeg_g","","");
+  else track0->Draw("fmod(Phi0*57.3+360,360.)>>h1Pdeg_g","","");
+  h1 = (TH1F*) gROOT->FindObject("h1Pdeg_g");
+  double pPhiMin=-360, pPhiMax=360;
+  int    pPhiBin=100;
+  GetTH1BoundaryValues(h1,pPhiMin,pPhiMax,1);
+  pPhiMin=ceil(pPhiMin)-3.;
+  pPhiMax=ceil(pPhiMax)+2.;
+  pPhiBin=int(pPhiMax-pPhiMin);
+  
+  //determine the range for theta
+  track0->Draw("Theta0*57.3>>h1Thdeg_g");
+  h1 = (TH1F*) gROOT->FindObject("h1Thdeg_g");
+  double pThMin=0, pThMax=180;
+  int    pThBin=90;
+  GetTH1BoundaryValues(h1,pThMin,pThMax,1);
+  pThMin=ceil(pThMin)-3.;
+  pThMax=ceil(pThMax)+2.;
+  pThBin=int(pThMax-pThMin);
+  
+  sprintf(theBin,"(%d,%.0f,%.0f,%d,%.0f,%.0f)",pThBin,pThMin,pThMax,pPhiBin,pPhiMin,pPhiMax);
+  
   sprintf(strTg[0],"%s >> h2PT_acc_A%s",theTg,theBin);
   sprintf(strTg[1],"%s >> h2PT_acc_B%s",theTg,theBin);
   sprintf(strTg[2],"%s >> h2PT_acc_C%s",theTg,theBin);
@@ -731,7 +856,7 @@ void PlotRCS(const char* inkey="")
   grA = (TGraph*) gROOT->FindObject("Graph")->Clone("GrA");
   grA->SetTitle(strTitle[0]);
   grA->SetMarkerStyle(1); 
-  grA->SetMarkerColor(12);
+  grA->SetMarkerColor(1);
   grA->Draw("AP");
       
   //track0->Draw("fmod(track0.Phi0*57.3+360,360.):track0.Theta0*57.3","track1.Pvb>0 ","same");
@@ -739,7 +864,7 @@ void PlotRCS(const char* inkey="")
   grB = (TGraph*) gROOT->FindObject("Graph")->Clone("GrB");
   //grB->SetTitle("Thrown Photon: proton detected; #theta_{#gamma} (deg);#phi_{#gamma} (deg)");
   grB->SetTitle(strTitle[1]);
-  grB->SetMarkerStyle(1); 
+  grB->SetMarkerStyle(2); 
   grB->SetMarkerColor(9);
 
   //track0->Draw("fmod(track0.Phi0*57.3+360,360.):track0.Theta0*57.3","track0.Pvb>0","same");
@@ -747,7 +872,7 @@ void PlotRCS(const char* inkey="")
   grC = (TGraph*) gROOT->FindObject("Graph")->Clone("GrC");
   //grC->SetTitle("Photon detected; #theta_{#gamma} (deg);#phi_{#gamma} (deg)");
   grC->SetTitle(strTitle[2]);
-  grC->SetMarkerStyle(1); 
+  grC->SetMarkerStyle(2); 
   grC->SetMarkerColor(4);
 
   //track0->Draw("fmod(track0.Phi0*57.3+360,360.):track0.Theta0*57.3","track1.Pvb>0 && track0.Pvb>0","same");
@@ -756,11 +881,11 @@ void PlotRCS(const char* inkey="")
   h2B->SetTitle("Detect both photon and proton; #theta_{#gamma} (deg);#phi_{#gamma} (deg)");
   grD = (TGraph*) gROOT->FindObject("Graph")->Clone("GrD");
   grD->SetTitle(strTitle[3]);
-  grD->SetMarkerStyle(1); 
+  grD->SetMarkerStyle(2); 
   grD->SetMarkerColor(2);
 
   grA->Draw("AP");
-  grB->Draw("Psame");
+  //grB->Draw("Psame");
   grC->Draw("Psame");
   grD->Draw("Psame");
 
@@ -780,7 +905,8 @@ void PlotRCS(const char* inkey="")
   if(SetupHMS)
     {
       h2C->GetXaxis()->SetRangeUser(10,30);
-      h2C->GetYaxis()->SetRangeUser(-20,20);
+      h2C->GetXaxis()->SetRangeUser(60,110);
+      h2C->GetYaxis()->SetRangeUser(-30,30);
     }
   else
     {
@@ -788,6 +914,15 @@ void PlotRCS(const char* inkey="")
       h2C->GetXaxis()->SetRangeUser(140,230);
     }
   h2C->Draw("colz text");
+
+  TPaveText *pt1 = new TPaveText(0.24,0.83,0.85,0.898,"brNDC");
+  pt1->SetFillStyle(4000);
+  pt1->SetBorderSize(0);
+  pt1->SetFillColor(0);  
+  pt1->AddText(Form("%s  #color[4]{TargetRotation = %.1f^{o}}",
+		     detector,HelmRotAngle1*57.3));
+  pt1->Draw("same");
+
   c32->Modified();
 
   c32->SaveAs(Form("Graph/Acc_gp_%s.png",key));
@@ -831,20 +966,20 @@ void PlotEP(const char* inkey="")
   char key[100];
   if(SetupHMS) 
     {
-      sprintf(key,"NPS_%.0fdeg_HMS_%.0f_deg%s",VDAngle*57.3,HMSAngle*57.3,inkey);
+      sprintf(key,"NPS%.1fdeg_HMS%.1fdeg%s",VDAngle*57.3,HMSAngle*57.3,inkey);
     }
   else
     {
-      sprintf(key,"LAC_%.0fdeg_SBS_%.0f_deg%s",VDAngle*57.3,SuperBigBiteAngle*57.3,inkey);
+      sprintf(key,"LAC%.1fdeg_SBS%.1fdeg%s",VDAngle*57.3,SuperBigBiteAngle*57.3,inkey);
     }
   char detector[100];
   if(SetupHMS) 
     {
-      sprintf(detector,"HMS(%.0f deg)+NPS(%.0f deg)",HMSAngle*57.3,VDAngle*57.3);
+      sprintf(detector,"HMS(%.1fdeg)+NPS(%.1fdeg)",HMSAngle*57.3,VDAngle*57.3);
     }
   else
     {
-      sprintf(detector,"SBS(%.0f deg)+LAC(%.0f deg)",SuperBigBiteAngle*57.3,VDAngle*57.3);
+      sprintf(detector,"SBS(%.1fdeg)+LAC(%.1fdeg)",SuperBigBiteAngle*57.3,VDAngle*57.3);
     }
 
   TCanvas *c31 = new TCanvas("c31","",800,600);
@@ -856,7 +991,7 @@ void PlotEP(const char* inkey="")
   const char *strCut[4]={"",
 			 "track1.Pvb>0",
 			 "track2.Pvb>0",
-			 "track1.Pvb>0 && track1.Pvb>0"
+			 "track0.Pvb>0 && track1.Pvb>0"
   };
   const char *strTitle[4]={
     "Thrown electron; #theta_{e} (deg);#phi_{e} (deg)",
@@ -968,22 +1103,22 @@ void PlotEGDiff(const char* inkey="")
   char theCut[255];
   if(SetupHMS) 
     {
-      sprintf(key,"NPS_%.0fdeg_HMS_%.0f_deg%s",VDAngle*57.3,HMSAngle*57.3,inkey);
+      sprintf(key,"NPS%.1fdeg_HMS%.1fdeg%s",VDAngle*57.3,HMSAngle*57.3,inkey);
     }
   else
     {
-      sprintf(key,"LAC_%.0fdeg_SBS_%.0f_deg%s",VDAngle*57.3,SuperBigBiteAngle*57.3,inkey);
+      sprintf(key,"LAC%.1fdeg_SBS%.1fdeg%s",VDAngle*57.3,SuperBigBiteAngle*57.3,inkey);
     }
   char detector[100], strPhi[100];
   if(SetupHMS) 
     {
-      sprintf(detector,"HMS(%.0f deg)",HMSAngle*57.3);
+      sprintf(detector,"HMS(%.1f deg)",HMSAngle*57.3);
       sprintf(strPhi,"track0.Phi0*57.3");
       sprintf(theCut,"track0.Pvb/track0.P0>0.9 && track1.Pvb/track1.P0>0.9 && track2.Pvb/track2.P0>0.9 && track0.Yvb<track2.Yvb");
     }
   else
     {
-      sprintf(detector,"SBS(%.0f deg)",SuperBigBiteAngle*57.3);
+      sprintf(detector,"SBS(%.1f deg)",SuperBigBiteAngle*57.3);
       sprintf(strPhi,"fmod(track0.Phi0*57.3+360,360)");
       sprintf(theCut,"track0.Pvb/track0.P0>0.9 && track1.Pvb/track1.P0>0.9 && track2.Pvb/track2.P0>0.9 && track0.Yvb>track2.Yvb");
     }
@@ -1025,11 +1160,22 @@ void PlotWACS()
   PlotThrown();
   PlotPhoton();
   PlotProton();
-  PlotElectron();
 
   PlotRCS();
-  PlotEP();
-  //return;
-  PlotEGDiff();
+  //return;  
+  TTree *track2=0;
+  track2 = (TTree*)gDirectory->Get("track2");
+  if(track2)
+    {
+      TH1F *hP0_det_e=new TH1F("hP0_det_e","Detected Electron",100,2.0,7.0);
+      track2->Project("hP0_det_e","P0","Pvb>1.0");
+      int n = hP0_det_e->GetEntries();
+      if(n>1000)
+	{
+	  PlotElectron();
+	  PlotEP();
+	  PlotEGDiff();
+	}
+    }
   //return;
 }
