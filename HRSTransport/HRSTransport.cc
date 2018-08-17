@@ -141,7 +141,7 @@ void HRSTransport::ChangeModel(int setting)
     }
     
     if (!found) {
-        printf("Can not found SNAKE model %d, no change.\n", setting);
+        printf("Can not find SNAKE model %d, no change. I quit...\n", setting);
         exit(-1);
     }
     else{

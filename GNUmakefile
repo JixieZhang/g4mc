@@ -43,7 +43,7 @@ ROOTCFLAGS   := $(shell root-config --cflags)
 ROOTLIBS     := $(shell root-config --libs)
 ROOTGLIBS    := $(shell root-config --glibs)
 
-CPPFLAGS  += $(ROOTCFLAGS) -IHRSTransport -IXSModel 
+CPPFLAGS  += $(ROOTCFLAGS) -IHRSTransport -IXSModel -fPIC
 
 EXTRALIBS += $(ROOTLIBS) 
 

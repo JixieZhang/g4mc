@@ -733,7 +733,24 @@ G4VPhysicalVolume* HRSDetectorConstruction::Construct()
 		pV3VD2Pos += pV3VDPosOffset;
 		new G4PVPlacement(pRotVD,pV3VD2Pos,
 			virtualDetector2Logical,"virtualBoundaryPhys_VD",magneticLogical,0,0);
+			
+		//by Jixie: Just place a box for visulization 
+		double pPMTLength = 60*cm; 
+		G4VSolid* virtualDetectorPMTSolid = new G4Box("virtualDetectorPMTBox",mVirtualDetectorWidth/2.0,
+			mVirtualDetectorHeight/2.0,pPMTLength/2.0);
+		G4LogicalVolume* virtualDetectorPMTLogical = new G4LogicalVolume(virtualDetectorPMTSolid,
+			mMaterialManager->lead,"virtualDetectorPMTLogical",0,0,0);
+		virtualDetectorPMTLogical->SetVisAttributes(LightBlueVisAtt);  
 
+		G4ThreeVector pV3VDPMTPos;
+		pV3VDPMTPos.set(0.0,0.0,
+			      mPivot2VDFace+mVirtualDetector1Thick+1.0*mm+mVirtualDetector2Thick*1.5+1.0*mm+pPMTLength/2.0);
+		pV3VDPMTPos.rotateY(mVDRotYAngle);
+		pV3VDPMTPos.rotateX(mVDRotXAngle);
+		pV3VDPMTPos += pV3VDPosOffset;
+		new G4PVPlacement(pRotVD,pV3VDPMTPos,
+			virtualDetectorPMTLogical,"virtualBoundaryPhys_PMT",magneticLogical,0,0);
+			
 	}
 
 

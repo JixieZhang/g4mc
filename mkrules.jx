@@ -104,7 +104,7 @@ G4CFLAGS    += -DG4VERBOSE -DG4_STORE_TRAJECTORY  -DG4UI_USE_TCSH \
  -DG4VIS_USE_HEPREPFILE -DG4VIS_USE_RAYTRACER -DG4VIS_USE_VRMLFILE \
  -DG4VIS_USE_OPENGLX -DG4VIS_USE_OPENGLQT -DG4VIS_USE_OPENGL -DG4VIS_USE
 
-G4LIBS      +=  -L/usr/lib64 -lQtCore_debug -lQtGui -L/lib64 -lGLU -lGL \
+G4LIBS      +=  -L/usr/lib64 -lQtCore -lQtGui -L/lib64 -lGLU -lGL \
  -L/usr/X11R6/lib64 -lXmu -lXt -lXext -lX11 -lXi -lSM -lICE -lexpat -lz -lm
 
 ########################################################################
